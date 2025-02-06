@@ -3,19 +3,348 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #000000;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #1e1e1e;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  html {
+    --bg-main: #000000;
+    --bg-header: #050505;
+    --bg-button: #202020;
+    --bg-input: #0D0D0D;
+    --bg-button-hover: #E2E2E2;
+    --font-primary: #E2E2E2;
+    --font-button: #FFFFFF;
+    --font-button-hover: #000000;
+    --font-button-sub: #FFFFFF99;
+    --border-primary: #1E1E1E;
+    --border-secondary: #333333;
+    --border-tertiary: #CCCCCC;
+  }
+}
+
+#root {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-primary);
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.rotate {
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.answer-markdown {
+  a {
+    text-decoration: none;
+    color: hsl(221.2 83.2% 53.3%);
+  }
+
+  code {
+    background-color: rgba(17, 24, 39, 1);
+    ;
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.875em;
+    font-weight: 500;
+    padding: 0.15rem 0.3rem;
+  }
+
+  h3 {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    font-weight: 350;
+  }
+
+  p>strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  ol {
+    padding-left: 1.625em;
+    margin-top: 0;
+  }
+
+  li {
+    padding-left: 0.375em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+  }
+
+  ul {
+    padding-left: 1.625em;
+  }
+
+  menu,
+  ol,
+  ul {
+    list-style: none;
+    list-style-type: disc;
+    margin-bottom: 1.25em;
+  }
+
+  hr {
+    border-top-width: 1px;
+    margin-bottom: 3em;
+    margin-top: 3em;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  table {
+    text-indent: 0;
+    font-size: .875em;
+    width: 100%;
+    text-align: left;
+    border-spacing: 0;
+    border-collapse: separate;
+    border-radius: .375rem;
+
+  }
+
+  thead tr th {
+    border-color: #FFFFFF33;
+    border-left-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    background-color: rgba(17, 24, 39, 0.7);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-weight: 600;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  thead tr th:first-child {
+    border-top-left-radius: .375rem;
+  }
+
+  thead tr th:last-child {
+    border-top-right-radius: .375rem;
+    border-right-width: 1px;
+  }
+
+  tbody tr td {
+    background-color: rgba(17, 24, 39, 1);
+    border-color: #FFFFFF33;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+    padding: .5rem .75rem;
+  }
+
+  tbody tr td:last-child {
+    border-right-width: 1px;
+    padding-right: .75rem;
+  }
+
+  tbody tr:last-child td:first-child {
+    border-bottom-left-radius: .375rem;
+  }
+
+  tbody tr:last-child td:last-child {
+    border-bottom-right-radius: .375rem;
+  }
+
 }
