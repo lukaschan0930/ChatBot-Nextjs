@@ -80,7 +80,7 @@ export const authOptions = {
         signIn: '/signin'
     },
     session: {
-        maxAge: 24 * 60 * 60, // 1 day in seconds
+        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
         strategy: "jwt",
     },
     debug: process.env.NODE_ENV === 'development',

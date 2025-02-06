@@ -3,6 +3,7 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { useAtom } from "jotai";
 import { ChatHistory as ChatHistoryType } from "@/app/lib/interface";
 import { chatHistoryAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
+import CircularProgress from "@mui/material/CircularProgress";
 import moment from "moment";
 import Image from "next/image";
 
@@ -91,16 +92,9 @@ const ChatHistory = () => {
                 New Chat
             </button>
             <div className="text-subButtonFont mt-7 mb-2">Chat History</div>
-            <div className="text-left flex flex-col h-full overflow-y-auto gap-1">
+            <div className="text-left flex flex-col h-full overflow-y-auto gap-1 overflow-x-hidden">
                 {isLoadingHistory ? (
-                    <>
-                        {Array.from({ length: 3 }).map((_, idx) => (
-                            <div
-                                key={idx}
-                                className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg"
-                            />
-                        ))}
-                    </>
+                    <CircularProgress />
                 ) : (
                     chatHistory.map((session: ChatHistoryType) => (
                         <div

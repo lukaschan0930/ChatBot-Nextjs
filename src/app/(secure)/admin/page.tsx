@@ -5,7 +5,6 @@ import Image from 'next/image'
 const AdminPage = () => {
     return (
         <div className="mt-[90px] max-w-[1096px] w-full mx-auto">
-
             <div className="flex justify-between mb-4 gap-6">
                 {['Total Users', 'Total Tokens', 'Total Tokens', 'Total Tokens'].map((title, index) => (
                     <div key={index} className="flex flex-col gap-4 w-full p-4 bg-secondaryBg rounded-[12px] border border-secondaryBorder relative">
@@ -15,9 +14,9 @@ const AdminPage = () => {
                     </div>
                 ))}
             </div>
-            <div className="bg-secondaryBg rounded-[12px] border border-secondaryBorder p-4">
+            <div className="bg-secondaryBg rounded-[12px] border border-secondaryBorder p-4 relative w-1/2">
                 <div className="text-subButtonFont text-[14px]">Tokens / sec</div>
-                <table className="w-full text-center border-collapse">
+                <table className="w-full text-center border-collapse text-mainFont">
                     <thead>
                         <tr>
                             <th></th>
@@ -47,6 +46,7 @@ const AdminPage = () => {
                         </tr>
                     </tbody>
                 </table>
+                <Image src="/image/light.svg" alt="light" width={85} height={65} className="absolute top-0 left-0" />
             </div>
         </div>
     );

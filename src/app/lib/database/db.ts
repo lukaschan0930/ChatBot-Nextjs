@@ -29,6 +29,7 @@ mongoose.Promise = global.Promise;
 const db = {
     User: userModel(),
     Chat: chatModel(),
+    ChangeLog: changeLogModel(),
 }
 
 function userModel() {
@@ -158,4 +159,30 @@ function chatModel() {
 
     return mongoose.models.Chat || mongoose.model('Chat', ChatSchema);
 }
+
+function changeLogModel() {
+    const ChangeLogSchema = new Schema({
+        title: {
+            type: String,
+            required: true
+        },
+        category: {
+            type: String,
+            required: true
+        },
+        article: {
+            type: String,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.ChangeLog || mongoose.model('ChangeLog', ChangeLogSchema);
+}
+
 export default db;

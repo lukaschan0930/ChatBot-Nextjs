@@ -99,3 +99,21 @@ export const AdminMenuItems = [
     }
 ];
 
+export const logCategory = [
+    {
+        id: "new",
+        label: "New",
+    },
+    {
+        id: "fix",
+        label: "Fix",
+    },
+    {
+        id: "delete",
+        label: "Delete",
+    },
+    {
+        id: "improvements",
+        label: "Improvements",
+    }
+]

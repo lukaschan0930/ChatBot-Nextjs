@@ -69,6 +69,12 @@ const Header = () => {
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-4">
+                    <button 
+                      className="flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
+                      onClick={() => router.push("/changeLog")}
+                    >
+                      Change Log
+                    </button>
                     <button className="flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
                       Quests
                     </button>

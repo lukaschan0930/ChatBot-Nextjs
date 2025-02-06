@@ -346,5 +346,17 @@ button:focus-visible {
   tbody tr:last-child td:last-child {
     border-bottom-right-radius: .375rem;
   }
+}
 
+.ql-container {
+  height: 300px;
+  /* Set the height of the editor */
+}
+
+.ql-editor {
+  color: white;
+  background-color: black;
+  /* Ensure the background is contrasting */
+  height: 100%;
+  /* Ensure the editor content fills the container */
 }

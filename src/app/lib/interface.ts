@@ -100,3 +100,11 @@ export interface ChatLog {
     response: string | null;
     timestamp: string | null;
 }
+
+export interface IChangeLog {
+    _id: string;
+    title: string;
+    article: string;
+    category: string;
+    createdAt: Date;
+}
