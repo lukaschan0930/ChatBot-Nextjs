@@ -117,7 +117,7 @@ const Verify = () => {
     <>
       {isVerified ? (
         <Box className="flex flex-col items-center justify-center min-h-screen bg-mainBg text-buttonFont">
-          <div className="flex items-end border-none outline-none focus:outline-none p-0 !mb-5">
+          <div className="flex items-end border-none outline-none focus:outline-none py-0 !mb-5 px-[120px]">
             <Image
               src="/image/EDITH_logo_png.png"
               alt="logo"
