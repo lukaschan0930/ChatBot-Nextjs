@@ -293,9 +293,8 @@ const SignUp = () => {
                 required: "Password is required",
                 pattern: {
                   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message: "Invalid password",
+                  message: "Weak Password",
                 },
-
               })}
             />
 
@@ -371,7 +370,7 @@ const SignUp = () => {
                 required: "Confirm Password is required",
                 pattern: {
                   value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message: "Invalid password",
+                  message: "Weak password",
                 },
 
               })}
@@ -502,7 +501,7 @@ const SignUp = () => {
           className="mt-4 text-center "
         >
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-[#4169E1] hover:text-[#87CEEB]">
+          <Link href="/signin" className="text-[#4169E1] hover:text-[#87CEEB]">
             Sign In
           </Link>
         </Typography>
