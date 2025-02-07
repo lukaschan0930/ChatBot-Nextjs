@@ -1,7 +1,7 @@
 export const MenuItems = [
   {
     id: "chatText",
-    label: "E.CHAT",
+    label: "Echo",
     checked: true,
     disable: false,
     // subItems: [
@@ -29,7 +29,7 @@ export const MenuItems = [
   },
   {
     id: "chatImage",
-    label: "E.GoLand",
+    label: "Workers",
     checked: false,
     disable: true,
     // subItems: [
@@ -42,7 +42,7 @@ export const MenuItems = [
   },
   {
     id: "chatVideo",
-    label: "E.G",
+    label: "Intelligence",
     checked: false,
     disable: true,
     // subItems: [
@@ -61,7 +61,7 @@ export const MenuItems = [
   },
   {
     id: "chatAudio",
-    label: "E.ROBO",
+    label: "Explorer",
     checked: false,
     disable: true,
     // subItems: [

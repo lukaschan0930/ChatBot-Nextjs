@@ -74,6 +74,12 @@ const MobileDropDownMenu = () => {
         </div>
         <DropdownMenuSeparator className="block sm:hidden bg-[#FFFFFF]/10" />
         <DropdownMenuSub>
+          <DropdownMenuItem
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+            onClick={() => router.push("/changeLog")}
+          >
+            Change Log
+          </DropdownMenuItem>
           <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
             Quests
           </DropdownMenuItem>

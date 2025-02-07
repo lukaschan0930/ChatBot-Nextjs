@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
 import { chatHistoryAtom, isStartChatAtom } from "@/app/lib/store";
-import { chatLogAtom, sessionIdAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 
@@ -15,9 +15,10 @@ const InputBox = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [messageOver, setMessageOver] = useState<boolean>(false);
   const [inputPrompt, setInputPrompt] = useState<string>("");
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [isStreaming, setIsStreaming] = useAtom(isStreamingAtom);
   // const [isOpen, setIsOpen] = useState<boolean>(false);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
+
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
@@ -221,7 +222,7 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg p-[21px] border-secondaryBorder border rounded-lg w-full max-w-[800px]`}
+        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[800px]`}
     >
       <div
         className={`${messageOver ? "order-0 basis-full" : "order-1"

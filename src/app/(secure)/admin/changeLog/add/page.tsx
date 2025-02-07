@@ -57,11 +57,11 @@ const AddChangeLog = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]">
-            <div className="border-2 border-secondaryBorder rounded-[8px] px-[74px] py-[60px] max-w-[900px] w-full bg-[#FFFFFF05]">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)] px-4 mt-10 lg:mt-4">
+            <div className="border-2 border-secondaryBorder rounded-[8px] px-10 lg:px-[74px] py-10 lg:py-[60px] max-w-[900px] w-full bg-[#FFFFFF05] overflow-y-auto">
                 <div className="flex flex-col gap-7">
                     <div className="text-mainFont text-2xl">Add new Change Log</div>
-                    <div className="flex w-full gap-5 justify-between">
+                    <div className="flex w-full gap-5 justify-between lg:flex-row flex-col">
                         <div className="flex flex-col gap-5 w-full">
                             <div className="text-mainFont text-[18px]">Title</div>
                             <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="John Doe" className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont" />
@@ -79,12 +79,11 @@ const AddChangeLog = () => {
                             </Select>
                         </div>
                     </div>
-
-                    <div className="flex flex-col gap-5 w-full">
+                    <div className="flex flex-col gap-5 w-full h-[480px] md:h-[400px] lg:h-[380px]">
                         <div className="text-mainFont text-[18px]">Article</div>
                         <Editor onChange={(data) => setContent(DOMPurify.sanitize(data))} value={content} />
                     </div>
-                    <div className="flex justify-end gap-5 mt-8">
+                    <div className="flex justify-end gap-5">
                         <Button variant="outlined" onClick={() => router.back()} className="bg-inherit hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-mainFont !text-sm !border !border-secondaryBorder">Cancel</Button>
                         <Button
                             variant="contained"

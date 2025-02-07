@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <div className="w-screen mt-[72px]">
-            <div className="flex gap-11 px-8 items-center mt-4 justify-start">
+            <div className="flex gap-11 px-8 items-center mt-4 justify-start max-md:hidden">
                 {
                     AdminMenuItems.map((item) => (
                         <div

@@ -4,8 +4,8 @@ import Image from 'next/image'
 
 const AdminPage = () => {
     return (
-        <div className="mt-[90px] max-w-[1096px] w-full mx-auto">
-            <div className="flex justify-between mb-4 gap-6">
+        <div className="md:mt-[90px] mt-10 max-w-[1096px] w-full mx-auto px-4 mb-4">
+            <div className="grid md:grid-cols-4 grid-cols-2 justify-between mb-4 gap-6">
                 {['Total Users', 'Total Tokens', 'Total Tokens', 'Total Tokens'].map((title, index) => (
                     <div key={index} className="flex flex-col gap-4 w-full p-4 bg-secondaryBg rounded-[12px] border border-secondaryBorder relative">
                         <div className="text-subButtonFont text-[14px]">{title}</div>
@@ -14,7 +14,7 @@ const AdminPage = () => {
                     </div>
                 ))}
             </div>
-            <div className="bg-secondaryBg rounded-[12px] border border-secondaryBorder p-4 relative w-1/2">
+            <div className="bg-secondaryBg rounded-[12px] border border-secondaryBorder p-4 relative lg:w-1/2">
                 <div className="text-subButtonFont text-[14px]">Tokens / sec</div>
                 <table className="w-full text-center border-collapse text-mainFont">
                     <thead>

@@ -5,6 +5,7 @@ import MobileDropDownMenu from "@/app/components/headers/MobileDropDownMenu";
 import { useEffect, useRef, useState } from "react";
 import ProfileDropDownMenu from "@/app/components/headers/ProfileDropDownMenu";
 import Image from "next/image";
+import MobileAdminMenu from "./MobileAdminMenu";
 
 const Header = () => {
   const router = useRouter();
@@ -69,7 +70,7 @@ const Header = () => {
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-4">
-                    <button 
+                    <button
                       className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
                       onClick={() => router.push("/changeLog")}
                     >
@@ -92,7 +93,14 @@ const Header = () => {
                 </div>
               </>
             ) : (
-              <div className="text-white text-2xl font-bold">Admin</div>
+              <>
+                <div className="text-white text-2xl font-bold flex items-center gap-2">
+                  Admin
+                  <div className="lg:hidden">
+                    <MobileAdminMenu />
+                  </div>
+                </div>
+              </>
             )
           }
         </div>

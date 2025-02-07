@@ -72,7 +72,11 @@ export async function POST(request: NextRequest) {
         ],
         model: "llama3.1-8b",
         stream: true,
-
+        temperature: 0.7,
+        max_tokens: 2000,
+        stream_options: {
+            include_usage: true
+        }
     });
 
     const encoder = new TextEncoder();
@@ -89,7 +93,7 @@ export async function POST(request: NextRequest) {
                     if (content) {
                         fullResponse += content;
                         controller.enqueue(encoder.encode(content));
-                        await new Promise(resolve => setTimeout(resolve, 50))
+                        await new Promise(resolve => setTimeout(resolve, 5));
                     }
                 }
             } catch (error) {
@@ -154,7 +158,6 @@ export async function POST(request: NextRequest) {
                     // Handling for when chatHistory doesn't exist (creating a new one)
                     const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
                     const newChatHistory = {
-
                         id: sessionId as string,
                         title: title as string,
                         chats: [{

@@ -5,7 +5,7 @@ import moment from 'moment'
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
-import { chatLogAtom, sessionIdAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
 
 interface MessagePart {
   type: "text" | "code";
@@ -18,6 +18,7 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
 
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
+  const [, setIsStreaming] = useAtom(isStreamingAtom);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -73,9 +74,11 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
 
   const refreshGenerate = async () => {
     try {
+      setIsStreaming(true);
       const prompt = chatLog[chatLog.length - 1].prompt;
       const chatHistory = chatLog.slice(-6, -1);
       setChatLog((prevChatLog) => {
+
         const newLog = [...prevChatLog];
         newLog[newLog.length - 1] = {
           prompt,
@@ -150,17 +153,18 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
         variant: "destructive",
         title: 'Failed to get response from server.',
       });
+    } finally {
+      setIsStreaming(false);
     }
   };
 
-
   return (
     <div className="flex flex-col text-mainFont w-full">
-      <div className="overflow-x-auto text-justify break-words whitespace-pre-wrap pl-8 w-full">
+      <div className="overflow-x-auto text-justify break-words mb-8 pl-8 w-full">
         {splitResponse(response).map((part, index) => (
           <React.Fragment key={index}>
             {part.type === "text" && (
-              <div className="break-words answer-markdown" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
+              <div className="break-words answer-markdown break-all" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
             )}
             {part.type === "code" && (
               <div className="relative">
@@ -174,7 +178,7 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
                   code={part.content}
                   language={part.language || "Text"}
                 >
-                  <CodeBlock.Code className="flex flex-col p-10 my-6 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap">
+                  <CodeBlock.Code className="flex flex-col lg:p-10 p-6 my-6 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap break-all">
                     <CodeBlock.LineContent>
                       <CodeBlock.Token />
                     </CodeBlock.LineContent>
@@ -186,17 +190,17 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
         ))}
       </div>
       <div className="flex items-center justify-between pl-8">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-3">
           {
             last && <button
-              className="p-0 transition-colors duration-100 ease-linear bg-transparent border-none text-subButtonFont focus:outline-none hover:scale-105"
+              className="p-1 transition-colors duration-100 ease-linear bg-transparent border-none text-subButtonFont focus:outline-none hover:scale-105 hover:text-white hover:bg-inputBg"
               onClick={refreshGenerate}
             >
               <FiRefreshCw size={20} />
             </button>
           }
           <button
-            className="p-0 transition-colors duration-100 ease-linear bg-transparent border-none text-subButtonFont focus:outline-none hover:scale-105"
+            className="p-1 transition-colors duration-100 ease-linear bg-transparent border-none text-subButtonFont focus:outline-none hover:scale-105 hover:text-white hover:bg-inputBg"
             onClick={(e) => {
               e.preventDefault();
               navigator.clipboard.writeText(response);
@@ -209,7 +213,7 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
             <FiCopy size={20} />
           </button>
         </div>
-        <span className="text-subButtonFont">
+        <span className="text-subButtonFont truncate">
           {moment(Number(timestamp)).format("YYYY/MM/DD HH:mm:ss")}
         </span>
       </div>

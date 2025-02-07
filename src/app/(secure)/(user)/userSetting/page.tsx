@@ -125,9 +125,8 @@ const UserSetting = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2]">
-
-            <div className="bg-[#FFFFFF05] border border-[#FFFFFF]/20 rounded-lg px-[72px] py-10 max-w-[900px] text-[#E2E2E2] text-base flex flex-col gap-7 items-stretch">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2] px-4">
+            <div className="bg-[#FFFFFF05] border border-[#FFFFFF]/20 rounded-lg px-4 lg:px-[72px] py-10 lg:max-w-[900px] text-[#E2E2E2] text-base flex flex-col gap-7 items-stretch">
                 <h1 className="text-2xl font-medium text-left text-[#FFFFFF] ml-1">Profile</h1>
                 <div className="flex items-center justify-between">
                     {

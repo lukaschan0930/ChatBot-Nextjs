@@ -13,6 +13,7 @@ const ChangeLog = () => {
     const [changeLogs, setChangeLogs] = useState<IChangeLog[]>([]);
     const { useFetch } = useAdmin();
     const fetch = useFetch();
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const fetchChangeLogs = async () => {
@@ -52,12 +53,24 @@ const ChangeLog = () => {
         }
     }
 
+    const filteredChangeLogs = changeLogs.filter(log => 
+        log.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        moment(log.createdAt).format("DD/MM/YYYY").includes(searchQuery) ||
+        log.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
-        <div className="flex flex-col items-center h-[calc(100vh-150px)]">
+        <div className="flex flex-col items-center h-[calc(100vh-150px)] px-4 mt-10 lg:mt-4">
             <div className="flex flex-col w-full justify-between max-w-[1000px] mt-12">
-                <div className="flex justify-between">
-                    <div className="relative">
-                        <Input type="text" placeholder="Search" className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none text-mainFont w-[280px]" />
+                <div className="flex justify-between lg:flex-row flex-col gap-5">
+                    <div className="relative lg:w-[280px] w-full">
+                        <Input 
+                            type="text" 
+                            placeholder="Search" 
+                            className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont w-full" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                         <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-subButtonFont" />
                     </div>
                     <Button
@@ -68,7 +81,7 @@ const ChangeLog = () => {
                         Add New
                     </Button>
                 </div>
-                <div className="mt-[60px] w-full">
+                <div className="mt-[60px] w-full overflow-x-auto">
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-secondaryBorder">
@@ -79,7 +92,7 @@ const ChangeLog = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {changeLogs.map((log, index) => (
+                            {filteredChangeLogs.map((log, index) => (
                                 <tr key={log._id} className={`hover:bg-[#FFFFFF05] ${index % 2 === 0 ? "bg-[#FFFFFF05]" : "bg-inherit"}`}>
                                     <td className="text-mainFont text-[18px] py-3 px-2">{log.title}</td>
                                     <td className="text-mainFont text-[18px] py-3 px-2">{moment(log.createdAt).format("DD/MM/YYYY")}</td>

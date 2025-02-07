@@ -81,12 +81,11 @@ const AdminProfile = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]">
-
-            <div className="border-2 border-secondaryBorder rounded-[8px] px-[74px] pt-[74px] pb-[60px] max-w-[900px] w-full bg-[#FFFFFF05]">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)] px-4 max-md:mt-10">
+            <div className="border-2 border-secondaryBorder rounded-[8px] px-10 lg:px-[74px] py-10 lg:pt-[74px] lg:pb-[60px] max-w-[900px] w-full bg-[#FFFFFF05]">
                 <div className="flex flex-col gap-7">
                     <div className="text-mainFont text-2xl">Admin Profile</div>
-                    <div className="flex flex-col gap-5 w-1/2">
+                    <div className="flex flex-col gap-5 lg:w-1/2">
                         <div className="text-mainFont text-[18px]">Admin Email</div>
                         <Input 
                             type="text" 
@@ -102,11 +101,11 @@ const AdminProfile = () => {
                             })}
                         />
                     </div>
-                    <div className="flex flex-col gap-5 w-1/2">
+                    <div className="flex flex-col gap-5 lg:w-1/2">
                         <div className="text-mainFont text-[18px]">Old Password</div>
                         <Input type="password" onChange={(e) => setOldPassword(e.target.value)} value={oldPassword} placeholder="********" className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont" />
                     </div>
-                    <div className="flex w-full gap-5 justify-between">
+                    <div className="flex w-full gap-5 justify-between lg:flex-row flex-col">
                         <div className="flex flex-col gap-5 w-full">
                             <div className="text-mainFont text-[18px]">New Password</div>
                             <Input type="password" onChange={(e) => setNewPassword(e.target.value)} value={newPassword} placeholder="********" className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont" />
