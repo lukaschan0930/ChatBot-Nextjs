@@ -21,10 +21,11 @@ const ChatArea = () => {
 
   return (
     <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center mt-8">
-      {chatLog.map((chat: ChatLog, id: number) => (
+      {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
         <div key={id} className="flex flex-col w-full gap-6 max-w-[800px]">
           <UserPrompt prompt={chat.prompt} />
           <div className="flex justify-start">
+
             <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-14 h-14 rounded-lg border-2 border-gray-500`} />
             {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             {

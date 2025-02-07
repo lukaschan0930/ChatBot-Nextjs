@@ -26,7 +26,7 @@ const ChangeLog = () => {
             const res = await fetch("/api/admin/changeLog");
             if (res.ok) {
                 const data = await res.json();
-                setChangeLogs(data);
+                setChangeLogs(data.data);
             }
             setIsLoading(false);
         }
@@ -57,8 +57,7 @@ const ChangeLog = () => {
                     ) : (
                         changeLogs.map((item: IChangeLog, index: number) => (
                             category === "" || category === item.category ? (
-                                <div key={index} className="flex flex-col gap-4 border-b-2 border-secondaryBorder pb-5">
-
+                                <div key={index} className="flex flex-col gap-4 border-b-2 border-secondaryBorder pb-5 mt-[40px]">
                                     <div className="flex items-center gap-5">
                                         <div className="bg-[#FFFFFF05] rounded-md text-mainFont border border-gray-400 px-2 py-1">{item.category}</div>
                                         <div className="text-subButtonFont">{moment(item.createdAt).format("DD/MM/YYYY")}</div>

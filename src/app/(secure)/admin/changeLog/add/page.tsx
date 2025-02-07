@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/app/hooks/use-toast";
 import DOMPurify from 'dompurify';
+import { useAdmin } from "@/app/context/AdminContext";
 
 const AddChangeLog = () => {
     const router = useRouter();
@@ -14,39 +15,45 @@ const AddChangeLog = () => {
     const [title, setTitle] = useState<string>("");
     const [content, setContent] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const { useFetch } = useAdmin();
+    const fetch = useFetch();
 
     const handleSubmit = async () => {
         if (!title || !content || !category) {
             toast({
                 title: "Change Log Added",
-
                 description: "Please fill in all fields",
                 variant: "destructive"
             });
             return;
         }
         setLoading(true);
-        const res = await fetch("/api/admin/changeLog", {
-            method: "POST",
-            body: JSON.stringify({ title, content, category })
-        });
-
-        if (res.ok) {
-            toast({
-                title: "Change Log Added",
-                description: "Change Log Added Successfully",
-                variant: "default"
-            });
-            router.push("/admin/changeLog");
-
-        } else {
+        try {
+            const res = await fetch.post("/api/admin/changeLog", { title, content, category });
+            if (res.status) {
+                toast({
+                    title: "Change Log Added",
+                    description: "Change Log Added Successfully",
+                    variant: "default"
+                });
+                router.push("/admin/changeLog");
+            } else {
+                toast({
+                    title: "Change Log Added",
+                    description: "Change Log Added Failed",
+                    variant: "destructive"
+                });
+            }
+        } catch (error) {
+            console.log(error);
             toast({
                 title: "Change Log Added",
                 description: "Change Log Added Failed",
                 variant: "destructive"
             });
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     return (
@@ -85,7 +92,7 @@ const AddChangeLog = () => {
                             onClick={handleSubmit}
                             disabled={loading}
                         >
-                            {loading ? <CircularProgress size={20} /> : "Update"}
+                            {loading ? <CircularProgress size={20} /> : "Save"}
                         </Button>
                     </div>
                 </div>

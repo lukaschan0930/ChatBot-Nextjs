@@ -7,16 +7,24 @@ import { useEffect, useState } from "react";
 import moment from "moment";
 import { toast } from "@/app/hooks/use-toast";
 import { IChangeLog } from "@/app/lib/interface";
-
+import { useAdmin } from "@/app/context/AdminContext";
 const ChangeLog = () => {
     const router = useRouter();
     const [changeLogs, setChangeLogs] = useState<IChangeLog[]>([]);
+    const { useFetch } = useAdmin();
+    const fetch = useFetch();
 
     useEffect(() => {
         const fetchChangeLogs = async () => {
-            const logs = await fetch("/api/admin/changeLog");
-            const data = await logs.json();
-            setChangeLogs(data);
+            const res = await fetch.get("/api/admin/changeLog");
+            if (res.status) {
+                setChangeLogs(res.data);
+            } else {
+                toast({
+                    description: "Failed to fetch change logs",
+                    variant: "destructive"
+                });
+            }
         }
         fetchChangeLogs();
     }, []);
@@ -29,18 +37,13 @@ const ChangeLog = () => {
             });
             return;
         }
-        const res = await fetch(`/api/admin/changeLog`, {
-            method: "DELETE",
-            body: JSON.stringify({ id })
-        });
-
-        if (res.ok) {
+        const res = await fetch.delete(`/api/admin/changeLog`, { id });
+        if (res.status) {
             toast({
                 description: "Change log deleted successfully",
                 variant: "default"
             });
-            const data = await res.json();
-            setChangeLogs(data.logs);
+            setChangeLogs(res.data);
         } else {
             toast({
                 description: "Failed to delete change log",

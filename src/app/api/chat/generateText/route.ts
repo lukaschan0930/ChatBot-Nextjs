@@ -9,6 +9,9 @@ import db from "@/app/lib/database/db";
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
     const { prompt, sessionId, chatLog, reGenerate } = await request.json();
+    if (!session) {
+        return new NextResponse("Unauthorized", { status: 401 });
+    }
     const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
 
     const timestamp = Date.now()
@@ -43,12 +46,13 @@ export async function POST(request: NextRequest) {
     ], { allowDiskUse: true })
     const sessions = session_item?.session ?? []
 
-    const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.map((chat: ChatLog) => chat.timestamp)]), []).sort((a: number, b: number) => b - a)
+    const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
     const index = timestamps.length < 25 ? timestamps.length - 1 : 24
     const last_timestamp = timestamps[index]
     if (index >= 24 && timestamp - last_timestamp < 6 * 60 * 60 * 1000) {
         return new NextResponse("Rate limited. Try again later.", { status: 429 })
     }
+
     const history = chatLog
         .flatMap((chat: ChatLog) => [
             { role: "user", content: chat.prompt },
@@ -123,14 +127,34 @@ export async function POST(request: NextRequest) {
 
                             });
                         }
-                        console.log("chatLog", chatHistory);
                         await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-
+                    } else {
+                        const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                        const newChatHistory = {
+                            id: sessionId as string,
+                            title: title as string,
+                            chats: [{
+                                prompt,
+                                response: fullResponse,
+                                timestamp: new Date().valueOf().toString()
+                            }]
+                        };
+                        if (chatHistory) {
+                            chatHistory.session.push(newChatHistory);
+                            await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+                        } else {
+                            const newHistory = {
+                                email: session?.user?.email as string,
+                                session: [newChatHistory]
+                            };
+                            await ChatRepo.create(newHistory);
+                        }
                     }
                 } else {
                     // Handling for when chatHistory doesn't exist (creating a new one)
                     const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
                     const newChatHistory = {
+
                         id: sessionId as string,
                         title: title as string,
                         chats: [{

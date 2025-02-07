@@ -38,6 +38,18 @@ export interface AuthContextType {
     setUser: (user: User | null) => void;
 }
 
+interface RequestFunction {
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (url: string, body?: any): Promise<any>;
+}
+
+interface UseFetchReturn {
+    get: RequestFunction;
+    post: RequestFunction;
+    put: RequestFunction;
+    delete: RequestFunction;
+}
+
 export interface AdminContextType {
     user: User | null;
     setUser: (user: User | null) => void;
@@ -45,6 +57,7 @@ export interface AdminContextType {
     setToken: (token: string | null) => void;
     logined: boolean;
     setLogined: (logined: boolean) => void;
+    useFetch: () => UseFetchReturn;
 }
 
 export interface Chat {

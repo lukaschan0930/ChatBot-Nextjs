@@ -32,7 +32,6 @@ async function findByEmail(email: string) {
     return db.User.findOne({ email });
 }
 
-
 async function create(user: IUser) {
     return db.User.create(user);
 }

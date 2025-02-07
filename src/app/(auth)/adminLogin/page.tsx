@@ -72,7 +72,7 @@ const AdminLogin = () => {
         <Box className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2]">
             {/* logo */}
             <button
-                className="flex items-end bg-transparent border-none outline-none focus:outline-none p-0 !mb-5"
+                className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0 !mb-5 px-[120px]"
                 onClick={() => router.push("/")}
             >
                 <Image

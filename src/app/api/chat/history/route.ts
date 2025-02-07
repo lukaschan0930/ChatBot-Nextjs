@@ -34,3 +34,25 @@ export async function DELETE(req: NextRequest) {
         return Response.json({ success: false, message: "Failed to delete session" });
     }
 }
+
+export async function PUT(req: NextRequest) {
+    const { id, title } = await req.json();
+    const session = await getServerSession(authOptions as AuthOptions);
+    if (!session) {
+        return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+    try {
+        const chats = await ChatRepo.findHistoryByEmail(session.user?.email as string);
+        const chatSession = chats.session.find((chat: ChatHistory) => chat.id === id);
+        if (!chatSession) {
+            return Response.json({ success: false, message: "Session not found" }, { status: 404 });
+        }
+        chatSession.title = title;
+        await ChatRepo.updateHistory(session.user?.email as string, { session: chats.session });
+        return Response.json({ success: true, message: "Session title updated" });
+
+    } catch (error) {
+        console.error(error);
+        return Response.json({ success: false, message: "Failed to update session title" });
+    }
+}

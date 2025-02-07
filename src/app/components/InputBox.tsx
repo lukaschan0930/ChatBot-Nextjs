@@ -2,7 +2,7 @@ import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
-import { isStartChatAtom } from "@/app/lib/store";
+import { chatHistoryAtom, isStartChatAtom } from "@/app/lib/store";
 import { chatLogAtom, sessionIdAtom } from "@/app/lib/store";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
@@ -21,6 +21,7 @@ const InputBox = () => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
+  const [, setChatHistory] = useAtom(chatHistoryAtom);
 
   // Adjust text input area 's height
   const adjustTextareaHeight = () => {
@@ -82,6 +83,19 @@ const InputBox = () => {
     }
   };
 
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("/api/chat/history");
+      const data = await res.json();
+      if (data.success) {
+        setChatHistory(data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  };
 
   const sendMessage = async (prompt: string) => {
     let requestSessionId = sessionId;
@@ -96,10 +110,16 @@ const InputBox = () => {
 
     try {
       // Add an initial empty chat log entry for the prompt.
-      setChatLog((prevChatLog) => [
-        ...prevChatLog,
-        { prompt, response: "", timestamp: Date.now().toString() },
-      ]);
+      setChatLog((prevChatLog) => {
+        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+        newLog.push({
+          prompt,
+          response: "",
+          timestamp: Date.now().toString()
+        });
+        return newLog;
+      });
+
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
@@ -115,6 +135,7 @@ const InputBox = () => {
       const decoder = new TextDecoder("utf-8");
       let fullResponse = "";
       const buffer = "";
+      const newChat = chatLog.length == 0 ? true : false;
 
       try {
         // Process each streamed chunk
@@ -126,12 +147,20 @@ const InputBox = () => {
           const chunk = decoder.decode(value, { stream: true });
           fullResponse += chunk;
           setChatLog((prevChatLog) => {
-            const newLog = [...prevChatLog];
-            newLog[newLog.length - 1] = {
-              prompt,
-              response: fullResponse,
-              timestamp: newLog[newLog.length - 1].timestamp,
-            };
+            const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+            if (newLog.length > 0) {
+              newLog[newLog.length - 1] = {
+                prompt,
+                response: fullResponse,
+                timestamp: newLog[newLog.length - 1].timestamp
+              };
+            } else {
+              newLog.push({
+                prompt,
+                response: fullResponse,
+                timestamp: Date.now().toString()
+              });
+            }
             return newLog;
           });
         }
@@ -139,34 +168,53 @@ const InputBox = () => {
         if (buffer.trim() !== "") {
           fullResponse += buffer;
           setChatLog((prevChatLog) => {
-            const newLog = [...prevChatLog];
-            newLog[newLog.length - 1] = {
-              prompt,
-              response: fullResponse,
-              timestamp: newLog[newLog.length - 1].timestamp
-            };
+            const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+            if (newLog.length > 0) {
+              newLog[newLog.length - 1] = {
+                prompt,
+                response: fullResponse,
+                timestamp: newLog[newLog.length - 1].timestamp
+              };
+            } else {
+              newLog.push({
+                prompt,
+                response: fullResponse,
+                timestamp: Date.now().toString()
+              });
+            }
             return newLog;
           });
         }
       } finally {
         // Always release the reader's lock.
         reader.releaseLock();
+        if (newChat) {
+          fetchHistory();
+        }
       }
     } catch (error) {
+      console.error("Error sending message:", error);
       setChatLog((prevChatLog) => {
-        const newLog = [...prevChatLog];
-        newLog[newLog.length - 1] = {
-          prompt,
-          response: "Failed to get response from server.",
-          timestamp: newLog[newLog.length - 1].timestamp,
-        };
+        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+        if (newLog.length > 0) {
+          newLog[newLog.length - 1] = {
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: newLog[newLog.length - 1].timestamp,
+          };
+        } else {
+          newLog.push({
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: Date.now().toString(),
+          });
+        }
         return newLog;
       });
       toast({
         variant: "destructive",
         title: 'Failed to get response from server.',
       });
-      console.error("Error sending message:", error);
     }
   };
 

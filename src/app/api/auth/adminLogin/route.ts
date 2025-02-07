@@ -14,6 +14,6 @@ export async function POST(request: NextRequest) {
     if (user.role !== "admin") {
         return NextResponse.json({ status: false, message: "User is not an admin" }, { status: 401 });
     }
-    const token = generateConfirmationToken(user._id);
+    const token = await generateConfirmationToken(user._id);
     return NextResponse.json({ status: true, user: user, token: token }, { status: 200 });
 }

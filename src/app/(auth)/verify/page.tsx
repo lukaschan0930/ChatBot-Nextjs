@@ -230,7 +230,7 @@ const Verify = () => {
           <Button
             type="button"
             variant="contained"
-            onClick={() => router.push("/auth/login")}
+            onClick={() => router.push("/signin")}
             className="h-10 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400"
             disabled={isLoading}
           >

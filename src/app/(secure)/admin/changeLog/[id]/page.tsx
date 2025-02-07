@@ -8,47 +8,63 @@ import { logCategory } from "@/app/lib/stack";
 import Editor from "@/app/components/Editor";
 import { useRouter } from "next/navigation";
 import { toast } from "@/app/hooks/use-toast";
+import { useAdmin } from "@/app/context/AdminContext";
 
 const ChangeLogEdit = ({ params }: { params: { id: string } }) => {
     const { id } = params;
     const [changeLog, setChangeLog] = useState<IChangeLog | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const router = useRouter();
+    const { useFetch } = useAdmin();
+    const fetch = useFetch();
 
     useEffect(() => {
         const fetchChangeLog = async () => {
-            const res = await fetch(`/api/admin/changeLog/${id}`);
-            const data = await res.json();
-            setChangeLog(data);
+            const res = await fetch.get(`/api/admin/changeLog/${id}`);
+            if (res.status) {
+                setChangeLog(res.data);
+            } else {
+                toast({
+                    description: "Failed to fetch change log",
+                    variant: "destructive"
+                });
+            }
         }
         fetchChangeLog();
     }, [id]);
 
     const handleSubmit = async () => {
-        const res = await fetch(`/api/admin/changeLog/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(changeLog)
-        });
-        if (res.ok) {
-            toast({
-                title: "Change Log Updated",
-                description: "Change Log Updated Successfully",
-                variant: "default"
-            });
-            router.push("/admin/changeLog");
-
-        } else {
+        setIsLoading(true);
+        try {
+            const res = await fetch.put(`/api/admin/changeLog/${id}`, { title: changeLog?.title, article: changeLog?.article, category: changeLog?.category } );
+            if (res.status) {
+                toast({
+                    title: "Change Log Updated",
+                    description: "Change Log Updated Successfully",
+                    variant: "default"
+                });
+                router.push("/admin/changeLog");
+            } else {
+                toast({
+                    title: "Change Log Updated",
+                    description: "Change Log Updated Failed",
+                    variant: "destructive"
+                });
+            }
+        } catch (error) {
+            console.log(error);
             toast({
                 title: "Change Log Updated",
                 description: "Change Log Updated Failed",
                 variant: "destructive"
             });
+        } finally {
+            setIsLoading(false);
         }
     }
 
     return (
         changeLog ? (
-
             <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]" >
                 <div className="border-2 border-secondaryBorder rounded-[8px] px-[74px] py-[60px] max-w-[900px] w-full bg-[#FFFFFF05]">
                     <div className="flex flex-col gap-7">

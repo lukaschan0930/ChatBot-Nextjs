@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiCheck, FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import { useAtom } from "jotai";
 import { ChatHistory as ChatHistoryType } from "@/app/lib/interface";
 import { chatHistoryAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
@@ -14,6 +14,8 @@ const ChatHistory = () => {
     const [, setChatLog] = useAtom(chatLogAtom);
     const [sessionId, setSessionId] = useAtom(sessionIdAtom);
     const [, setIsStartChat] = useAtom(isStartChatAtom);
+    const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+    const [newTitle, setNewTitle] = useState<string>("");
 
     const deleteSession = async (id: string) => {
         await setChatHistory(chatHistory.filter((session) => session.id !== id));
@@ -32,6 +34,24 @@ const ChatHistory = () => {
             .replace(/\*\*/g, '');  // Remove asterisks
         return cleanText.trim() || 'Untitled Chat';
     }
+
+    // Function to handle title update
+    const updateSessionTitle = async (id: string, newTitle: string) => {
+        if (newTitle != "" && newTitle != extractTitleFromMd(chatHistory.find(session => session.id === id)?.title || "")) {
+            try {
+                await fetch("/api/chat/history", {
+                    method: "PUT",
+                    body: JSON.stringify({ id, title: newTitle }),
+                });
+                setChatHistory(chatHistory.map(session =>
+                    session.id === id ? { ...session, title: newTitle } : session
+                ));
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        setEditingSessionId(null);
+    };
 
     useEffect(() => {
         setChatHistory([]);
@@ -74,8 +94,11 @@ const ChatHistory = () => {
             }
         };
 
-        fetchChats();
+        if (sessionId) {
+            fetchChats();
+        }
     }, [sessionId]);
+
 
     return (
         <>
@@ -83,8 +106,8 @@ const ChatHistory = () => {
                 className="w-full mt-4 text-nowrap bg-inherit focus:outline-none flex justify-center items-center gap-4 border-1 border-gray-500 rounded-lg py-3"
                 onClick={(e) => {
                     e.preventDefault();
-                    setSessionId(null);
                     setChatLog([]);
+                    setSessionId(null);
                     setIsStartChat(false);
                 }}
             >
@@ -96,23 +119,65 @@ const ChatHistory = () => {
                 {isLoadingHistory ? (
                     <CircularProgress />
                 ) : (
-                    chatHistory.map((session: ChatHistoryType) => (
+                    chatHistory.sort((a, b) => Number(b.chats[b.chats.length - 1].timestamp) - Number(a.chats[a.chats.length - 1].timestamp)).map((session: ChatHistoryType) => (
                         <div
                             key={session.id}
                             onClick={() => setSessionId(session.id)}
                             className={`${session.id === sessionId ? "bg-inputBg text-mainFont" : "text-subButtonFont hover:bg-inputBg hover:border-tertiaryBorder hover:text-mainFont"} flex items-center justify-start group transition-colors duration-200 relative py-4 px-4 rounded-lg`}
                         >
                             <div className="w-[200px] flex flex-col gap-1">
-                                <div className="text-white truncate text-sm">{extractTitleFromMd(session.title) || "Untitled Chat"}</div>
-                                <div className="text-[10px]">{moment(Number(session.chats[session.chats.length - 1].timestamp)).format("YYYY/MM/DD HH:mm:ss")}</div>
+                                {editingSessionId === session.id ? (
+                                    <input
+                                        type="text"
+                                        value={newTitle}
+                                        onChange={(e) => setNewTitle(e.target.value)}
+                                        onBlur={() => updateSessionTitle(session.id, newTitle)}
+                                        className="text-white truncate text-sm bg-transparent border-2 border-gray-500 rounded-lg p-1"
+                                    />
+                                ) : (
+                                    <>
+                                        <div className="text-white truncate text-sm">{extractTitleFromMd(session.title) || "Untitled Chat"}</div>
+                                        <div className="text-[10px]">{moment(Number(session.chats[session.chats.length - 1].timestamp)).format("YYYY/MM/DD HH:mm:ss")}</div>
+                                    </>
+                                )}
                             </div>
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-inputBg pl-2 hidden group-hover:flex items-center rounded-r-lg">
-                                <button className="bg-inputBg p-1 border-none" onClick={() => deleteSession(session.id)}>
-                                    <FiEdit size={20} />
-                                </button>
-                                <button className="bg-inputBg p-1 border-none" onClick={() => deleteSession(session.id)}>
-                                    <FiTrash2 size={20} />
-                                </button>
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-inputBg pl-2 hidden group-hover:flex items-center rounded-r-lg gap-1">
+                                {
+                                    editingSessionId !== session.id ? (
+                                        <>
+                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                e.stopPropagation();
+                                                setNewTitle(extractTitleFromMd(session.title));
+                                                setEditingSessionId(session.id);
+                                            }}>
+                                                <FiEdit size={20} />
+                                            </button>
+                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteSession(session.id);
+                                            }}>
+                                                <FiTrash2 size={20} />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateSessionTitle(session.id, newTitle);
+                                            }}>
+                                                <FiCheck size={20} />
+                                            </button>
+                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEditingSessionId(null);
+                                            }}>
+                                                <FiX size={20} />
+                                            </button>
+                                        </>
+                                    )
+                                }
+
+
                             </div>
                         </div>
                     ))
