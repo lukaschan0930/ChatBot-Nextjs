@@ -12,7 +12,7 @@ const ChatText = () => {
 
   return (
     <main className={`flex justify-center text-mainFont w-screen min-h-screen`}>
-      <div className="w-[260px] border-r-2 border-primaryBorder flex flex-col items-start px-4 mt-[72px]">
+      <div className="w-[260px] border-r-2 border-primaryBorder flex flex-col items-start px-4 mt-[72px] max-h-[calc(100vh-72px)]">
         <ChatHistory />
       </div>
       <div className={`flex flex-col flex-auto items-center mt-[72px] justify-center h-[calc(100vh-72px)] py-5`}>

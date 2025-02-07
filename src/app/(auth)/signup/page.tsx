@@ -292,7 +292,7 @@ const SignUp = () => {
               {...register("password", {
                 required: "Password is required",
                 pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
                   message: "Weak Password",
                 },
               })}
@@ -303,7 +303,6 @@ const SignUp = () => {
                 variant="caption"
                 color="error"
                 sx={{ pt: 1, color: "#FF0000", bgcolor: "#000000" }}
-
               >
                 {errors.password.message}
               </Typography>
@@ -369,10 +368,9 @@ const SignUp = () => {
               {...register("confirmPassword", {
                 required: "Confirm Password is required",
                 pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
                   message: "Weak password",
                 },
-
               })}
             />
 

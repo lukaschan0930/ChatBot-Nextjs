@@ -205,10 +205,9 @@ const AdminLogin = () => {
                             {...register("password", {
                                 required: "Password is required",
                                 pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                                    message: "Invalid password",
+                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+                                    message: "Weak password",
                                 },
-
                             })}
                         />
 

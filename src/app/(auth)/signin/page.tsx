@@ -203,10 +203,9 @@ const SignIn = () => {
               {...register("password", {
                 required: "Password is required",
                 pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message: "Invalid password",
-                },
-
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+                  message: "Weak password",
+                }
               })}
             />
 
@@ -290,7 +289,7 @@ const SignIn = () => {
             disabled={isLoading.google}
             onClick={async () => {
               setIsLoading(prev => ({ ...prev, google: true }));
-              const result = await signIn("google");
+              const result = await signIn("google", { redirect: false });
               if (result?.error) {
                 toast({
                   variant: "destructive",
@@ -300,7 +299,6 @@ const SignIn = () => {
               }
               router.push("/");
             }}
-
             className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
           >
             {isLoading.google ? (

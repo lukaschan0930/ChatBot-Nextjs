@@ -6,6 +6,7 @@ import { chatHistoryAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/
 import CircularProgress from "@mui/material/CircularProgress";
 import moment from "moment";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const ChatHistory = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
@@ -16,6 +17,7 @@ const ChatHistory = () => {
     const [, setIsStartChat] = useAtom(isStartChatAtom);
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [newTitle, setNewTitle] = useState<string>("");
+    const router = useRouter();
 
     const deleteSession = async (id: string) => {
         await setChatHistory(chatHistory.filter((session) => session.id !== id));
@@ -103,7 +105,7 @@ const ChatHistory = () => {
     return (
         <>
             <button
-                className="w-full mt-4 text-nowrap bg-inherit focus:outline-none flex justify-center items-center gap-4 border-1 border-gray-500 rounded-lg py-3"
+                className="w-full mt-4 text-nowrap bg-inherit focus:outline-none flex justify-center items-center gap-4 border-1 border-gray-500 rounded-lg py-3 hover:border-tertiaryBorder"
                 onClick={(e) => {
                     e.preventDefault();
                     setChatLog([]);
@@ -115,7 +117,7 @@ const ChatHistory = () => {
                 New Chat
             </button>
             <div className="text-subButtonFont mt-7 mb-2">Chat History</div>
-            <div className="text-left flex flex-col h-full overflow-y-auto gap-1 overflow-x-hidden">
+            <div className="text-left flex flex-col flex-auto overflow-y-auto gap-1 overflow-x-hidden">
                 {isLoadingHistory ? (
                     <CircularProgress />
                 ) : (
@@ -183,6 +185,16 @@ const ChatHistory = () => {
                     ))
                 )}
             </div>
+            <div className="border-t border-gray-500 py-5 w-full pl-4">
+                <button
+                    className="flex items-center justify-center gap-2 text-mainFont bg-transparent border-none focus:outline-none"
+                    onClick={() => { router.push("/chatText/setting") }}
+                >
+                    <Image src="/image/settings.svg" alt="settings" width={20} height={20} />
+                    Settings
+                </button>
+
+            </div >
         </>
     )
 }
