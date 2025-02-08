@@ -146,7 +146,6 @@ const InputBox = () => {
 
           // Decode the incoming chunk and add it to our buffer.
           const chunk = decoder.decode(value, { stream: true });
-          console.log("chunk", chunk);
           const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
           fullResponse += content;
 
@@ -178,7 +177,6 @@ const InputBox = () => {
         }
 
         if (buffer.trim() !== "") {
-          console.log("buffer", buffer);
           const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
           fullResponse += content;
           setChatLog((prevChatLog) => {

@@ -20,7 +20,6 @@ export const processChunkedString = (chunkedString: string): Promise<{ content: 
     let inputTime = 0;
     let outputTime = 0;
 
-    console.log("jsonArrayString", jsonArrayString);
     try {
       const jsonArray = JSON.parse(jsonArrayString);
       jsonArray.forEach((data: any) => {
