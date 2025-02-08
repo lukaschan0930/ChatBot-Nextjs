@@ -64,6 +64,11 @@ export async function POST(request: NextRequest) {
         baseURL: process.env.CEREBRAS_BASE_URL!,
     });
 
+    let inputToken = 0;
+    let outputToken = 0;
+    let inputTime = 0;
+    let outputTime = 0;
+    const startTime = Date.now();
     const stream = await client.chat.completions.create({
         messages: [
             { role: "system", content: process.env.SYSTEM_PROMPT! },
@@ -92,14 +97,22 @@ export async function POST(request: NextRequest) {
                     const content = data.choices?.[0]?.delta?.content || "";
                     if (content) {
                         fullResponse += content;
-                        controller.enqueue(encoder.encode(content));
+                        controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime })));
                         await new Promise(resolve => setTimeout(resolve, 5));
+                    }
+                    if (chunk.usage) {
+                        const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
+                        inputToken = usage.prompt_tokens;
+                        outputToken = usage.completion_tokens;
                     }
                 }
             } catch (error) {
                 console.error("Streaming error: ", error);
             }
+            outputTime = (Date.now() - startTime) / 1000;
+            controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime })));
             controller.close();
+
             try {
                 if (chatHistory) {
                     // Find the current session using sessionId
@@ -111,15 +124,22 @@ export async function POST(request: NextRequest) {
                                 currentSession.chats[currentSession.chats.length - 1] = {
                                     prompt,
                                     response: fullResponse,
-                                    timestamp: new Date().valueOf().toString()
+                                    timestamp: new Date().valueOf().toString(),
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime
                                 };
-
                             } else {
                                 // Should there be no messages, push the new chat instead.
                                 currentSession.chats.push({
                                     prompt,
                                     response: fullResponse,
-                                    timestamp: new Date().valueOf().toString()
+                                    timestamp: new Date().valueOf().toString(),
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime
                                 });
                             }
                         } else {
@@ -127,8 +147,11 @@ export async function POST(request: NextRequest) {
                             currentSession.chats.push({
                                 prompt,
                                 response: fullResponse,
-                                timestamp: new Date().valueOf().toString()
-
+                                timestamp: new Date().valueOf().toString(),
+                                inputToken: inputToken,
+                                outputToken: outputToken,
+                                inputTime: inputTime,
+                                outputTime: outputTime
                             });
                         }
                         await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
@@ -140,9 +163,14 @@ export async function POST(request: NextRequest) {
                             chats: [{
                                 prompt,
                                 response: fullResponse,
-                                timestamp: new Date().valueOf().toString()
+                                timestamp: new Date().valueOf().toString(),
+                                inputToken: inputToken,
+                                outputToken: outputToken,
+                                inputTime: inputTime,
+                                outputTime: outputTime
                             }]
                         };
+
                         if (chatHistory) {
                             chatHistory.session.push(newChatHistory);
                             await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
@@ -163,9 +191,14 @@ export async function POST(request: NextRequest) {
                         chats: [{
                             prompt: prompt as string,
                             response: fullResponse,
-                            timestamp: new Date().valueOf().toString()
+                            timestamp: new Date().valueOf().toString(),
+                            inputToken: inputToken,
+                            outputToken: outputToken,
+                            inputTime: inputTime,
+                            outputTime: outputTime
                         }]
                     };
+
                     if (chatHistory) {
                         chatHistory.session.push(newChatHistory);
                         await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);

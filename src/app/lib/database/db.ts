@@ -145,9 +145,22 @@ function chatModel() {
                 timestamp: {
                     type: Number,
                     required: true,
-                }
+                },
+                inputToken: {
+                    type: Number
+                },
+                outputToken: {
+                    type: Number
+                },
+                inputTime: {
+                    type: Number
+                },
+                outputTime: {
+                    type: Number,
+                },
             }]
         }],
+
         updatedAt: {
             type: Date,
             default: Date.now()

@@ -146,20 +146,30 @@ const InputBox = () => {
 
           // Decode the incoming chunk and add it to our buffer.
           const chunk = decoder.decode(value, { stream: true });
-          fullResponse += chunk;
+          const data = JSON.parse(chunk);
+          fullResponse += data.content;
           setChatLog((prevChatLog) => {
             const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
             if (newLog.length > 0) {
               newLog[newLog.length - 1] = {
                 prompt,
                 response: fullResponse,
-                timestamp: newLog[newLog.length - 1].timestamp
+                timestamp: newLog[newLog.length - 1].timestamp,
+                inputToken: data.inputToken,
+                outputToken: data.outputToken,
+                inputTime: data.inputTime,
+                outputTime: data.outputTime
               };
+
             } else {
               newLog.push({
                 prompt,
                 response: fullResponse,
-                timestamp: Date.now().toString()
+                timestamp: Date.now().toString(),
+                inputToken: data.inputToken,
+                outputToken: data.outputToken,
+                inputTime: data.inputTime,
+                outputTime: data.outputTime
               });
             }
             return newLog;
@@ -167,20 +177,30 @@ const InputBox = () => {
         }
 
         if (buffer.trim() !== "") {
-          fullResponse += buffer;
+          const data = JSON.parse(buffer);
+          fullResponse += data.content;
           setChatLog((prevChatLog) => {
             const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+
             if (newLog.length > 0) {
               newLog[newLog.length - 1] = {
                 prompt,
                 response: fullResponse,
-                timestamp: newLog[newLog.length - 1].timestamp
+                timestamp: newLog[newLog.length - 1].timestamp,
+                inputToken: data.inputToken,
+                outputToken: data.outputToken,
+                inputTime: data.inputTime,
+                outputTime: data.outputTime
               };
             } else {
               newLog.push({
                 prompt,
                 response: fullResponse,
-                timestamp: Date.now().toString()
+                timestamp: Date.now().toString(),
+                inputToken: data.inputToken,
+                outputToken: data.outputToken,
+                inputTime: data.inputTime,
+                outputTime: data.outputTime
               });
             }
             return newLog;
@@ -202,12 +222,20 @@ const InputBox = () => {
             prompt,
             response: "Failed to get response from server.",
             timestamp: newLog[newLog.length - 1].timestamp,
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0
           };
         } else {
           newLog.push({
             prompt,
             response: "Failed to get response from server.",
             timestamp: Date.now().toString(),
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0
           });
         }
         return newLog;

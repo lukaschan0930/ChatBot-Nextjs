@@ -6,6 +6,7 @@ import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
 import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
+import AnalysisMenu from "../headers/AnalysisMenu";
 
 interface MessagePart {
   type: "text" | "code";
@@ -14,8 +15,18 @@ interface MessagePart {
   startIndex: number;
 }
 
-const Response = ({ response, timestamp, last }: { response: string, timestamp: string | null, last: boolean }) => {
-
+const Response = (
+  { 
+    response, 
+    timestamp, 
+    last, 
+    inputToken = 0, 
+    outputToken = 0, 
+    inputTime = 0, 
+    outputTime = 0 
+  }: 
+  { response: string, timestamp: string | null, last: boolean, inputToken?: number, outputToken?: number, inputTime?: number, outputTime?: number }
+) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
   const [, setIsStreaming] = useAtom(isStreamingAtom);
@@ -78,15 +89,17 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
       const prompt = chatLog[chatLog.length - 1].prompt;
       const chatHistory = chatLog.slice(-6, -1);
       setChatLog((prevChatLog) => {
-
         const newLog = [...prevChatLog];
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
           timestamp: Date.now().toString(),
+          inputToken: 0,
+          outputToken: 0,
+          inputTime: 0,
+          outputTime: 0
         };
         return newLog;
-
       });
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
@@ -111,26 +124,36 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          fullResponse += chunk;
+          const data = JSON.parse(chunk);
+          fullResponse += data.content;
           setChatLog((prevChatLog) => {
             const newLog = [...prevChatLog];
             newLog[newLog.length - 1] = {
               prompt,
               response: fullResponse,
               timestamp: newLog[newLog.length - 1].timestamp,
+              inputToken: data.inputToken,
+              outputToken: data.outputToken,
+              inputTime: data.inputTime,
+              outputTime: data.outputTime
             };
             return newLog;
           });
         }
 
         if (buffer.trim() !== "") {
-          fullResponse += buffer;
+          const data = JSON.parse(buffer);
+          fullResponse += data.content;
           setChatLog((prevChatLog) => {
             const newLog = [...prevChatLog];
             newLog[newLog.length - 1] = {
               prompt,
               response: fullResponse,
-              timestamp: newLog[newLog.length - 1].timestamp
+              timestamp: newLog[newLog.length - 1].timestamp,
+              inputToken: data.inputToken,
+              outputToken: data.outputToken,
+              inputTime: data.inputTime,
+              outputTime: data.outputTime
             };
             return newLog;
           });
@@ -144,7 +167,11 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
         newLog[newLog.length - 1] = {
           prompt: chatLog[chatLog.length - 1].prompt,
           response: "Failed to get response from server.",
-          timestamp: newLog[newLog.length - 1].timestamp
+          timestamp: newLog[newLog.length - 1].timestamp,
+          inputToken: 0,
+          outputToken: 0,
+          inputTime: 0,
+          outputTime: 0
         };
         return newLog;
       });
@@ -189,7 +216,7 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
           </React.Fragment>
         ))}
       </div>
-      <div className="flex items-center justify-between pl-8">
+      <div className="flex md:items-center justify-between pl-8 flex-col md:flex-row items-start gap-1">
         <div className="flex items-center gap-1 md:gap-3">
           {
             last && <button
@@ -213,9 +240,7 @@ const Response = ({ response, timestamp, last }: { response: string, timestamp: 
             <FiCopy size={20} />
           </button>
         </div>
-        <span className="text-subButtonFont truncate">
-          {moment(Number(timestamp)).format("YYYY/MM/DD HH:mm:ss")}
-        </span>
+        <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} />
       </div>
     </div>
   );

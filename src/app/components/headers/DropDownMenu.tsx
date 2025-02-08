@@ -82,7 +82,6 @@ const DropDownMenu = () => {
               }}
               disabled={item.disable}
               className="text-mainFont hover:text-hoverFont flex items-center justify-between px-3 py-2 [&>span]:hidden text-md text-center"
-
             >
               <p className="flex-1">{item.label}</p>
               <FaCheck

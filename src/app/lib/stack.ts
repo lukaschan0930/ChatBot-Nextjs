@@ -1,9 +1,15 @@
 export const MenuItems = [
   {
     id: "chatText",
-    label: "Echo",
+    label: "E.CHAT",
     checked: true,
     disable: false,
+  },
+  {
+    id: "echo",
+    label: "Echo",
+    checked: false,
+    disable: true,
     // subItems: [
     //   {
     //     id: "llm-chat",
@@ -81,18 +87,18 @@ export const MenuItems = [
 ];
 
 export const AdminMenuItems = [
-    {
-      id: "",
-      label: "Dashboard",
-    },
+    // {
+    //   id: "",
+    //   label: "Dashboard",
+    // },
     {
       id: "profile",
       label: "Profile",
     },
-    {
-      id: "eChat",
-      label: "E.Chat",
-    },
+    // {
+    //   id: "eChat",
+    //   label: "E.Chat",
+    // },
     {
       id: "changeLog",
       label: "Change Log",

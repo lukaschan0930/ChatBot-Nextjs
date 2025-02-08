@@ -65,6 +65,10 @@ export interface Chat {
     response: string | null;
     sessionId: string | null;
     timestamp: string | null;
+    inputToken?: number;
+    outputToken?: number;
+    inputTime?: number;
+    outputTime?: number;
 }
 
 export interface Session {
@@ -112,7 +116,12 @@ export interface ChatLog {
     prompt: string;
     response: string | null;
     timestamp: string | null;
+    inputToken?: number;
+    outputToken?: number;
+    inputTime?: number;
+    outputTime?: number;
 }
+
 
 export interface IChangeLog {
     _id: string;
