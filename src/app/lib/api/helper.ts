@@ -77,7 +77,8 @@ export const authOptions = {
     ],
     pages: {
         error: '/verify',
-        signIn: '/signin'
+        signIn: '/signin',
+        success: '/',
     },
     session: {
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
