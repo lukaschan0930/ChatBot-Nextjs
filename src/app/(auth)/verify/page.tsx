@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 interface CodeProps {
@@ -112,6 +113,14 @@ const Verify = () => {
       setIsLoading(false);
     }
   };
+
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session) {
+      router.push("/chatText");
+    }
+  }, [session]);
 
   return (
     <>

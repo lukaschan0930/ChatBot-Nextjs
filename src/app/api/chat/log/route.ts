@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
     }
     try {
         const chats = await ChatRepo.findHistoryByEmail(session.user?.email as string);
+        if (!chats || !chats.session) {
+            return Response.json({ success: false, message: "No chats found" }, { status: 404 });
+        }
         const chat = chats.session.find((chat: ChatHistory) => chat.id === sessionId);
         return Response.json({ success: true, data: chat?.chats });
     } catch (error) {

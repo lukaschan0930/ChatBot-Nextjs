@@ -198,17 +198,11 @@ export async function POST(request: NextRequest) {
                             outputTime: outputTime
                         }]
                     };
-
-                    if (chatHistory) {
-                        chatHistory.session.push(newChatHistory);
-                        await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                    } else {
-                        const newHistory = {
-                            email: session?.user?.email as string,
-                            session: [newChatHistory]
-                        };
-                        await ChatRepo.create(newHistory);
-                    }
+                    const newHistory = {
+                        email: session?.user?.email as string,
+                        session: [newChatHistory]
+                    };
+                    await ChatRepo.create(newHistory);
                 }
             } catch (error) {
                 console.log("error", error);

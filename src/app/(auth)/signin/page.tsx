@@ -12,13 +12,14 @@ import {
   OutlinedInput,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { LoginProps } from "@/app/lib/interface";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const SignIn = () => {
   const {
@@ -66,8 +67,17 @@ const SignIn = () => {
     }
   };
 
+  const { data: session } = useSession();
+  
+  useEffect(() => {
+    if (session) {
+      router.push("/chatText");
+    }
+  }, [session]);
+
   return (
     <Box className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2]">
+
       {/* logo */}
       <button
         className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0 !mb-5 px-[120px]"
@@ -289,7 +299,10 @@ const SignIn = () => {
             disabled={isLoading.google}
             onClick={async () => {
               setIsLoading(prev => ({ ...prev, google: true }));
-              const result = await signIn("google", { redirect: false });
+              const result = await signIn("google", {
+                redirect: false,
+              });
+              setIsLoading(prev => ({ ...prev, google: false }));
               if (result?.error) {
                 toast({
                   variant: "destructive",
@@ -297,7 +310,7 @@ const SignIn = () => {
                 });
                 return;
               }
-              router.push("/");
+              router.push("/chatText");
             }}
             className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
           >

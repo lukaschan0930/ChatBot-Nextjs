@@ -14,12 +14,13 @@ import {
   OutlinedInput,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const SignUp = () => {
   const {
@@ -48,10 +49,18 @@ const SignUp = () => {
       const result = await response.json();
       if (result.success) {
         return true;
+      } else {
+        toast({
+          variant: "destructive",
+          description: result.error || "Sign up unsuccessful, please try again.",
+        })
+        return false;
       }
-      return false;
     } catch (error) {
-      console.log(error);
+      toast({
+        variant: "destructive",
+        description: "Sign up unsuccessful, please try again.",
+      })
       return false;
     }
   }
@@ -94,6 +103,14 @@ const SignUp = () => {
       setIsLoading(prev => ({ ...prev, form: false }));
     }
   };
+
+  const { data: session } = useSession();
+  
+  useEffect(() => {
+    if (session) {
+      router.push("/chatText");
+    }
+  }, [session]);
 
   return (
     <Box className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2]">
@@ -453,13 +470,22 @@ const SignUp = () => {
             disabled={isLoading.google}
             onClick={async () => {
               setIsLoading(prev => ({ ...prev, google: true }));
-              await signIn("google", {
+              const result = await signIn("google", {
                 redirect: false,
               });
               setIsLoading(prev => ({ ...prev, google: false }));
+              if (result?.error) {
+                toast({
+                  variant: "destructive",
+                  description: result.error || "Sign in unsuccessful, please check your credentials.",
+                });
+                return;
+              }
+              router.push("/chatText");
             }}
             className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
           >
+
             {isLoading.google ? (
               <>
                 <span className="flex items-center gap-2">

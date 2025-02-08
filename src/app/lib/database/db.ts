@@ -132,7 +132,6 @@ function chatModel() {
             },
             title: {
                 type: String,
-                required: true,
             },
             chats: [{
                 prompt: {

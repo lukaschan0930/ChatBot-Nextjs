@@ -8,11 +8,11 @@ export async function POST(request: NextRequest) {
     const { email, password, confirmPassword, name } = await request.json();
 
     if (password !== confirmPassword) {
-        return Response.json({ error: "Passwords do not match" }, { status: 400 });
+        return Response.json({ error: "Passwords do not match" });
     }
     const user = await UserRepo.findByEmail(email);
     if (user && user.verify) {
-        return Response.json({ error: "User already exists" }, { status: 400 });
+        return Response.json({ error: "User already exists" });
     }
 
     try {
@@ -52,6 +52,6 @@ export async function POST(request: NextRequest) {
         return Response.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error(error);
-        return Response.json({ error: "Failed to sign up" }, { status: 500 });
+        return Response.json({ error: "Failed to sign up" });
     }
 }
