@@ -7,6 +7,7 @@ import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
 import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
 import AnalysisMenu from "../headers/AnalysisMenu";
+import { processChunkedString } from "@/app/lib/utils";
 
 interface MessagePart {
   type: "text" | "code";
@@ -124,36 +125,37 @@ const Response = (
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const data = JSON.parse(chunk);
-          fullResponse += data.content;
+          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+          fullResponse += content;
+
           setChatLog((prevChatLog) => {
             const newLog = [...prevChatLog];
             newLog[newLog.length - 1] = {
               prompt,
               response: fullResponse,
               timestamp: newLog[newLog.length - 1].timestamp,
-              inputToken: data.inputToken,
-              outputToken: data.outputToken,
-              inputTime: data.inputTime,
-              outputTime: data.outputTime
+              inputToken: inputToken,
+              outputToken: outputToken,
+              inputTime: inputTime,
+              outputTime: outputTime
             };
             return newLog;
           });
         }
 
         if (buffer.trim() !== "") {
-          const data = JSON.parse(buffer);
-          fullResponse += data.content;
+          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+          fullResponse += content;
           setChatLog((prevChatLog) => {
             const newLog = [...prevChatLog];
             newLog[newLog.length - 1] = {
               prompt,
               response: fullResponse,
               timestamp: newLog[newLog.length - 1].timestamp,
-              inputToken: data.inputToken,
-              outputToken: data.outputToken,
-              inputTime: data.inputTime,
-              outputTime: data.outputTime
+              inputToken: inputToken,
+              outputToken: outputToken,
+              inputTime: inputTime,
+              outputTime: outputTime
             };
             return newLog;
           });

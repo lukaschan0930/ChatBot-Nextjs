@@ -4,7 +4,7 @@ import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
 import { chatHistoryAtom, isStartChatAtom } from "@/app/lib/store";
 import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
-import { generateSessionId } from "@/app/lib/utils";
+import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
@@ -146,8 +146,10 @@ const InputBox = () => {
 
           // Decode the incoming chunk and add it to our buffer.
           const chunk = decoder.decode(value, { stream: true });
-          const data = JSON.parse(chunk);
-          fullResponse += data.content;
+          console.log("chunk", chunk);
+          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+          fullResponse += content;
+
           setChatLog((prevChatLog) => {
             const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
             if (newLog.length > 0) {
@@ -155,21 +157,20 @@ const InputBox = () => {
                 prompt,
                 response: fullResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: data.inputToken,
-                outputToken: data.outputToken,
-                inputTime: data.inputTime,
-                outputTime: data.outputTime
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime
               };
-
             } else {
               newLog.push({
                 prompt,
                 response: fullResponse,
                 timestamp: Date.now().toString(),
-                inputToken: data.inputToken,
-                outputToken: data.outputToken,
-                inputTime: data.inputTime,
-                outputTime: data.outputTime
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime
               });
             }
             return newLog;
@@ -177,30 +178,30 @@ const InputBox = () => {
         }
 
         if (buffer.trim() !== "") {
-          const data = JSON.parse(buffer);
-          fullResponse += data.content;
+          console.log("buffer", buffer);
+          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+          fullResponse += content;
           setChatLog((prevChatLog) => {
             const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
-
             if (newLog.length > 0) {
               newLog[newLog.length - 1] = {
                 prompt,
                 response: fullResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: data.inputToken,
-                outputToken: data.outputToken,
-                inputTime: data.inputTime,
-                outputTime: data.outputTime
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime
               };
             } else {
               newLog.push({
                 prompt,
                 response: fullResponse,
                 timestamp: Date.now().toString(),
-                inputToken: data.inputToken,
-                outputToken: data.outputToken,
-                inputTime: data.inputTime,
-                outputTime: data.outputTime
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime
               });
             }
             return newLog;
