@@ -120,6 +120,7 @@ export interface ChatLog {
     outputToken?: number;
     inputTime?: number;
     outputTime?: number;
+    totalTime?: number;
 }
 
 

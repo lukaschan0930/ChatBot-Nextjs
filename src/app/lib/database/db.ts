@@ -157,8 +157,12 @@ function chatModel() {
                 outputTime: {
                     type: Number,
                 },
+                totalTime: {
+                    type: Number,
+                }
             }]
         }],
+
 
         updatedAt: {
             type: Date,

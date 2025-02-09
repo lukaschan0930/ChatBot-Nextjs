@@ -24,9 +24,10 @@ const Response = (
     inputToken = 0, 
     outputToken = 0, 
     inputTime = 0, 
-    outputTime = 0 
+    outputTime = 0,
+    totalTime = 0
   }: 
-  { response: string, timestamp: string | null, last: boolean, inputToken?: number, outputToken?: number, inputTime?: number, outputTime?: number }
+  { response: string, timestamp: string | null, last: boolean, inputToken?: number, outputToken?: number, inputTime?: number, outputTime?: number, totalTime?: number }
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
@@ -98,10 +99,12 @@ const Response = (
           inputToken: 0,
           outputToken: 0,
           inputTime: 0,
-          outputTime: 0
+          outputTime: 0,
+          totalTime: 0
         };
         return newLog;
       });
+
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
         body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true }),
@@ -137,7 +140,8 @@ const Response = (
               inputToken: inputToken,
               outputToken: outputToken,
               inputTime: inputTime,
-              outputTime: outputTime
+              outputTime: outputTime,
+              totalTime: totalTime
             };
             return newLog;
           });
@@ -155,7 +159,8 @@ const Response = (
               inputToken: inputToken,
               outputToken: outputToken,
               inputTime: inputTime,
-              outputTime: outputTime
+              outputTime: outputTime,
+              totalTime: totalTime
             };
             return newLog;
           });
@@ -173,7 +178,8 @@ const Response = (
           inputToken: 0,
           outputToken: 0,
           inputTime: 0,
-          outputTime: 0
+          outputTime: 0,
+          totalTime: 0
         };
         return newLog;
       });
@@ -242,7 +248,7 @@ const Response = (
             <FiCopy size={20} />
           </button>
         </div>
-        <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} />
+        <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} />
       </div>
     </div>
   );

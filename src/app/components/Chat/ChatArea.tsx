@@ -29,7 +29,7 @@ const ChatArea = () => {
             {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             {
               (chat.response) ?
-                <Response response={chat.response} timestamp={chat.timestamp} last={chatLog.length - 1 === id} inputToken={chat.inputToken} outputToken={chat.outputToken} inputTime={chat.inputTime} outputTime={chat.outputTime} /> :
+                <Response response={chat.response} timestamp={chat.timestamp} last={chatLog.length - 1 === id} inputToken={chat.inputToken} outputToken={chat.outputToken} inputTime={chat.inputTime} outputTime={chat.outputTime} totalTime={chat.totalTime} /> :
                 chatLog.length - 1 === id && <p className="text-2xl pl-4">Edith is thinking...</p>
             }
           </div>

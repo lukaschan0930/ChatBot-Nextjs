@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
     let outputToken = 0;
     let inputTime = 0;
     let outputTime = 0;
+    let queueTime = 0;
+    let totalTime = 0;
     const startTime = Date.now();
     const stream = await client.chat.completions.create({
         messages: [
@@ -97,7 +99,7 @@ export async function POST(request: NextRequest) {
                     const content = data.choices?.[0]?.delta?.content || "";
                     if (content) {
                         fullResponse += content;
-                        controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime })));
+                        controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
                         await new Promise(resolve => setTimeout(resolve, 5));
                     }
                     if (chunk.usage) {
@@ -105,17 +107,24 @@ export async function POST(request: NextRequest) {
                         inputToken = usage.prompt_tokens;
                         outputToken = usage.completion_tokens;
                     }
+                    if (chunk.time_info) {
+                        const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
+                        inputTime = timeInfo.prompt_time;                        
+                        queueTime = timeInfo.queue_time;
+                    }
                 }
             } catch (error) {
                 console.error("Streaming error: ", error);
             }
-            outputTime = (Date.now() - startTime) / 1000;
-            controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime })));
+            totalTime = (Date.now() - startTime) / 1000;
+            outputTime = totalTime - inputTime - queueTime;
+            controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
             controller.close();
 
             try {
                 if (chatHistory) {
                     // Find the current session using sessionId
+
                     const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
                     if (currentSession) {
                         if (reGenerate) {
@@ -128,7 +137,8 @@ export async function POST(request: NextRequest) {
                                     inputToken: inputToken,
                                     outputToken: outputToken,
                                     inputTime: inputTime,
-                                    outputTime: outputTime
+                                    outputTime: outputTime,
+                                    totalTime: totalTime
                                 };
                             } else {
                                 // Should there be no messages, push the new chat instead.
@@ -139,7 +149,8 @@ export async function POST(request: NextRequest) {
                                     inputToken: inputToken,
                                     outputToken: outputToken,
                                     inputTime: inputTime,
-                                    outputTime: outputTime
+                                    outputTime: outputTime,
+                                    totalTime: totalTime
                                 });
                             }
                         } else {
@@ -151,7 +162,8 @@ export async function POST(request: NextRequest) {
                                 inputToken: inputToken,
                                 outputToken: outputToken,
                                 inputTime: inputTime,
-                                outputTime: outputTime
+                                outputTime: outputTime,
+                                totalTime: totalTime
                             });
                         }
                         await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
@@ -167,7 +179,8 @@ export async function POST(request: NextRequest) {
                                 inputToken: inputToken,
                                 outputToken: outputToken,
                                 inputTime: inputTime,
-                                outputTime: outputTime
+                                outputTime: outputTime,
+                                totalTime: totalTime
                             }]
                         };
 
@@ -195,13 +208,15 @@ export async function POST(request: NextRequest) {
                             inputToken: inputToken,
                             outputToken: outputToken,
                             inputTime: inputTime,
-                            outputTime: outputTime
+                            outputTime: outputTime,
+                            totalTime: totalTime
                         }]
                     };
                     const newHistory = {
                         email: session?.user?.email as string,
                         session: [newChatHistory]
                     };
+
                     await ChatRepo.create(newHistory);
                 }
             } catch (error) {
