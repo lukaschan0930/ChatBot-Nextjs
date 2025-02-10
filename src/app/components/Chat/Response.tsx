@@ -193,6 +193,8 @@ const Response = (
     }
   };
 
+  console.log(timestamp, outputTime, inputToken, outputToken, inputTime, outputTime, totalTime);
+
   return (
     <div className="flex flex-col text-mainFont w-full">
       <div className="overflow-x-auto text-justify break-words mb-8 pl-8 w-full">
@@ -248,7 +250,10 @@ const Response = (
             <FiCopy size={20} />
           </button>
         </div>
-        <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} />
+        <div className="text-sm text-subFont">
+          Time: {outputTime}s
+        </div>
+        {/* <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} /> */}
       </div>
     </div>
   );

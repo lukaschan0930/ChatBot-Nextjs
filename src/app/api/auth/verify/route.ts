@@ -16,7 +16,15 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "User not found" }, { status: 400 });
   }
 
-  return Response.json({ message: "Email verified", id: user._id }, { status: 200 });
+  if (user.verify) {
+    return Response.json({ error: "User already verified" }, { status: 400 });
+  }
+
+  user.verify = true;
+  await user.save();
+
+  const signInToken = await generateConfirmationToken(user.email as string, "manual");
+  return Response.json({ message: "Email verified", id: user._id, token: signInToken }, { status: 200 });
 }
 
 export async function POST(request: NextRequest) {
@@ -29,16 +37,12 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return Response.json({ error: "User not found" }, { status: 400 });
   }
-  if (user.verify) {
-    return Response.json({ error: "User already verified" }, { status: 400 });
-  }
+
   inviteUser.numsOfUsedInviteCode = inviteUser.numsOfUsedInviteCode + 1;
   await inviteUser.save();
 
   user.referralCode = inviteUser.inviteCode;
-  user.verify = true;
   await user.save();
 
-  const token = await generateConfirmationToken(user.email as string, "manual");
-  return Response.json({ message: "Email verified", token: token }, { status: 200 });
+  return Response.json({ message: "Email verified"}, { status: 200 });
 }

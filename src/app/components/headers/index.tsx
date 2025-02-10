@@ -57,13 +57,13 @@ const Header = () => {
                 height={100}
               />
             </button>
-            {
+            {/* {
               endPoint !== "admin" && (
                 <div className="hidden sm:flex">
                   <DropDownMenu />
                 </div>
               )
-            }
+            } */}
           </div>
           {
             endPoint !== "admin" ? (
@@ -76,15 +76,19 @@ const Header = () => {
                     >
                       Change Log
                     </button>
-                    <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
+                    {/* <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
                       Quests
-                    </button>
-                    <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
+                    </button> */}
+                    {/* <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
                       AI Agents
-                    </button>
-                    <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
+                    </button> */}
+                    <button 
+                      className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
+                      onClick={() => window.open("https://docs.edithx.ai", "_blank")}
+                    >
                       Docs
                     </button>
+
                   </div>
                   <ProfileDropDownMenu />
                 </div>

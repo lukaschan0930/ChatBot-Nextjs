@@ -18,7 +18,9 @@ const Verify = () => {
   const searchParams = useSearchParams();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isContinue, setIsContinue] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [token, setToken] = useState("");
   const [id, setId] = useState("");
 
   useEffect(() => {
@@ -39,6 +41,7 @@ const Verify = () => {
         } else {
           setIsVerified(true);
           setId(data.id);
+          setToken(data.token);
         }
       } catch (error) {
         console.log(error);
@@ -75,21 +78,18 @@ const Verify = () => {
       });
 
       if (res.status === 200) {
-        const data = await res.json();
-        if (data.token) {
-          const result = await signIn("token", {
-            token: data.token,
-            redirect: false,
+        const result = await signIn("token", {
+          token: token,
+          redirect: false,
+        });
+        if (result?.error) {
+          toast({
+            variant: "destructive",
+            description: "Access forbidden - your token is expired",
           });
-          if (result?.error) {
-            toast({
-              variant: "destructive",
-              description: "Access forbidden - your token is expired",
-            });
-            return;
-          }
-          router.push("/");
+          return;
         }
+        router.push("/");
       } else {
         const data = await res.json();
         toast({
@@ -112,6 +112,23 @@ const Verify = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const continueWithoutCode = async () => {
+    setIsContinue(true);
+    const result = await signIn("token", {
+      token: token,
+      redirect: false,
+    });
+    if (result?.error) {
+      toast({
+        variant: "destructive",
+        description: "Access forbidden - your token is expired",
+      });
+      return;
+    }
+    setIsContinue(false);
+    router.push("/");
   };
 
   const { data: session } = useSession();
@@ -140,7 +157,7 @@ const Verify = () => {
           <Box className="w-full max-w-sm p-6 space-y-4">
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col items-start space-y-10"
+              className="flex flex-col items-start space-y-6"
             >
               <FormControl
                 sx={{
@@ -226,6 +243,37 @@ const Verify = () => {
                   </span>
                 ) : (
                   "Check Code"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                fullWidth
+                disabled={isLoading}
+                className="h-10 !border-white !text-white hover:!bg-[#ffffff10]"
+                onClick={continueWithoutCode}
+              >
+                {isContinue ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  </span>
+                ) : (
+                  "Continue without Code"
                 )}
               </Button>
             </form>

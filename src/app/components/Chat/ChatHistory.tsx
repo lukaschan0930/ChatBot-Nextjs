@@ -115,6 +115,7 @@ const ChatHistory = () => {
                                 setChatLog([]);
                                 setSessionId(null);
                                 setIsStartChat(false);
+                                setIsSidebarVisible(false);
                             }}
                         >
                             <Image src="/image/circle_plus.svg" alt="new chat" width={21} height={21} />
@@ -128,7 +129,7 @@ const ChatHistory = () => {
                                 chatHistory.sort((a, b) => Number(b.chats[b.chats.length - 1].timestamp) - Number(a.chats[a.chats.length - 1].timestamp)).map((session: ChatHistoryType) => (
                                     <div
                                         key={session.id}
-                                        onClick={() => setSessionId(session.id)}
+                                        onClick={() => {setSessionId(session.id); setIsSidebarVisible(false)}}
                                         className={`${session.id === sessionId ? "bg-inputBg text-mainFont" : "text-subButtonFont hover:bg-inputBg hover:border-tertiaryBorder hover:text-mainFont"} flex items-center justify-start group transition-colors duration-200 relative py-4 px-4 rounded-lg`}
                                     >
                                         <div className="w-[200px] flex flex-col gap-1">
@@ -195,13 +196,13 @@ const ChatHistory = () => {
                                 <Image src="/image/settings.svg" alt="settings" width={20} height={20} />
                                 Settings
                             </button>
-                            <button
+                            {/* <button
                                 className="flex items-center justify-start gap-2 text-mainFont bg-transparent border-none focus:outline-none hover:bg-inputBg w-full"
                                 onClick={() => setIsSidebarVisible(false)}
                             >
                                 <Image src="/image/collapse.svg" alt="collapse" width={20} height={20} />
                                 Collapse Sidebar
-                            </button>
+                            </button> */}
                         </div >
                     </>
                 )

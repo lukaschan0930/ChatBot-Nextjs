@@ -80,13 +80,16 @@ const MobileDropDownMenu = () => {
           >
             Change Log
           </DropdownMenuItem>
-          <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
+          {/* <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
             Quests
-          </DropdownMenuItem>
-          <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
+          </DropdownMenuItem> */}
+          {/* <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
             AI Agents
-          </DropdownMenuItem>
-          <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
+          </DropdownMenuItem> */}
+          <DropdownMenuItem 
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+            onClick={() => window.open("https://docs.edithx.ai", "_blank")}
+          >
             Docs
           </DropdownMenuItem>
         </DropdownMenuSub>
