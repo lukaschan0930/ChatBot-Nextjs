@@ -88,9 +88,11 @@ export const authOptions = {
     callbacks: {
         async signIn({ user, account, profile }: { user: NextAuthUser, account: Account, profile: Profile }) {
             if (account?.provider === 'google') {
+                console.log("profile", profile);
                 let existingUser = await UserRepo.findByEmail(profile?.email as string);
                 if (existingUser && existingUser.verify == true) {
                     user.name = existingUser.name;
+
                     user.email = existingUser.email;
                     return true;
                 }
