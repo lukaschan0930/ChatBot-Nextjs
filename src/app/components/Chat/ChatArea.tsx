@@ -5,10 +5,12 @@ import Response from "./Response";
 import { chatLogAtom } from "@/app/lib/store";
 import { useAtom } from "jotai";
 import Image from "next/image";
+import { isSidebarVisibleAtom } from "@/app/lib/store";
 
 const ChatArea = () => {
   const [chatLog,] = useAtom(chatLogAtom);
   const chatLogEndRef = useRef<HTMLDivElement>(null);
+  const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
 
   useEffect(() => {
     if (chatLogEndRef.current) {
@@ -20,7 +22,7 @@ const ChatArea = () => {
   }, [chatLog]);
 
   return (
-    <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center mt-8">
+    <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center mt-8" onClick={() => setIsSidebarVisible(false)}>
       {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
         <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[800px] px-4">
           <UserPrompt prompt={chat.prompt} />

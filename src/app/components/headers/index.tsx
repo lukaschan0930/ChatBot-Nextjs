@@ -1,11 +1,14 @@
 'use client'
 import { usePathname, useRouter } from "next/navigation";
-import DropDownMenu from "@/app/components/headers/DropDownMenu";
+// import DropDownMenu from "@/app/components/headers/DropDownMenu";
 import MobileDropDownMenu from "@/app/components/headers/MobileDropDownMenu";
 import { useEffect, useRef, useState } from "react";
 import ProfileDropDownMenu from "@/app/components/headers/ProfileDropDownMenu";
 import Image from "next/image";
 import MobileAdminMenu from "./MobileAdminMenu";
+import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
+import { useAtom } from "jotai";
+import { FiEdit } from "react-icons/fi";
 
 const Header = () => {
   const router = useRouter();
@@ -17,6 +20,10 @@ const Header = () => {
 
   const [isLeftSidebar, setIsLeftSidebar] = useState<boolean>(false);
   const [isRightSidebar, setIsRightSidebar] = useState<boolean>(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
+  const [, setChatLog] = useAtom(chatLogAtom);
+  const [, setSessionId] = useAtom(sessionIdAtom);
+  const [, setIsStartChat] = useAtom(isStartChatAtom);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,13 +51,31 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b-2 bg-headerBg text-mainFont border-primaryBorder">
         <div className="flex h-[72px] items-center px-4 sm:px-10 justify-between relative">
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-5">
+            <button
+              className="flex items-center justify-start gap-2 text-mainFont bg-transparent focus:outline-none hover:bg-inputBg w-fit p-2 border border-secondaryBorder rounded-md hover:border-mainFont"
+              onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+            >
+              <Image src="/image/collapse.svg" alt="collapse" width={20} height={20} />
+            </button>
+            <button
+              className="flex items-center justify-start gap-2 text-mainFont bg-transparent focus:outline-none hover:bg-inputBg w-fit p-2 border border-secondaryBorder rounded-md hover:border-mainFont"
+              onClick={() => {
+                router.push("/chatText");
+                setChatLog([]);
+                setSessionId(null);
+                setIsStartChat(false);
+                setIsSidebarVisible(false);
+              }}
+            >
+              <FiEdit size={20} />
+            </button>
             <button
               className="flex items-end p-0 bg-transparent border-none outline-none focus:outline-none text-buttonFont"
               onClick={() => router.push("/")}
             >
               <Image
-                src="/image/EDITH_logo_png.png"
+                src="/image/symbol-edith.svg"
                 alt="logo"
                 className="h-10 w-auto"
                 width={100}
@@ -82,7 +107,7 @@ const Header = () => {
                     {/* <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
                       AI Agents
                     </button> */}
-                    <button 
+                    <button
                       className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
                       onClick={() => window.open("https://docs.edithx.ai", "_blank")}
                     >
