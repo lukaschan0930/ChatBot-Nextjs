@@ -36,6 +36,30 @@ const SignIn = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
+  const googleSignIn = async () => {
+    try {
+      setIsLoading(prev => ({ ...prev, google: true }));
+      const result = await signIn("google", {
+        redirect: false,
+      });
+      setIsLoading(prev => ({ ...prev, google: false }));
+      if (result?.error) {
+        toast({
+          variant: "destructive",
+          description: result.error || "Sign in unsuccessful, please check your credentials.",
+        });
+        return;
+      }
+      router.push("/chatText");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+      });
+      console.log("error", error);
+    }
+  }
+
   const onSubmit = async (data: LoginProps) => {
     setIsLoading((prev) => ({ ...prev, form: true }));
     try {
@@ -297,30 +321,7 @@ const SignIn = () => {
             variant="contained"
             fullWidth
             disabled={isLoading.google}
-            onClick={async () => {
-              try {
-                setIsLoading(prev => ({ ...prev, google: true }));
-                const result = await signIn("google", {
-                  redirect: false,
-                });
-                setIsLoading(prev => ({ ...prev, google: false }));
-                if (result?.error) {
-                  toast({
-                    variant: "destructive",
-                    description: result.error || "Sign in unsuccessful, please check your credentials.",
-                  });
-                  return;
-                }
-                router.push("/chatText");
-              } catch (error) {
-                toast({
-                  variant: "destructive",
-                  description: error instanceof Error ? error.message : "An unexpected error occurred.",
-                });
-                console.log("error", error);
-              }
-            }}
-
+            onClick={googleSignIn}
             className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
           >
             {isLoading.google ? (
