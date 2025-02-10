@@ -104,8 +104,32 @@ const SignUp = () => {
     }
   };
 
+  const googleSignIn = async () => {
+    try {
+      setIsLoading(prev => ({ ...prev, google: true }));
+      const result = await signIn("google", {
+        callbackUrl: "/chatText",
+      });
+      setIsLoading(prev => ({ ...prev, google: false }));
+
+      if (result?.error) {
+        toast({
+          variant: "destructive",
+          description: result.error || "Sign in unsuccessful, please check your credentials.",
+        });
+        return;
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+      });
+      console.log("error", error);
+    }
+  }
+
   const { data: session } = useSession();
-  
+
   useEffect(() => {
     if (session) {
       router.push("/chatText");
@@ -468,21 +492,7 @@ const SignUp = () => {
             variant="contained"
             fullWidth
             disabled={isLoading.google}
-            onClick={async () => {
-              setIsLoading(prev => ({ ...prev, google: true }));
-              const result = await signIn("google", {
-                redirect: false,
-              });
-              setIsLoading(prev => ({ ...prev, google: false }));
-              if (result?.error) {
-                toast({
-                  variant: "destructive",
-                  description: result.error || "Sign in unsuccessful, please check your credentials.",
-                });
-                return;
-              }
-              router.push("/chatText");
-            }}
+            onClick={googleSignIn}
             className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
           >
 

@@ -41,6 +41,7 @@ const SignIn = () => {
       setIsLoading(prev => ({ ...prev, google: true }));
       const result = await signIn("google", {
         redirect: false,
+        callbackUrl: "/chatText",
       });
       setIsLoading(prev => ({ ...prev, google: false }));
       if (result?.error) {
@@ -50,7 +51,6 @@ const SignIn = () => {
         });
         return;
       }
-      router.push("/chatText");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -66,9 +66,8 @@ const SignIn = () => {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
-        redirect: false,
+        callbackUrl: "/chatText",
       });
-
       if (result?.error) {
         toast({
           variant: "destructive",
@@ -77,7 +76,6 @@ const SignIn = () => {
         });
         return;
       }
-      router.push("/");
     } catch (error) {
       toast({
         variant: "destructive",
