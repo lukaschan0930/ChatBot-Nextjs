@@ -54,7 +54,7 @@ const MobileDropDownMenu = () => {
         className="bg-inputBg mt-[14px] w-[200px] border-secondaryBorder"
         align="end"
       >
-        <div className="block sm:hidden">
+        {/* <div className="block sm:hidden">
           {menuItems.map((item) => (
             <DropdownMenuItem
               key={item.id}
@@ -72,7 +72,7 @@ const MobileDropDownMenu = () => {
             </DropdownMenuItem>
           ))}
         </div>
-        <DropdownMenuSeparator className="block sm:hidden bg-[#FFFFFF]/10" />
+        <DropdownMenuSeparator className="block sm:hidden bg-[#FFFFFF]/10" /> */}
         <DropdownMenuSub>
           <DropdownMenuItem
             className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"

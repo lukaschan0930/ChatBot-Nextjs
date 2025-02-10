@@ -18,7 +18,7 @@ const ChatText = () => {
         <div className="flex flex-col h-full items-center justify-center w-full gap-2 px-4" onClick={() => setIsSidebarVisible(false)}>
           {!isStartChat ? (
             <div className="text-3xl font-bold whitespace-nowrap w-full flex flex-col items-center">
-              <div className="flex items-end justify-center p-0 border-none outline-none focus:outline-none">
+              <div className="flex items-end justify-center border-none outline-none focus:outline-none">
                 <Image
                   src="/image/EDITH_logo_png.png"
                   alt="logo"
@@ -27,7 +27,7 @@ const ChatText = () => {
                   className="h-16 w-auto"
                 />
               </div>
-              <span className="hidden sm:block mb-10 text-[24px] text-[#777777] mt-[45px] text-center">
+              <span className="hidden sm:block text-[24px] text-[#777777] mt-[45px] text-center">
                 Every Day I&apos;m Theoretically Human
               </span>
               <InputBox />

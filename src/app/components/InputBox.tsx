@@ -249,7 +249,7 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[800px]`}
+        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg mt-[10px] p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[800px]`}
     >
       <div
         className={`${messageOver ? "order-0 basis-full" : "order-1"
