@@ -16,10 +16,7 @@ export const authOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            httpOptions: {
-                timeout: 10000,
-            }
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!
         }),
 
         CredentialsProvider({
@@ -87,12 +84,11 @@ export const authOptions = {
     debug: process.env.NODE_ENV === 'development',
     callbacks: {
         async signIn({ user, account, profile }: { user: NextAuthUser, account: Account, profile: Profile }) {
+            console.log("profile", profile);
             if (account?.provider === 'google') {
-                console.log("profile", profile);
                 let existingUser = await UserRepo.findByEmail(profile?.email as string);
                 if (existingUser && existingUser.verify == true) {
                     user.name = existingUser.name;
-
                     user.email = existingUser.email;
                     return true;
                 }
