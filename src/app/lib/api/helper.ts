@@ -16,9 +16,11 @@ export const authOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            httpOptions: {
+                timeout: 10000,
+            }
         }),
-
         CredentialsProvider({
             id: 'credentials',
             name: 'Credentials',
@@ -42,7 +44,6 @@ export const authOptions = {
 
             }
         }),
-
         CredentialsProvider({
             id: 'token',
             name: 'JWT-Token',
@@ -81,6 +82,7 @@ export const authOptions = {
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
         strategy: "jwt",
     },
+    secret: process.env.NEXTAUTH_SECRET!,
     debug: true,
     callbacks: {
         async signIn({ user, account, profile }: { user: NextAuthUser, account: Account, profile: Profile }) {
@@ -147,14 +149,12 @@ export const authOptions = {
             return true;
         },
         async jwt({ token, account, user }: { token: JWT, account: Account, user: NextAuthUser }) {
-            // Persist the OAuth access_token to the token right after signin
             if (account) {
                 token.accessToken = account.access_token
                 token.name = user.name;
                 token.email = user.email;
             }
             return token
-
         },
         async session({ session, token }: { session: Session, token: JWT }) {
             if (session.user) {
