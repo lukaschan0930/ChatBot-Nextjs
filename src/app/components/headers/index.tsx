@@ -51,7 +51,7 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b-2 bg-headerBg text-mainFont border-primaryBorder">
         <div className="flex h-[72px] items-center px-4 sm:px-10 justify-between relative">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 lg:gap-5">
             <button
               className="flex items-center justify-start gap-2 text-mainFont bg-transparent focus:outline-none hover:bg-inputBg w-fit p-2 border border-secondaryBorder rounded-md hover:border-mainFont"
               onClick={() => setIsSidebarVisible(!isSidebarVisible)}

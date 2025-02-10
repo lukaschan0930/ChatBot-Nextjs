@@ -251,7 +251,7 @@ const Response = (
           </button>
         </div>
         <div className="text-sm text-subFont">
-          Time: {outputTime}s
+          Time: {Number(outputTime.toFixed(5))}s
         </div>
         {/* <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} /> */}
       </div>
