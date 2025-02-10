@@ -71,77 +71,90 @@ export async function POST(request: NextRequest) {
     let queueTime = 0;
     let totalTime = 0;
     const startTime = Date.now();
-    const stream = await client.chat.completions.create({
-        messages: [
-            { role: "system", content: process.env.SYSTEM_PROMPT! },
-            ...history,
-            { role: "user", content: prompt }
-        ],
-        model: "llama3.1-8b",
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 2000,
-        stream_options: {
-            include_usage: true
-        }
-    });
-
-    const encoder = new TextEncoder();
-    let fullResponse = "";
-
-    const streamResponse = new ReadableStream({
-        async start(controller) {
-            try {
-                // Iterate over each streamed chunk
-                for await (const chunk of stream) {
-                    const data = chunk as { choices?: { delta?: { content?: string } }[] };
-                    // Cerebras returns the text in data.choices[0]?.delta?.content
-                    const content = data.choices?.[0]?.delta?.content || "";
-                    if (content) {
-                        fullResponse += content;
-                        controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
-                        await new Promise(resolve => setTimeout(resolve, 5));
-                    }
-                    if (chunk.usage) {
-                        const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
-                        inputToken = usage.prompt_tokens;
-                        outputToken = usage.completion_tokens;
-                    }
-                    if (chunk.time_info) {
-                        const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
-                        inputTime = timeInfo.prompt_time;                        
-                        queueTime = timeInfo.queue_time;
-                    }
-                }
-            } catch (error) {
-                console.error("Streaming error: ", error);
+    try {
+        const stream = await client.chat.completions.create({
+            messages: [
+                { role: "system", content: process.env.SYSTEM_PROMPT! },
+                ...history,
+                { role: "user", content: prompt }
+            ],
+            model: "llama3.1-8b",
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 2000,
+            stream_options: {
+                include_usage: true
             }
-            totalTime = (Date.now() - startTime) / 1000;
-            outputTime = totalTime - inputTime - queueTime;
-            controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
-            controller.close();
+        });
+        const encoder = new TextEncoder();
+        let fullResponse = "";
 
-            try {
-                if (chatHistory) {
-                    // Find the current session using sessionId
+        const streamResponse = new ReadableStream({
+            async start(controller) {
+                try {
+                    // Iterate over each streamed chunk
+                    for await (const chunk of stream) {
+                        const data = chunk as { choices?: { delta?: { content?: string } }[] };
+                        // Cerebras returns the text in data.choices[0]?.delta?.content
+                        const content = data.choices?.[0]?.delta?.content || "";
+                        if (content) {
+                            fullResponse += content;
+                            controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
+                            await new Promise(resolve => setTimeout(resolve, 5));
+                        }
+                        if (chunk.usage) {
+                            const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
+                            inputToken = usage.prompt_tokens;
+                            outputToken = usage.completion_tokens;
+                        }
+                        if (chunk.time_info) {
+                            const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
+                            inputTime = timeInfo.prompt_time;
+                            queueTime = timeInfo.queue_time;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Streaming error: ", error);
+                }
+                totalTime = (Date.now() - startTime) / 1000;
+                outputTime = totalTime - inputTime - queueTime;
+                controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
+                controller.close();
 
-                    const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
-                    if (currentSession) {
-                        if (reGenerate) {
-                            // If reGenerate is true and there is at least one message, update the last chat
-                            if (currentSession.chats.length > 0) {
-                                currentSession.chats[currentSession.chats.length - 1] = {
-                                    prompt,
-                                    response: fullResponse,
-                                    timestamp: new Date().valueOf().toString(),
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime
-                                };
+                try {
+                    if (chatHistory) {
+                        // Find the current session using sessionId
+
+                        const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
+                        if (currentSession) {
+                            if (reGenerate) {
+                                // If reGenerate is true and there is at least one message, update the last chat
+                                if (currentSession.chats.length > 0) {
+                                    currentSession.chats[currentSession.chats.length - 1] = {
+                                        prompt,
+                                        response: fullResponse,
+                                        timestamp: new Date().valueOf().toString(),
+                                        inputToken: inputToken,
+                                        outputToken: outputToken,
+                                        inputTime: inputTime,
+                                        outputTime: outputTime,
+                                        totalTime: totalTime
+                                    };
+                                } else {
+                                    // Should there be no messages, push the new chat instead.
+                                    currentSession.chats.push({
+                                        prompt,
+                                        response: fullResponse,
+                                        timestamp: new Date().valueOf().toString(),
+                                        inputToken: inputToken,
+                                        outputToken: outputToken,
+                                        inputTime: inputTime,
+                                        outputTime: outputTime,
+                                        totalTime: totalTime
+                                    });
+                                }
                             } else {
-                                // Should there be no messages, push the new chat instead.
+                                // Otherwise, just add a new chat message.
                                 currentSession.chats.push({
                                     prompt,
                                     response: fullResponse,
@@ -153,27 +166,43 @@ export async function POST(request: NextRequest) {
                                     totalTime: totalTime
                                 });
                             }
+                            await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                         } else {
-                            // Otherwise, just add a new chat message.
-                            currentSession.chats.push({
-                                prompt,
-                                response: fullResponse,
-                                timestamp: new Date().valueOf().toString(),
-                                inputToken: inputToken,
-                                outputToken: outputToken,
-                                inputTime: inputTime,
-                                outputTime: outputTime,
-                                totalTime: totalTime
-                            });
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            const newChatHistory = {
+                                id: sessionId as string,
+                                title: title as string,
+                                chats: [{
+                                    prompt,
+                                    response: fullResponse,
+                                    timestamp: new Date().valueOf().toString(),
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime,
+                                    totalTime: totalTime
+                                }]
+                            };
+
+                            if (chatHistory) {
+                                chatHistory.session.push(newChatHistory);
+                                await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+                            } else {
+                                const newHistory = {
+                                    email: session?.user?.email as string,
+                                    session: [newChatHistory]
+                                };
+                                await ChatRepo.create(newHistory);
+                            }
                         }
-                        await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                     } else {
+                        // Handling for when chatHistory doesn't exist (creating a new one)
                         const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
                         const newChatHistory = {
                             id: sessionId as string,
                             title: title as string,
                             chats: [{
-                                prompt,
+                                prompt: prompt as string,
                                 response: fullResponse,
                                 timestamp: new Date().valueOf().toString(),
                                 inputToken: inputToken,
@@ -183,48 +212,24 @@ export async function POST(request: NextRequest) {
                                 totalTime: totalTime
                             }]
                         };
+                        const newHistory = {
+                            email: session?.user?.email as string,
+                            session: [newChatHistory]
+                        };
 
-                        if (chatHistory) {
-                            chatHistory.session.push(newChatHistory);
-                            await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                        } else {
-                            const newHistory = {
-                                email: session?.user?.email as string,
-                                session: [newChatHistory]
-                            };
-                            await ChatRepo.create(newHistory);
-                        }
+                        await ChatRepo.create(newHistory);
                     }
-                } else {
-                    // Handling for when chatHistory doesn't exist (creating a new one)
-                    const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                    const newChatHistory = {
-                        id: sessionId as string,
-                        title: title as string,
-                        chats: [{
-                            prompt: prompt as string,
-                            response: fullResponse,
-                            timestamp: new Date().valueOf().toString(),
-                            inputToken: inputToken,
-                            outputToken: outputToken,
-                            inputTime: inputTime,
-                            outputTime: outputTime,
-                            totalTime: totalTime
-                        }]
-                    };
-                    const newHistory = {
-                        email: session?.user?.email as string,
-                        session: [newChatHistory]
-                    };
-
-                    await ChatRepo.create(newHistory);
+                } catch (error) {
+                    console.log("error", error);
+                    return new NextResponse("Error generating text.", { status: 500 })
                 }
-            } catch (error) {
-                console.log("error", error);
-                return new NextResponse("Error generating text.", { status: 500 })
-            }
-        },
-    });
+            },
+        });
 
-    return new NextResponse(streamResponse);
+        return new NextResponse(streamResponse);
+        
+    } catch (error) {
+        console.error("Error generating text: ", error);
+        return new NextResponse("Error generating text.", { status: 500 })
+    }
 } 

@@ -26,13 +26,17 @@ const ChatArea = () => {
       {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
         <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[800px] px-0 md:px-4">
           <UserPrompt prompt={chat.prompt} />
-          <div className="flex justify-start">
-            <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-10 h-10 md:w-14 md:h-14 rounded-lg border-2 border-gray-500`} />
+          <div className="flex justify-start flex-col md:flex-row gap-1 md:gap-0">
+            <div className="flex items-center gap-2 md:gap-0 h-fit md:!w-14 md:!h-14 md:hidden">
+              <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} !w-10 !h-10 md:!w-14 md:!h-14 rounded-lg border-2 border-gray-500`} />
+              <div className="text-lg md:hidden">EDITH</div>
+            </div>
+            <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-14 h-14 hidden md:block rounded-lg border-2 border-gray-500`} />
             {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             {
               (chat.response) ?
                 <Response response={chat.response} timestamp={chat.timestamp} last={chatLog.length - 1 === id} inputToken={chat.inputToken} outputToken={chat.outputToken} inputTime={chat.inputTime} outputTime={chat.outputTime} totalTime={chat.totalTime} /> :
-                chatLog.length - 1 === id && <p className="text-2xl pl-4">Edith is thinking...</p>
+                chatLog.length - 1 === id && <p className="text-2xl md:pl-4">Edith is thinking...</p>
             }
           </div>
         </div>
