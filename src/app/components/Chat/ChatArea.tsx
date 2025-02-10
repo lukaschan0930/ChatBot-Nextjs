@@ -22,12 +22,12 @@ const ChatArea = () => {
   }, [chatLog]);
 
   return (
-    <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center mt-8" onClick={() => setIsSidebarVisible(false)}>
+    <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center px-2 mt-8" onClick={() => setIsSidebarVisible(false)}>
       {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
-        <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[800px] px-4">
+        <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[800px] px-0 md:px-4">
           <UserPrompt prompt={chat.prompt} />
           <div className="flex justify-start">
-            <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-14 h-14 rounded-lg border-2 border-gray-500`} />
+            <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-10 h-10 md:w-14 md:h-14 rounded-lg border-2 border-gray-500`} />
             {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             {
               (chat.response) ?

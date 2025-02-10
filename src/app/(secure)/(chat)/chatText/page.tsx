@@ -15,7 +15,7 @@ const ChatText = () => {
     <main className={`flex justify-center text-mainFont w-screen min-h-screen ${isSidebarVisible && "max-md:backdrop-blur-md"}`}>
       <ChatHistory />
       <div className={`flex flex-col flex-auto items-center mt-[72px] justify-center h-[calc(100vh-72px)] py-5 relative`}>
-        <div className="flex flex-col h-full items-center justify-center w-full gap-2 px-4" onClick={() => setIsSidebarVisible(false)}>
+        <div className="flex flex-col h-full items-center justify-center w-full gap-2 px-2 md:px-4" onClick={() => setIsSidebarVisible(false)}>
           {!isStartChat ? (
             <div className="text-3xl font-bold whitespace-nowrap w-full flex flex-col items-center">
               <div className="flex items-end justify-center border-none outline-none focus:outline-none">

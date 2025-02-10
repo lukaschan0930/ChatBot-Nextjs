@@ -255,7 +255,7 @@ button:focus-visible {
     font-weight: 350;
   }
 
-  p>strong {
+  p > strong {
     font-size: 1.5rem;
     font-weight: 800;
   }
