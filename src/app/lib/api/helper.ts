@@ -81,7 +81,7 @@ export const authOptions = {
         maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
         strategy: "jwt",
     },
-    debug: process.env.NODE_ENV === 'development',
+    debug: true,
     callbacks: {
         async signIn({ user, account, profile }: { user: NextAuthUser, account: Account, profile: Profile }) {
             console.log("profile", profile);
