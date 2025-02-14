@@ -2,10 +2,11 @@ import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
-import { chatHistoryAtom, isStartChatAtom } from "@/app/lib/store";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
+import { chatHistoryAtom, isStartChatAtom, researchStepAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
+import { IResearchLog } from "@/app/lib/interface";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
@@ -16,6 +17,8 @@ const InputBox = () => {
   const [messageOver, setMessageOver] = useState<boolean>(false);
   const [inputPrompt, setInputPrompt] = useState<string>("");
   const [isStreaming, setIsStreaming] = useAtom(isStreamingAtom);
+  const [, setResearchLog] = useAtom(researchLogAtom);
+  const [, setResearchStep] = useAtom(researchStepAtom);
   // const [isOpen, setIsOpen] = useState<boolean>(false);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
 
@@ -76,7 +79,8 @@ const InputBox = () => {
     setIsStreaming(true);
     setIsStartChat(true);
     try {
-      await sendMessage(inputPrompt);
+      // await sendMessage(inputPrompt, []);
+      await generateResearch(inputPrompt);
     } finally {
       setIsStreaming(false);
       setInputPrompt("");
@@ -98,7 +102,7 @@ const InputBox = () => {
     }
   };
 
-  const sendMessage = async (prompt: string) => {
+  const sendMessage = async (prompt: string, learnings: string[]) => {
     let requestSessionId = sessionId;
     if (!requestSessionId) {
       const newId = generateSessionId(
@@ -121,10 +125,9 @@ const InputBox = () => {
         return newLog;
       });
 
-
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: requestSessionId, chatLog: chatLog.slice(-5), reGenerate: false }),
+        body: JSON.stringify({ prompt, sessionId: requestSessionId, chatLog: chatLog.slice(-5), reGenerate: false, learnings }),
       });
 
       if (!res.body) {
@@ -243,6 +246,150 @@ const InputBox = () => {
         variant: "destructive",
         title: 'Failed to get response from server.',
       });
+    }
+  };
+
+  const generateResearch = async (prompt: string) => {
+    try {
+      setChatLog((prevChatLog) => {
+        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+        newLog.push({
+          prompt,
+          response: "",
+          timestamp: Date.now().toString()
+        });
+        return newLog;
+      });
+      const res = await fetch("/api/chat/generateResearchSteps", {
+        method: "POST",
+        body: JSON.stringify({ prompt, chatLog: chatLog.slice(-5) }),
+      });
+      const data = await res.json();
+      const steps = JSON.parse(data.steps);
+
+      const newResearchLog = [];
+
+      for (const step of steps.steps) {
+        newResearchLog.push({
+          title: step,
+          researchSteps: [],
+          sources: [],
+          learnings: []
+        });
+      }
+
+      newResearchLog.push({
+        title: "compile research result",
+        researchSteps: [],
+        sources: [],
+        learnings: []
+      });
+
+      // Create a new log array based on the current state
+      setResearchLog(newResearchLog);
+      await handleResearchStep(0, 0, newResearchLog);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: 'Failed to get response from server.',
+      });
+      setChatLog((prevChatLog) => {
+        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+        if (newLog.length > 0) {
+          newLog[newLog.length - 1] = {
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: newLog[newLog.length - 1].timestamp,
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0
+          };
+        } else {
+          newLog.push({
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: Date.now().toString(),
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0
+          });
+        }
+        return newLog;
+      });
+    }
+  };
+
+  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[]) => {
+    try {
+      if (researchStepIndex == log.length - 1) {
+        const learnings = log.flatMap((step) => step.learnings.map((learning) => learning));
+        await sendMessage(inputPrompt, learnings);
+      } else {
+        console.log(researchStepIndex, stepIndex);
+        const researchStep = log[researchStepIndex];
+        log[researchStepIndex].researchSteps.push(
+          stepIndex == 0 ? "Searching resources..." : "Reading resources...",
+        );
+        setResearchLog((prevLog) => {
+          const newLog = [...prevLog];
+          newLog[researchStepIndex].researchSteps[stepIndex] =
+            stepIndex == 0 ? "Searching resources..." : "Reading resources...";
+          return newLog;
+        });
+        if (stepIndex == 0) {
+          const res = await fetch("/api/chat/searchingResources", {
+            method: "POST",
+            body: JSON.stringify({ title: researchStep.title }),
+          });
+          const data = await res.json();
+          console.log(data);
+          log[researchStepIndex].sources = data.results.flatMap((result: { urls: string[], contents: string[], images: string[] }) =>
+            result.urls.map((url: string, index: number) => ({
+              url,
+              image: result.images[index]
+            }))
+          );
+          setResearchLog((prevLog) => {
+            // Create a deep copy of the previous log to avoid direct mutation
+            const newLog = prevLog.map((logItem, index) => {
+              if (index === researchStepIndex) {
+                return {
+                  ...logItem,
+                  sources: data.results.flatMap((result: { urls: string[], contents: string[], images: string[] }) =>
+                    result.urls.map((url: string, index: number) => ({
+                      url,
+                      image: result.images[index]
+                    }))
+                  )
+                };
+              }
+              return logItem;
+            });
+            return newLog;
+          });
+          await handleResearchStep(researchStepIndex, 1, log);
+        } else {
+          const res = await fetch("/api/chat/analyzingResources", {
+            method: "POST",
+            body: JSON.stringify({ sources: researchStep.sources, title: researchStep.title }),
+          });
+          const data = await res.json();
+          log[researchStepIndex].learnings = data.learningDatas;
+          setResearchLog((prevLog) => {
+            const newLog = [...prevLog];
+            newLog[researchStepIndex].learnings = data.learningDatas;
+            return newLog;
+          });
+          setResearchStep(researchStepIndex + 1);
+          await handleResearchStep(researchStepIndex + 1, 0, log);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   };
 

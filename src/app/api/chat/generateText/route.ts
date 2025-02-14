@@ -1,5 +1,5 @@
 import Cerebras from '@cerebras/cerebras_cloud_sdk';
-import { authOptions } from "@/app/lib/api/helper";
+import { authOptions, trimPrompt } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
 import { ChatHistory, ChatLog } from '@/app/lib/interface';
@@ -8,7 +8,7 @@ import db from "@/app/lib/database/db";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
-    const { prompt, sessionId, chatLog, reGenerate } = await request.json();
+    const { prompt, sessionId, chatLog, reGenerate, learnings } = await request.json();
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -71,12 +71,21 @@ export async function POST(request: NextRequest) {
     let queueTime = 0;
     let totalTime = 0;
     const startTime = Date.now();
+
+    const learningsString = trimPrompt(
+        learnings
+          .map((learning: string) => `<learning>\n${learning}\n</learning>`)
+          .join('\n'),
+        150_000,
+      );
+    const learningsPrompt = `Given the following prompt from the user, write a final report on the topic using the learnings from research. Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:\n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>`;
+
     try {
         const stream = await client.chat.completions.create({
             messages: [
                 { role: "system", content: process.env.SYSTEM_PROMPT! },
                 ...history,
-                { role: "user", content: prompt }
+                { role: "user", content: learnings.length > 0 ? learningsPrompt : prompt }
             ],
             model: "llama3.1-8b",
             stream: true,
@@ -124,7 +133,6 @@ export async function POST(request: NextRequest) {
                 try {
                     if (chatHistory) {
                         // Find the current session using sessionId
-
                         const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
                         if (currentSession) {
                             if (reGenerate) {

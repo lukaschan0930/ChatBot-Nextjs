@@ -123,11 +123,27 @@ export interface ChatLog {
     totalTime?: number;
 }
 
-
 export interface IChangeLog {
     _id: string;
     title: string;
     article: string;
     category: string;
     createdAt: Date;
+}
+
+export interface IChatCompletionChoice {
+    message?: { content?: string | null };
+}
+
+export interface IResearchLog {
+    title: string;
+    researchSteps: string[];
+    sources: ISource[];
+    learnings: string[];
+}
+
+export interface ISource {
+    url: string;
+    content?: string;
+    image: string;
 }

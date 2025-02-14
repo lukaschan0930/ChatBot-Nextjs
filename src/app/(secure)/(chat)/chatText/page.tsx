@@ -6,6 +6,7 @@ import { useAtom } from "jotai";
 import { isStartChatAtom, isSidebarVisibleAtom } from "@/app/lib/store";
 import Image from "next/image";
 import ChatHistory from "@/app/components/Chat/ChatHistory";
+import ResearchArea from "@/app/components/Chat/ResearchArea";
 
 const ChatText = () => {
   const [isStartChat,] = useAtom(isStartChatAtom);
@@ -39,6 +40,7 @@ const ChatText = () => {
           )}
           {isStartChat && <InputBox />}
         </div>
+        <ResearchArea />
       </div>
     </main>
   );
