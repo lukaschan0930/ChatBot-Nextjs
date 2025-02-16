@@ -40,8 +40,8 @@ const ChatText = () => {
           )}
           {isStartChat && <InputBox />}
         </div>
-        <ResearchArea />
       </div>
+      <ResearchArea />
     </main>
   );
 };

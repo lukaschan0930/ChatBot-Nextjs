@@ -159,6 +159,10 @@ function chatModel() {
                 },
                 totalTime: {
                     type: Number,
+                },
+                chatType: {
+                    type: Number,
+                    required: true
                 }
             }]
         }],

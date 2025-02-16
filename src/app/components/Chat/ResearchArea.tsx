@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useAtom } from 'jotai';
 import { researchLogAtom, researchStepAtom } from '@/app/lib/store';
 import StepContent from '@mui/material/StepContent';
+import Image from 'next/image';
 
 const QontoConnector = styled(StepConnector)(({ theme }) => ({
     [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -90,7 +91,7 @@ function QontoStepIcon(props: StepIconProps) {
     );
 }
 
-const steps = ['Select campaign settings', 'Create an ad group', 'Create an ad'];
+const researchTabs = ['Activities', 'Resources'];
 
 const CustomStepContent = styled(StepContent)({
     borderLeftWidth: 3,
@@ -104,54 +105,93 @@ const ResearchArea = () => {
     const [researchStep,] = useAtom(researchStepAtom);
 
     return (
-        <div className="absolute right-[50px] w-[300px] h-[600px] bg-white rounded-md px-4 overflow-y-auto">
-            <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} aria-label="deep-research-tabs" className="w-full">
-                <Tab label="Activity" className="w-1/2" />
-                <Tab label="Sources" className="w-1/2" />
-            </Tabs>
-            <div
-                role="tabpanel"
-                hidden={tabValue !== 0}
-                id={`tabpanel-activity`}
-                aria-labelledby={`tab-activity`}
-                className='py-3'
-            >
-                <Stepper activeStep={researchStep} connector={<QontoConnector />} orientation="vertical">
-                    {researchLog.map((step, index) => (
-                        <Step key={index}>
-                            <StepLabel StepIconComponent={QontoStepIcon}>{step.title}</StepLabel>
-                            <CustomStepContent>
-                                {
-                                    step.researchSteps.map((researchStep, index) => (
-                                        <div key={index}>{researchStep}</div>
-                                    ))
-                                }
-                            </CustomStepContent>
-                        </Step>
-                    ))}
-                </Stepper>
-            </div>
-            <div
-                role="tabpanel"
-                hidden={tabValue !== 1}
-                id={`tabpanel-sources`}
-                aria-labelledby={`tab-sources`}
-            >
-                <div className="p-3">
-                    <h2>Sources</h2>
-                    <div className="p-3">
-                        {researchLog.map((step, index) => (
-                            <div key={index}>
-                                <div>{
-                                    step.sources.map((source, index) => (
-                                        source.image ? <div key={index}>
-                                            <img src={source.image} alt={source.url} width={100} height={100} />
-                                        </div> : <div key={index}>
-                                            <h3>{source.url}</h3>
-                                        </div>
-                                    ))
-                                }</div>
+        <div className="hidden xl:block pr-[19px] pt-[108px] h-screen pb-4">
+            <div className='xl:w-[370px] rounded-md border border-primaryBorder h-full py-7 px-6 overflow-y-auto'>
+                <div className='flex items-center'>
+                    {
+                        researchTabs.map((tab, index) => (
+                            <div
+                                key={index}
+                                className={`px-4 py-1 border-b-2 cursor-pointer ${tabValue === index ? "border-mainFont" : "border-transparent"}`}
+                                onClick={() => setTabValue(index)}
+                            >
+                                <div className={`${tabValue === index ? 'text-mainFont' : 'text-subButtonFont'}`}>{tab}</div>
                             </div>
+                        ))
+                    }
+                </div>
+                <div
+                    role="tabpanel"
+                    hidden={tabValue !== 0}
+                    id={`tabpanel-activity`}
+                    aria-labelledby={`tab-activity`}
+                    className='py-3'
+                >
+                    <div className="flex flex-col">
+                        {researchLog.map((step, index) => (
+                            <div key={index} className="flex relative min-h-[80px] items-start py-2">
+                                <div
+                                    className={`absolute flex items-center justify-center w-[10px] h-[10px] rounded-full text-white text-sm mt-2
+              ${index < researchStep ? 'bg-white' : index === researchStep ? 'bg-white shadow-lg animate-sparkle' : 'bg-subButtonFont'}`}
+                                    style={index === researchStep ? { animation: 'sparkle 1s infinite' } : {}}
+                                >
+                                </div>
+                                {
+                                    index < researchLog.length - 1 &&
+                                    <div className={`absolute h-[calc(100%-7px)] w-[2px] mt-[15px] left-[4px] ${index < researchStep ? 'bg-white' : 'bg-subButtonFont'}`} />
+                                }
+                                <div className="flex flex-col ml-6">
+                                    <div>{step.title}</div>
+                                    {
+                                        index === researchStep ?
+                                            <div className="ml-1 flex items-center mt-1">
+                                                <Image
+                                                    src="/image/chat_logo.svg"
+                                                    alt="chat loading"
+                                                    className={`w-8 h-auto ${step.researchSteps[step.researchSteps.length - 1].type === 1 ? 'rotate' : ''}`}
+                                                    width={100}
+                                                    height={100}
+                                                />
+                                                <span className="ml-2">{step.researchSteps[step.researchSteps.length - 1].researchStep}</span>
+                                            </div>
+                                            :
+                                            index < researchStep &&
+                                            <div className="ml-1 flex items-center mt-1">
+                                                <Image
+                                                    src="/image/chat_logo.svg"
+                                                    alt="chat loading"
+                                                    className="w-8 h-auto"
+                                                    width={100}
+                                                    height={100}
+                                                />
+                                                <span className="ml-2">Completed</span>
+                                            </div>
+                                    }
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div
+                    role="tabpanel"
+                    hidden={tabValue !== 1}
+                    id={`tabpanel-sources`}
+                    aria-labelledby={`tab-sources`}
+                    className='py-3'
+                >
+                    <div className="flex flex-col gap-3">
+                        {researchLog.map((step, index) => (
+                            step.sources.map((source, index) => (
+                                <div 
+                                    key={index} className='rounded-md bg-[#FFFFFF08] py-4 px-6 flex flex-col cursor-pointer'
+                                    onClick={() => window.open(source.url, '_blank')}
+                                >
+                                    <div className='text-mainFont text-sm'>{source.title}</div>
+                                    <div className='flex flex-col gap-4 text-subButtonFont text-sm ml-3'>
+                                        <div>{`${source.url && `${source.url.substring(0, 20)}...`}`}</div>
+                                    </div>
+                                </div>
+                            ))
                         ))}
                     </div>
                 </div>

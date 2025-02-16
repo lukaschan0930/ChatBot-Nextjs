@@ -8,13 +8,16 @@ import db from "@/app/lib/database/db";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
-    const { prompt, sessionId, chatLog, reGenerate, learnings } = await request.json();
+    const { prompt, sessionId, chatLog, reGenerate, learnings, time } = await request.json();
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
     const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
 
     const timestamp = Date.now()
+    const chatType = learnings.length > 0 ? 1 : 0; // Determine chatType based on learnings length
+    console.log("chatType", chatType);
+
     const [session_item] = await db.Chat.aggregate([
         { $match: { email: session?.user?.email as string } },
         {
@@ -46,11 +49,19 @@ export async function POST(request: NextRequest) {
     ], { allowDiskUse: true })
     const sessions = session_item?.session ?? []
 
-    const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
-    const index = timestamps.length < 25 ? timestamps.length - 1 : 24
-    const last_timestamp = timestamps[index]
-    if (index >= 24 && timestamp - last_timestamp < 6 * 60 * 60 * 1000) {
-        return new NextResponse("Rate limited. Try again later.", { status: 429 })
+    const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.filter((chat) => chat.chatType === chatType).map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
+    if (chatType == 0) {
+        const index = timestamps.length < 25 ? timestamps.length - 1 : 24
+        const last_timestamp = timestamps[index]
+        if (index >= 24 && timestamp - last_timestamp < 6 * 60 * 60 * 1000) {
+            return new NextResponse("Rate limited. Try again later.", { status: 429 })
+        }
+    } else {
+        const index = timestamps.length < 6 ? timestamps.length - 1 : 5
+        const last_timestamp = timestamps[index]
+        if (index >= 5 && timestamp - last_timestamp < 30 * 24 * 60 * 60 * 1000) {
+            return new NextResponse("Deep Research Rate limited. Try again later.", { status: 429 })
+        }
     }
 
     const history = chatLog
@@ -78,7 +89,10 @@ export async function POST(request: NextRequest) {
           .join('\n'),
         150_000,
       );
-    const learningsPrompt = `Given the following prompt from the user, write a final report on the topic using the learnings from research. Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:\n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>`;
+    const learningsPrompt = `Given the following prompt from the user, write a final report on the topic using the learnings from research. 
+    Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:
+    \n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>
+    Not using words "Final Report:" or "Final Report" in the response title.`;
 
     try {
         const stream = await client.chat.completions.create({
@@ -97,6 +111,7 @@ export async function POST(request: NextRequest) {
         });
         const encoder = new TextEncoder();
         let fullResponse = "";
+        console.log("chatType", chatType);
 
         const streamResponse = new ReadableStream({
             async start(controller) {
@@ -127,7 +142,7 @@ export async function POST(request: NextRequest) {
                 }
                 totalTime = (Date.now() - startTime) / 1000;
                 outputTime = totalTime - inputTime - queueTime;
-                controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime })));
+                controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time })));
                 controller.close();
 
                 try {
@@ -146,7 +161,8 @@ export async function POST(request: NextRequest) {
                                         outputToken: outputToken,
                                         inputTime: inputTime,
                                         outputTime: outputTime,
-                                        totalTime: totalTime
+                                        totalTime: totalTime + time,
+                                        chatType: chatType
                                     };
                                 } else {
                                     // Should there be no messages, push the new chat instead.
@@ -158,7 +174,7 @@ export async function POST(request: NextRequest) {
                                         outputToken: outputToken,
                                         inputTime: inputTime,
                                         outputTime: outputTime,
-                                        totalTime: totalTime
+                                        totalTime: totalTime + time
                                     });
                                 }
                             } else {
@@ -171,7 +187,7 @@ export async function POST(request: NextRequest) {
                                     outputToken: outputToken,
                                     inputTime: inputTime,
                                     outputTime: outputTime,
-                                    totalTime: totalTime
+                                    totalTime: totalTime + time
                                 });
                             }
                             await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
@@ -188,7 +204,8 @@ export async function POST(request: NextRequest) {
                                     outputToken: outputToken,
                                     inputTime: inputTime,
                                     outputTime: outputTime,
-                                    totalTime: totalTime
+                                    totalTime: totalTime + time,
+                                    chatType: chatType
                                 }]
                             };
 
@@ -217,7 +234,8 @@ export async function POST(request: NextRequest) {
                                 outputToken: outputToken,
                                 inputTime: inputTime,
                                 outputTime: outputTime,
-                                totalTime: totalTime
+                                totalTime: totalTime + time,
+                                chatType: chatType
                             }]
                         };
                         const newHistory = {

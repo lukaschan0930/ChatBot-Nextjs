@@ -378,3 +378,12 @@ button:focus-visible {
   height: 100%;
   /* Ensure the editor content fills the container */
 }
+
+@keyframes sparkle {
+  0%, 100% {
+      box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.7);
+  }
+  50% {
+      box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5);
+  }
+}

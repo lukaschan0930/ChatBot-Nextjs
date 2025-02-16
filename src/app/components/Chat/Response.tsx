@@ -92,6 +92,7 @@ const Response = (
       const chatHistory = chatLog.slice(-6, -1);
       setChatLog((prevChatLog) => {
         const newLog = [...prevChatLog];
+        const chatType = chatLog[chatLog.length - 1].chatType;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
@@ -100,7 +101,8 @@ const Response = (
           outputToken: 0,
           inputTime: 0,
           outputTime: 0,
-          totalTime: 0
+          totalTime: 0,
+          chatType: chatType
         };
         return newLog;
       });
@@ -141,7 +143,8 @@ const Response = (
               outputToken: outputToken,
               inputTime: inputTime,
               outputTime: outputTime,
-              totalTime: totalTime
+              totalTime: totalTime,
+              chatType: chatLog[chatLog.length - 1].chatType
             };
             return newLog;
           });
@@ -160,7 +163,8 @@ const Response = (
               outputToken: outputToken,
               inputTime: inputTime,
               outputTime: outputTime,
-              totalTime: totalTime
+              totalTime: totalTime,
+              chatType: newLog[newLog.length - 1].chatType
             };
             return newLog;
           });
@@ -179,7 +183,8 @@ const Response = (
           outputToken: 0,
           inputTime: 0,
           outputTime: 0,
-          totalTime: 0
+          totalTime: 0,
+          chatType: newLog[newLog.length - 1].chatType
         };
         return newLog;
       });

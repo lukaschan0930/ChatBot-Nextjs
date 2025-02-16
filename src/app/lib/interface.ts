@@ -69,6 +69,7 @@ export interface Chat {
     outputToken?: number;
     inputTime?: number;
     outputTime?: number;
+    chatType: number;
 }
 
 export interface Session {
@@ -121,6 +122,7 @@ export interface ChatLog {
     inputTime?: number;
     outputTime?: number;
     totalTime?: number;
+    chatType: number;
 }
 
 export interface IChangeLog {
@@ -137,13 +139,19 @@ export interface IChatCompletionChoice {
 
 export interface IResearchLog {
     title: string;
-    researchSteps: string[];
+    researchSteps: IResearchStep[];
     sources: ISource[];
     learnings: string[];
+}
+
+export interface IResearchStep {
+    type: number;
+    researchStep: string;
 }
 
 export interface ISource {
     url: string;
     content?: string;
     image: string;
+    title: string;
 }

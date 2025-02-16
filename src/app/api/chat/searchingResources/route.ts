@@ -23,12 +23,13 @@ export async function POST(request: NextRequest) {
             limit: 2,
             scrapeOptions: { formats: ['markdown'] },
         });
+        const titles = compact(result.data.map(item => item.metadata?.title));
         const newUrls = compact(result.data.map(item => item.url));
         const contents = compact(result.data.map(item => item.markdown)).map(
             content => trimPrompt(content, 25_000),
         );
         const images = compact(result.data.map(item => item.metadata?.ogImage));
-        return { urls: newUrls, contents, images };
+        return { urls: newUrls, contents, images, titles };
     }));
     return NextResponse.json({ results });
 }

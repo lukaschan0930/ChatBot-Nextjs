@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
         ], { allowDiskUse: true })
         const sessions = session_item?.session ?? []
 
-        const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
-        const index = timestamps.length < 25 ? timestamps.length - 1 : 24
+        const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.filter((chat) => chat.chatType == 1).map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
+        const index = timestamps.length < 6 ? timestamps.length - 1 : 5
         const last_timestamp = timestamps[index]
-        if (index >= 24 && timestamp - last_timestamp < 6 * 60 * 60 * 1000) {
-            return NextResponse.json({ error: "Rate limited. Try again later." }, { status: 429 })
+        if (index >= 5 && timestamp - last_timestamp < 30 * 24 * 60 * 60 * 1000) {
+            return NextResponse.json({ error: "Deep Research Rate limited. Try again later." }, { status: 429 })
         }
 
         const history = chatLog

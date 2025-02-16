@@ -123,3 +123,18 @@ export const logCategory = [
         label: "Improvements",
     }
 ]
+
+export const ChatTypeItems = [
+    {
+        id: "normal",
+        label: "Normal Chat",
+        image: "/image/Edith_Logo.png"
+    },
+    {
+        id: "deep",
+        label: "Pro (Deep Search)",
+        image: "/image/pro.png"
+    },
+]
+
+

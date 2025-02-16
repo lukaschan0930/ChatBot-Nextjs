@@ -3,10 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
 import { chatHistoryAtom, isStartChatAtom, researchStepAtom } from "@/app/lib/store";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom, chatTypeAtom, progressAtom } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 import { IResearchLog } from "@/app/lib/interface";
+import ChatTypeMenu from "@/app/components/Chat/ChatTypeMenu";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
@@ -19,6 +20,8 @@ const InputBox = () => {
   const [isStreaming, setIsStreaming] = useAtom(isStreamingAtom);
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
+  const [chatType,] = useAtom(chatTypeAtom);
+  const [, setProgress] = useAtom(progressAtom);
   // const [isOpen, setIsOpen] = useState<boolean>(false);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
 
@@ -79,8 +82,12 @@ const InputBox = () => {
     setIsStreaming(true);
     setIsStartChat(true);
     try {
-      // await sendMessage(inputPrompt, []);
-      await generateResearch(inputPrompt);
+      if (chatType === 0) {
+        await sendMessage(inputPrompt, []);
+      } else {
+        setProgress(0);
+        await generateResearch(inputPrompt);
+      }
     } finally {
       setIsStreaming(false);
       setInputPrompt("");
@@ -102,7 +109,7 @@ const InputBox = () => {
     }
   };
 
-  const sendMessage = async (prompt: string, learnings: string[]) => {
+  const sendMessage = async (prompt: string, learnings: string[], time = 0) => {
     let requestSessionId = sessionId;
     if (!requestSessionId) {
       const newId = generateSessionId(
@@ -115,20 +122,24 @@ const InputBox = () => {
 
     try {
       // Add an initial empty chat log entry for the prompt.
-      setChatLog((prevChatLog) => {
-        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
-        newLog.push({
-          prompt,
-          response: "",
-          timestamp: Date.now().toString()
+      if (learnings.length == 0) {
+        setChatLog((prevChatLog) => {
+          const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+          newLog.push({
+            prompt,
+            response: "",
+            timestamp: Date.now().toString(),
+            chatType: chatType
+          });
+          return newLog;
         });
-        return newLog;
-      });
+      }
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: requestSessionId, chatLog: chatLog.slice(-5), reGenerate: false, learnings }),
+        body: JSON.stringify({ prompt, sessionId: requestSessionId, chatLog: chatLog.slice(-5), reGenerate: false, learnings, time }),
       });
+      setProgress(100);
 
       if (!res.body) {
         console.error("No response body");
@@ -162,7 +173,8 @@ const InputBox = () => {
                 inputToken: inputToken,
                 outputToken: outputToken,
                 inputTime: inputTime,
-                outputTime: outputTime
+                outputTime: outputTime,
+                chatType: chatType
               };
             } else {
               newLog.push({
@@ -172,7 +184,8 @@ const InputBox = () => {
                 inputToken: inputToken,
                 outputToken: outputToken,
                 inputTime: inputTime,
-                outputTime: outputTime
+                outputTime: outputTime,
+                chatType: chatType
               });
             }
             return newLog;
@@ -192,7 +205,8 @@ const InputBox = () => {
                 inputToken: inputToken,
                 outputToken: outputToken,
                 inputTime: inputTime,
-                outputTime: outputTime
+                outputTime: outputTime,
+                chatType: chatType
               };
             } else {
               newLog.push({
@@ -202,7 +216,8 @@ const InputBox = () => {
                 inputToken: inputToken,
                 outputToken: outputToken,
                 inputTime: inputTime,
-                outputTime: outputTime
+                outputTime: outputTime,
+                chatType: chatType
               });
             }
             return newLog;
@@ -227,7 +242,8 @@ const InputBox = () => {
             inputToken: 0,
             outputToken: 0,
             inputTime: 0,
-            outputTime: 0
+            outputTime: 0,
+            chatType: chatType
           };
         } else {
           newLog.push({
@@ -237,7 +253,8 @@ const InputBox = () => {
             inputToken: 0,
             outputToken: 0,
             inputTime: 0,
-            outputTime: 0
+            outputTime: 0,
+            chatType: chatType
           });
         }
         return newLog;
@@ -250,24 +267,31 @@ const InputBox = () => {
   };
 
   const generateResearch = async (prompt: string) => {
+    let time = 0;
+    const startTime = Date.now();
     try {
       setChatLog((prevChatLog) => {
         const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
         newLog.push({
           prompt,
           response: "",
-          timestamp: Date.now().toString()
+          timestamp: Date.now().toString(),
+          chatType: chatType
         });
         return newLog;
       });
+      setProgress(0);
+      setResearchLog([]);
+      setResearchStep(0);
       const res = await fetch("/api/chat/generateResearchSteps", {
         method: "POST",
         body: JSON.stringify({ prompt, chatLog: chatLog.slice(-5) }),
       });
       const data = await res.json();
       const steps = JSON.parse(data.steps);
-
+      const totalProgress = steps.steps.length * 2;
       const newResearchLog = [];
+      setProgress(10);
 
       for (const step of steps.steps) {
         newResearchLog.push({
@@ -287,7 +311,8 @@ const InputBox = () => {
 
       // Create a new log array based on the current state
       setResearchLog(newResearchLog);
-      await handleResearchStep(0, 0, newResearchLog);
+      time = Date.now() - startTime;
+      await handleResearchStep(0, 0, newResearchLog, totalProgress, time);
     } catch (error) {
       console.error(error);
       toast({
@@ -304,7 +329,8 @@ const InputBox = () => {
             inputToken: 0,
             outputToken: 0,
             inputTime: 0,
-            outputTime: 0
+            outputTime: 0,
+            chatType: chatType
           };
         } else {
           newLog.push({
@@ -314,7 +340,8 @@ const InputBox = () => {
             inputToken: 0,
             outputToken: 0,
             inputTime: 0,
-            outputTime: 0
+            outputTime: 0,
+            chatType: chatType
           });
         }
         return newLog;
@@ -322,29 +349,44 @@ const InputBox = () => {
     }
   };
 
-  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[]) => {
+  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[], totalProgress: number, time: number) => {
     try {
       if (researchStepIndex == log.length - 1) {
         const learnings = log.flatMap((step) => step.learnings.map((learning) => learning));
-        await sendMessage(inputPrompt, learnings);
+        log[researchStepIndex].researchSteps.push({
+          type: 1,
+          researchStep: "Compiling research result..."
+        });
+        await sendMessage(inputPrompt, learnings, time);
+        setResearchStep(researchStepIndex + 1);
       } else {
         console.log(researchStepIndex, stepIndex);
         const researchStep = log[researchStepIndex];
-        log[researchStepIndex].researchSteps.push(
-          stepIndex == 0 ? "Searching resources..." : "Reading resources...",
-        );
+        log[researchStepIndex].researchSteps.push({
+          type: 1,
+          researchStep: stepIndex == 0 ? "Searching resources..." : "Reading resources..."
+        });
         setResearchLog((prevLog) => {
           const newLog = [...prevLog];
           newLog[researchStepIndex].researchSteps[stepIndex] =
-            stepIndex == 0 ? "Searching resources..." : "Reading resources...";
+            stepIndex == 0 ? {
+              type: 1,
+              researchStep: "Searching resources..."
+            } : {
+              type: 1,
+              researchStep: "Reading resources..."
+            };
           return newLog;
         });
         if (stepIndex == 0) {
+          const startTime = Date.now();
           const res = await fetch("/api/chat/searchingResources", {
             method: "POST",
             body: JSON.stringify({ title: researchStep.title }),
           });
           const data = await res.json();
+          time += Date.now() - startTime;
+          setProgress(Math.floor((researchStepIndex * 2 + 1) / totalProgress * 80) + 10);
           console.log(data);
           log[researchStepIndex].sources = data.results.flatMap((result: { urls: string[], contents: string[], images: string[] }) =>
             result.urls.map((url: string, index: number) => ({
@@ -358,10 +400,12 @@ const InputBox = () => {
               if (index === researchStepIndex) {
                 return {
                   ...logItem,
-                  sources: data.results.flatMap((result: { urls: string[], contents: string[], images: string[] }) =>
+                  sources: data.results.flatMap((result: { urls: string[], contents: string[], images: string[], titles: string[] }) =>
                     result.urls.map((url: string, index: number) => ({
                       url,
-                      image: result.images[index]
+                      image: result.images[index],
+                      title: result.titles[index],
+                      content: result.contents[index]
                     }))
                   )
                 };
@@ -370,25 +414,36 @@ const InputBox = () => {
             });
             return newLog;
           });
-          await handleResearchStep(researchStepIndex, 1, log);
+          await handleResearchStep(researchStepIndex, 1, log, totalProgress, time);
         } else {
+          const startTime = Date.now();
           const res = await fetch("/api/chat/analyzingResources", {
             method: "POST",
             body: JSON.stringify({ sources: researchStep.sources, title: researchStep.title }),
           });
           const data = await res.json();
+          time += Date.now() - startTime;
           log[researchStepIndex].learnings = data.learningDatas;
           setResearchLog((prevLog) => {
             const newLog = [...prevLog];
             newLog[researchStepIndex].learnings = data.learningDatas;
             return newLog;
           });
+          setProgress(Math.floor((researchStepIndex * 2 + 2) / totalProgress * 80) + 10);
           setResearchStep(researchStepIndex + 1);
-          await handleResearchStep(researchStepIndex + 1, 0, log);
+          await handleResearchStep(researchStepIndex + 1, 0, log, totalProgress, time);
         }
       }
     } catch (error) {
       console.error(error);
+      setResearchLog((prevLog) => {
+        const newLog = [...prevLog];
+        newLog[researchStepIndex].researchSteps.push({
+          type: 0,
+          researchStep: "Failed to get response from server."
+        });
+        return newLog;
+      });
       throw error;
     }
   };
@@ -396,12 +451,13 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg mt-[10px] p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[800px]`}
+        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg mt-[10px] p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[700px]`}
     >
       <div
         className={`${messageOver ? "order-0 basis-full" : "order-1"
-          } flex-grow`}
+          } flex-grow flex gap-3`}
       >
+        <ChatTypeMenu />
         <textarea
           ref={textareaRef}
           className={`${isStreaming ? '' : "text-mainFont"} bg-transparent pt-2 border-none w-full h-[36px] font-semibold text-base placeholder:text-subButtonFont overflow-y-hidden outline-none resize-none`}
