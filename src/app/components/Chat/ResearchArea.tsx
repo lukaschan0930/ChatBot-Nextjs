@@ -13,7 +13,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { useState } from 'react';
 import { useAtom } from 'jotai';
-import { researchLogAtom, researchStepAtom } from '@/app/lib/store';
+import { researchLogAtom, researchStepAtom, chatTypeAtom } from '@/app/lib/store';
 import StepContent from '@mui/material/StepContent';
 import Image from 'next/image';
 
@@ -103,9 +103,10 @@ const ResearchArea = () => {
     const [tabValue, setTabValue] = useState(0);
     const [researchLog,] = useAtom(researchLogAtom);
     const [researchStep,] = useAtom(researchStepAtom);
+    const [chatType,] = useAtom(chatTypeAtom);
 
     return (
-        <div className="hidden xl:block pr-[19px] pt-[108px] h-screen pb-4">
+        <div className={`${chatType === 0 ? 'hidden' : 'hidden xl:block'} pr-[19px] pt-[108px] h-screen pb-4`}>
             <div className='xl:w-[370px] rounded-md border border-primaryBorder h-full py-7 px-6 overflow-y-auto'>
                 <div className='flex items-center'>
                     {

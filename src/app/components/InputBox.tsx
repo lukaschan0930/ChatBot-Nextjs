@@ -388,10 +388,12 @@ const InputBox = () => {
           time += Date.now() - startTime;
           setProgress(Math.floor((researchStepIndex * 2 + 1) / totalProgress * 80) + 10);
           console.log(data);
-          log[researchStepIndex].sources = data.results.flatMap((result: { urls: string[], contents: string[], images: string[] }) =>
+          log[researchStepIndex].sources = data.results.flatMap((result: { urls: string[], contents: string[], images: string[], titles: string[] }) =>
             result.urls.map((url: string, index: number) => ({
               url,
-              image: result.images[index]
+              image: result.images[index],
+              title: result.titles[index],
+              content: result.contents[index]
             }))
           );
           setResearchLog((prevLog) => {

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { sources, title } = await request.json();
     const learnings = await generateLearnings(sources, title);
     const learningDatas = learnings.learnings.length > 0 ? learnings.learnings : sources.map((source: ISource) => source.content);
-    console.log(learningDatas);
+    console.log("learningDatas", learningDatas);
     return NextResponse.json({ learningDatas });
 }
 
@@ -40,5 +40,7 @@ const generateLearnings = async (sources: ISource[], title: string) => {
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
     });
+
+    console.log("response", response.choices[0].message.content);
     return JSON.parse(response.choices[0].message.content || "{}");
 }
