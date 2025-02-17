@@ -68,6 +68,7 @@ const ChangeLog = () => {
                                 (item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                                  item.article.toLowerCase().includes(searchQuery.toLowerCase()))
                             )
+                            .sort((a: IChangeLog, b: IChangeLog) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                             .map((item: IChangeLog, index: number) => (
                                 <div key={index} className="flex flex-col gap-4 border-b-2 border-secondaryBorder pb-5 mt-[40px]">
                                     <div className="flex items-center gap-5">
@@ -86,7 +87,6 @@ const ChangeLog = () => {
                 }
             </div>
         </div>
-
     )
 }
 
