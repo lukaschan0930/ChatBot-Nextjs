@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     const sessions = session_item?.session ?? []
 
     const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.filter((chat) => chat.chatType === chatType).map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
+    console.log("timestamps", timestamps);
     if (chatType == 0) {
         const index = timestamps.length < 25 ? timestamps.length - 1 : 24
         const last_timestamp = timestamps[index]

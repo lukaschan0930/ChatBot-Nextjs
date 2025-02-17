@@ -8,10 +8,15 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
     const { sources, title } = await request.json();
-    const learnings = await generateLearnings(sources, title);
-    const learningDatas = learnings.learnings.length > 0 ? learnings.learnings : sources.map((source: ISource) => source.content);
-    console.log("learningDatas", learningDatas);
-    return NextResponse.json({ learningDatas });
+    try {
+        const learnings = await generateLearnings(sources, title);
+        const learningDatas = learnings.learnings.length > 0 ? learnings.learnings : sources.map((source: ISource) => source.content);
+        console.log("learningDatas", learningDatas);
+        return NextResponse.json({ learningDatas });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
 }
 
 const generateLearnings = async (sources: ISource[], title: string) => {
