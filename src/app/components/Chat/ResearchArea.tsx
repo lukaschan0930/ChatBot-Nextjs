@@ -13,7 +13,7 @@ const ResearchArea = () => {
 
     return (
         <div className={`${isResearchAreaVisible && 'xl:block'} hidden pr-[19px] pt-[108px] h-screen pb-4`}>
-            <div className='xl:w-[370px] rounded-md border-2 border-primaryBorder h-full py-7 px-6 overflow-y-auto'>
+            <div className='xl:w-[370px] rounded-md border border-secondaryBorder bg-inputBg h-full py-7 px-6 overflow-y-auto'>
                 <div className='flex items-center'>
                     {
                         researchTabs.map((tab, index) => (

@@ -92,6 +92,7 @@ const InputBox = () => {
       requestSessionId = newId;
     }
     try {
+      setInputPrompt("");
       if (chatType === 0) {
         await sendMessage(inputPrompt, [], requestSessionId);
       } else {
