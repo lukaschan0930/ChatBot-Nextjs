@@ -15,43 +15,31 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const timestamp = Date.now()
-        const [session_item] = await db.Chat.aggregate([
-            { $match: { email: session?.user?.email as string } },
-            {
-                $project: {
-                    _id: 1,
-                    email: 1,
-                    session: {
-                        $map: {
-                            input: "$session",
-                            as: "s",
-                            in: {
-                                chats: {
-                                    $sortArray: {
-                                        input: {
-                                            $map: {
-                                                input: "$$s.chats",
-                                                as: "chat",
-                                                in: "$$chat.timestamp"
-                                            }
-                                        },
-                                        sortBy: -1  // 1 for ascending, -1 for descending
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        ], { allowDiskUse: true })
-        const sessions = session_item?.session ?? []
+        const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-        const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.filter((chat) => chat.chatType == 1).map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
-        const index = timestamps.length < 6 ? timestamps.length - 1 : 5
-        const last_timestamp = timestamps[index]
-        if (index >= 5 && timestamp - last_timestamp < 30 * 24 * 60 * 60 * 1000) {
-            return NextResponse.json({ error: "Deep Research Rate limited. Try again later." }, { status: 429 })
+        const recentChatType1Timestamps = await db.Chat.aggregate([
+            { $match: { email: session?.user?.email as string } },
+            { $unwind: "$session" },
+            { $unwind: "$session.chats" },
+            {
+                $match: {
+                    "session.chats.chatType": 1
+                }
+            },
+            { $sort: { "session.chats.timestamp": -1 } },
+            { $limit: 5 },
+            { $project: { "session.chats.timestamp": 1 } }
+        ]);
+
+        if (recentChatType1Timestamps.length === 5) {
+            const oldestTimestamp = recentChatType1Timestamps[4].session.chats.timestamp;
+            if (oldestTimestamp > oneMonthAgo) {
+                const daysUntilAvailable = Math.ceil((oldestTimestamp + 30 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000));
+                return NextResponse.json({
+                    error: "Monthly limit for chat type 1 reached.",
+                    availableInDays: daysUntilAvailable
+                }, { status: 429 });
+            }
         }
 
         const history = chatLog

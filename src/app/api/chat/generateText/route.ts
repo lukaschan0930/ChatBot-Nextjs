@@ -14,54 +14,30 @@ export async function POST(request: NextRequest) {
     }
     const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
 
-    const timestamp = Date.now()
     const chatType = learnings.length > 0 ? 1 : 0; // Determine chatType based on learnings length
-    console.log("chatType", chatType);
 
-    const [session_item] = await db.Chat.aggregate([
+    const recentChatType1Timestamps = await db.Chat.aggregate([
         { $match: { email: session?.user?.email as string } },
+        { $unwind: "$session" },
+        { $unwind: "$session.chats" },
         {
-            $project: {
-                _id: 1,
-                email: 1,
-                session: {
-                    $map: {
-                        input: "$session",
-                        as: "s",
-                        in: {
-                            chats: {
-                                $sortArray: {
-                                    input: {
-                                        $map: {
-                                            input: "$$s.chats",
-                                            as: "chat",
-                                            in: "$$chat.timestamp"
-                                        }
-                                    },
-                                    sortBy: -1  // 1 for ascending, -1 for descending
-                                }
-                            }
-                        }
-                    }
-                }
+            $match: {
+                "session.chats.chatType": 0
             }
-        }
-    ], { allowDiskUse: true })
-    const sessions = session_item?.session ?? []
+        },
+        { $sort: { "session.chats.timestamp": -1 } },
+        { $limit: 24 },
+        { $project: { "session.chats.timestamp": 1 } }
+    ]);
 
-    const timestamps = sessions.reduce((prev: number[], cur: ChatHistory) => ([...prev, ...cur.chats.filter((chat) => chat.chatType === chatType).map((chat) => chat)]), []).sort((a: number, b: number) => b - a)
-    console.log("timestamps", timestamps);
-    if (chatType == 0) {
-        const index = timestamps.length < 25 ? timestamps.length - 1 : 24
-        const last_timestamp = timestamps[index]
-        if (index >= 24 && timestamp - last_timestamp < 6 * 60 * 60 * 1000) {
-            return new NextResponse("Rate limited. Try again later.", { status: 429 })
-        }
-    } else {
-        const index = timestamps.length < 6 ? timestamps.length - 1 : 5
-        const last_timestamp = timestamps[index]
-        if (index >= 5 && timestamp - last_timestamp < 30 * 24 * 60 * 60 * 1000) {
-            return new NextResponse("Deep Research Rate limited. Try again later.", { status: 429 })
+    const oneHourAgo = Date.now() - 6 * 60 * 60 * 1000;
+
+    if (recentChatType1Timestamps.length === 24) {
+        const oldestTimestamp = recentChatType1Timestamps[23].session.chats.timestamp;
+        if (oldestTimestamp > oneHourAgo) {
+            return NextResponse.json({
+                error: "Rate Limit Reached.",
+            }, { status: 429 });
         }
     }
 
@@ -175,7 +151,8 @@ export async function POST(request: NextRequest) {
                                         outputToken: outputToken,
                                         inputTime: inputTime,
                                         outputTime: outputTime,
-                                        totalTime: totalTime + time / 1000
+                                        totalTime: totalTime + time / 1000,
+                                        chatType: chatType
                                     });
                                 }
                             } else {
@@ -188,7 +165,8 @@ export async function POST(request: NextRequest) {
                                     outputToken: outputToken,
                                     inputTime: inputTime,
                                     outputTime: outputTime,
-                                    totalTime: totalTime + time
+                                    totalTime: totalTime + time,
+                                    chatType: chatType
                                 });
                             }
                             await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);

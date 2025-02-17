@@ -176,7 +176,6 @@ function chatModel() {
         timestamps: true
     });
 
-
     return mongoose.models.Chat || mongoose.model('Chat', ChatSchema);
 }
 

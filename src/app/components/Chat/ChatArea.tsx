@@ -54,7 +54,7 @@ const ChatArea = () => {
                 </div>
                 </>
               }
-              {chatLog.length - 1 === id && activeChatId === sessionId && <AccordionResearchArea />}
+              {chatLog.length - 1 === id && activeChatId === sessionId && chatType == 1 && <AccordionResearchArea />}
               {
                 chat.response &&
                 <Response response={chat.response} timestamp={chat.timestamp} last={chatLog.length - 1 === id} inputToken={chat.inputToken} outputToken={chat.outputToken} inputTime={chat.inputTime} outputTime={chat.outputTime} totalTime={chat.totalTime} chatType={chat.chatType} />

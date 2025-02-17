@@ -304,6 +304,41 @@ const InputBox = () => {
         method: "POST",
         body: JSON.stringify({ prompt, chatLog: chatLog.slice(-5) }),
       });
+      if (res.status == 429) {
+        const msg = await res.json();
+        setChatLog((prevChatLog) => {
+          const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+          if (newLog.length > 0) {
+            newLog[newLog.length - 1] = {
+              prompt,
+              response: "Failed to get response from server.",
+              timestamp: newLog[newLog.length - 1].timestamp,
+              inputToken: 0,
+              outputToken: 0,
+              inputTime: 0,
+              outputTime: 0,
+              chatType: chatType
+            };
+          } else {
+            newLog.push({
+              prompt,
+              response: "Failed to get response from server.",
+              timestamp: Date.now().toString(),
+              inputToken: 0,
+              outputToken: 0,
+              inputTime: 0,
+              outputTime: 0,
+              chatType: chatType
+            });
+          }
+          return newLog;
+        });
+        toast({
+          variant: "destructive",
+          title: `You've already used your 5 free credits per month. Please try again after ${msg.availableInDays} days.`
+        });
+        return;
+      }
       const data = await res.json();
       const steps = JSON.parse(data.steps);
       const totalProgress = steps.steps.length * 2;
