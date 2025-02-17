@@ -1,13 +1,12 @@
 import { FiCopy, FiRefreshCw } from "react-icons/fi";
 import React from "react";
 import { CodeBlock } from "react-code-block";
-import moment from 'moment'
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom } from "@/app/lib/store";
-import AnalysisMenu from "../headers/AnalysisMenu";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom, activeChatIdAtom, isResearchAreaVisibleAtom, researchLogAtom, researchStepAtom, progressAtom } from "@/app/lib/store";
 import { processChunkedString } from "@/app/lib/utils";
+import { IResearchLog } from "@/app/lib/interface";
 
 interface MessagePart {
   type: "text" | "code";
@@ -17,21 +16,37 @@ interface MessagePart {
 }
 
 const Response = (
-  { 
-    response, 
-    timestamp, 
-    last, 
-    inputToken = 0, 
-    outputToken = 0, 
-    inputTime = 0, 
+  {
+    response,
+    timestamp,
+    last,
+    inputToken = 0,
+    outputToken = 0,
+    inputTime = 0,
     outputTime = 0,
-    totalTime = 0
-  }: 
-  { response: string, timestamp: string | null, last: boolean, inputToken?: number, outputToken?: number, inputTime?: number, outputTime?: number, totalTime?: number }
+    totalTime = 0,
+    chatType
+  }:
+    {
+      response: string,
+      timestamp: string | null,
+      last: boolean,
+      inputToken?: number,
+      outputToken?: number,
+      inputTime?: number,
+      outputTime?: number,
+      totalTime?: number,
+      chatType: number
+    }
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
   const [, setIsStreaming] = useAtom(isStreamingAtom);
+  const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
+  const [, setActiveChatId] = useAtom(activeChatIdAtom);
+  const [, setProgress] = useAtom(progressAtom);
+  const [, setResearchLog] = useAtom(researchLogAtom);
+  const [, setResearchStep] = useAtom(researchStepAtom);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -85,8 +100,214 @@ const Response = (
     return parts.filter((part) => part.content.trim());
   };
 
-  const refreshGenerate = async () => {
+  const refreshGenerate = () => {
+    if (chatType == 0) {
+      sendMessage([], 0);
+    } else {
+      generateResearch();
+    }
+  };
+
+  const generateResearch = async () => {
+    let time = 0;
+    const startTime = Date.now();
+    setIsResearchAreaVisible(true);
+    setActiveChatId(sessionId ?? "");
+    const prompt = chatLog[chatLog.length - 1].prompt;
+
     try {
+      setChatLog((prevChatLog) => {
+        const newLog = [...prevChatLog];
+        const chatType = chatLog[chatLog.length - 1].chatType;
+        newLog[newLog.length - 1] = {
+          prompt,
+          response: "",
+          timestamp: Date.now().toString(),
+          inputToken: 0,
+          outputToken: 0,
+          inputTime: 0,
+          outputTime: 0,
+          totalTime: 0,
+          chatType: chatType
+        };
+        return newLog;
+      });
+      setProgress(0);
+      setResearchLog([]);
+      setResearchStep(0);
+      const res = await fetch("/api/chat/generateResearchSteps", {
+        method: "POST",
+        body: JSON.stringify({ prompt, chatLog: chatLog.slice(-5) }),
+      });
+      const data = await res.json();
+      const steps = JSON.parse(data.steps);
+      const totalProgress = steps.steps.length * 2;
+      const newResearchLog = [];
+      setProgress(10);
+
+      for (const step of steps.steps) {
+        newResearchLog.push({
+          title: step,
+          researchSteps: [],
+          sources: [],
+          learnings: []
+        });
+      }
+
+      newResearchLog.push({
+        title: "compile research result",
+        researchSteps: [],
+        sources: [],
+        learnings: []
+      });
+
+      // Create a new log array based on the current state
+      setResearchLog(newResearchLog);
+      time = Date.now() - startTime;
+      await handleResearchStep(0, 0, newResearchLog, totalProgress, time);
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: 'Failed to get response from server.',
+      });
+      setChatLog((prevChatLog) => {
+        const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+        if (newLog.length > 0) {
+          newLog[newLog.length - 1] = {
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: newLog[newLog.length - 1].timestamp,
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0,
+            chatType: chatType
+          };
+        } else {
+          newLog.push({
+            prompt,
+            response: "Failed to get response from server.",
+            timestamp: Date.now().toString(),
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0,
+            chatType: chatType
+          });
+        }
+        return newLog;
+      });
+    }
+  };
+
+  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[], totalProgress: number, time: number) => {
+    try {
+      if (researchStepIndex == log.length - 1) {
+        const learnings = log.flatMap((step) => step.learnings.map((learning) => learning));
+        log[researchStepIndex].researchSteps.push({
+          type: 1,
+          researchStep: "Compiling research result..."
+        });
+        await sendMessage(learnings, time);
+        setResearchStep(researchStepIndex + 1);
+      } else {
+        console.log(researchStepIndex, stepIndex);
+        const researchStep = log[researchStepIndex];
+        log[researchStepIndex].researchSteps.push({
+          type: 1,
+          researchStep: stepIndex == 0 ? "Searching resources..." : "Reading resources..."
+        });
+        setResearchLog((prevLog) => {
+          const newLog = [...prevLog];
+          newLog[researchStepIndex].researchSteps[stepIndex] =
+            stepIndex == 0 ? {
+              type: 1,
+              researchStep: "Searching resources..."
+            } : {
+              type: 1,
+              researchStep: "Reading resources..."
+            };
+          return newLog;
+        });
+        if (stepIndex == 0) {
+          const startTime = Date.now();
+          const res = await fetch("/api/chat/searchingResources", {
+            method: "POST",
+            body: JSON.stringify({ title: researchStep.title }),
+          });
+          const data = await res.json();
+          console.log("time", time);
+          time += Date.now() - startTime;
+          console.log("time", time);
+          setProgress(Math.floor((researchStepIndex * 2 + 1) / totalProgress * 80) + 10);
+          console.log(data);
+          log[researchStepIndex].sources = data.results.flatMap((result: { urls: string[], contents: string[], images: string[], titles: string[] }) =>
+            result.urls.map((url: string, index: number) => ({
+              url,
+              image: result.images[index],
+              title: result.titles[index],
+              content: result.contents[index]
+            }))
+          );
+          setResearchLog((prevLog) => {
+            // Create a deep copy of the previous log to avoid direct mutation
+            const newLog = prevLog.map((logItem, index) => {
+              if (index === researchStepIndex) {
+                return {
+                  ...logItem,
+                  sources: data.results.flatMap((result: { urls: string[], contents: string[], images: string[], titles: string[] }) =>
+                    result.urls.map((url: string, index: number) => ({
+                      url,
+                      image: result.images[index],
+                      title: result.titles[index],
+                      content: result.contents[index]
+                    }))
+                  )
+                };
+              }
+              return logItem;
+            });
+            return newLog;
+          });
+          await handleResearchStep(researchStepIndex, 1, log, totalProgress, time);
+        } else {
+          const startTime = Date.now();
+          const res = await fetch("/api/chat/analyzingResources", {
+            method: "POST",
+            body: JSON.stringify({ sources: researchStep.sources, title: researchStep.title }),
+          });
+          const data = await res.json();
+          console.log("time", time);
+          time += Date.now() - startTime;
+          console.log("time", time);
+          log[researchStepIndex].learnings = data.learningDatas;
+          setResearchLog((prevLog) => {
+            const newLog = [...prevLog];
+            newLog[researchStepIndex].learnings = data.learningDatas;
+            return newLog;
+          });
+          setProgress(Math.floor((researchStepIndex * 2 + 2) / totalProgress * 80) + 10);
+          setResearchStep(researchStepIndex + 1);
+          await handleResearchStep(researchStepIndex + 1, 0, log, totalProgress, time);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setResearchLog((prevLog) => {
+        const newLog = [...prevLog];
+        newLog[researchStepIndex].researchSteps.push({
+          type: 0,
+          researchStep: "Failed to get response from server."
+        });
+        return newLog;
+      });
+      throw error;
+    }
+  };
+
+  const sendMessage = async (learnings: string[], time: number) => {
+    try { 
       setIsStreaming(true);
       const prompt = chatLog[chatLog.length - 1].prompt;
       const chatHistory = chatLog.slice(-6, -1);
@@ -109,7 +330,7 @@ const Response = (
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true }),
+        body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true, learnings, time }),
       });
       if (res.status != 200) {
         throw new Error("Failed to get response from server.");
@@ -197,8 +418,6 @@ const Response = (
       setIsStreaming(false);
     }
   };
-
-  console.log(timestamp, outputTime, inputToken, outputToken, inputTime, outputTime, totalTime);
 
   return (
     <div className="flex flex-col text-mainFont w-full">

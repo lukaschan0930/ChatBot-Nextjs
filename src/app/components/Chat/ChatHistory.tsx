@@ -7,6 +7,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import moment from "moment";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { generateSessionId } from "@/app/lib/utils";
+import { useSession } from "next-auth/react";
 
 const ChatHistory = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
@@ -19,6 +21,7 @@ const ChatHistory = () => {
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [newTitle, setNewTitle] = useState<string>("");
     const router = useRouter();
+    const { data: session } = useSession();
 
     const deleteSession = async (id: string) => {
         await setChatHistory(chatHistory.filter((session) => session.id !== id));
@@ -85,7 +88,7 @@ const ChatHistory = () => {
                 try {
                     const chats = await fetch(`/api/chat/log?sessionId=${sessionId}`);
                     const data = await chats.json();
-                    if (data.success) {
+                    if (data.success && data.data.length > 0) {
                         setChatLog(data.data);
                     }
                 } catch (error) {
@@ -109,11 +112,14 @@ const ChatHistory = () => {
                 isSidebarVisible && (
                     <>
                         <button
+                            type="button"
                             className="w-full mt-4 text-nowrap bg-inherit focus:outline-none flex justify-center items-center gap-4 border-1 border-gray-500 rounded-lg py-3 hover:border-tertiaryBorder"
-                            onClick={(e) => {
-                                e.preventDefault();
+                            onClick={() => {
                                 setChatLog([]);
-                                setSessionId(null);
+                                setSessionId(generateSessionId(
+                                    session?.user?.email as string,
+                                    Date.now().toString()
+                                ));
                                 setIsStartChat(false);
                                 setIsSidebarVisible(false);
                             }}

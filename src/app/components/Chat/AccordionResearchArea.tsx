@@ -1,19 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
-import { researchLogAtom, researchStepAtom, isResearchAreaVisibleAtom } from '@/app/lib/store';
+import { researchLogAtom, researchStepAtom } from '@/app/lib/store';
 import Image from 'next/image';
+import { FaChevronDown } from 'react-icons/fa';
 
 const researchTabs = ["Activities", "Resources"];
 
-const ResearchArea = () => {
+const AccordionResearchArea = () => {
     const [tabValue, setTabValue] = useState(0);
     const [researchLog,] = useAtom(researchLogAtom);
     const [researchStep,] = useAtom(researchStepAtom);
-    const [isResearchAreaVisible,] = useAtom(isResearchAreaVisibleAtom);
+    const [isOpen, setIsOpen] = useState(true);
+    const currentStepRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (researchStep === researchLog.length - 1) {
+            setIsOpen(false);
+        } else {
+            setIsOpen(true);
+        }
+    }, [researchStep, researchLog]);
+
+    useEffect(() => {
+        if (currentStepRef.current) {
+            currentStepRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [researchStep]);
 
     return (
-        <div className={`${isResearchAreaVisible && 'xl:block'} hidden pr-[19px] pt-[108px] h-screen pb-4`}>
-            <div className='xl:w-[370px] rounded-md border-2 border-primaryBorder h-full py-7 px-6 overflow-y-auto'>
+        <div className={`px-[19px] py-4 md:w-[calc(100%-32px)] w-full border-2 border-primaryBorder rounded-lg md:ml-8 mb-4 xl:hidden`}>
+            <div className='w-full flex justify-between items-center' onClick={() => setIsOpen(!isOpen)}>
+                <div className='flex items-center gap-2'>
+                    <div className='text-mainFont text-sm'>Pro Search</div>
+                </div>
+                <FaChevronDown
+                    className={`!w-5 !h-5 ${isOpen ? "rotate-180" : ""
+                        } transition-all duration-150`}
+                />
+            </div>
+            <div className={`h-full overflow-y-auto transition-all duration-300 ${isOpen ? 'max-h-[calc(100vh-450px)] mt-4' : 'max-h-0 overflow-hidden'}`}>
                 <div className='flex items-center'>
                     {
                         researchTabs.map((tab, index) => (
@@ -38,6 +63,7 @@ const ResearchArea = () => {
                         {researchLog.map((step, index) => (
                             <div key={index} className="flex relative min-h-[80px] items-start py-2">
                                 <div
+                                    ref={index === researchStep ? currentStepRef : null}
                                     className={`absolute flex items-center justify-center w-[10px] h-[10px] rounded-full text-white text-sm mt-2
               ${index < researchStep ? 'bg-white' : index === researchStep ? 'bg-white shadow-lg animate-sparkle' : 'bg-subButtonFont'}`}
                                     style={index === researchStep ? { animation: 'sparkle 1s infinite' } : {}}
@@ -80,7 +106,6 @@ const ResearchArea = () => {
                     </div>
                 </div>
                 <div
-                    role="tabpanel"
                     hidden={tabValue !== 1}
                     id={`tabpanel-sources`}
                     aria-labelledby={`tab-sources`}
@@ -89,7 +114,7 @@ const ResearchArea = () => {
                     <div className="flex flex-col gap-3">
                         {researchLog.map((step, index) => (
                             step.sources.map((source, index) => (
-                                <div 
+                                <div
                                     key={index} className='rounded-md bg-[#FFFFFF08] py-4 px-6 flex flex-col cursor-pointer'
                                     onClick={() => window.open(source.url, '_blank')}
                                 >
@@ -107,4 +132,4 @@ const ResearchArea = () => {
     );
 };
 
-export default ResearchArea;
+export default AccordionResearchArea;

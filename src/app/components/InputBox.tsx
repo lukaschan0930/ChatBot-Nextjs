@@ -2,12 +2,11 @@ import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
-import { chatHistoryAtom, isStartChatAtom, researchStepAtom } from "@/app/lib/store";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom, chatTypeAtom, progressAtom } from "@/app/lib/store";
+import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom, chatTypeAtom, progressAtom, isResearchAreaVisibleAtom } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 import { IResearchLog } from "@/app/lib/interface";
-import ChatTypeMenu from "@/app/components/Chat/ChatTypeMenu";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
@@ -20,8 +19,10 @@ const InputBox = () => {
   const [isStreaming, setIsStreaming] = useAtom(isStreamingAtom);
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
-  const [chatType,] = useAtom(chatTypeAtom);
+  const [chatType, setChatType] = useAtom(chatTypeAtom);
   const [, setProgress] = useAtom(progressAtom);
+  const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
+  const [, setActiveChatId] = useAtom(activeChatIdAtom);
   // const [isOpen, setIsOpen] = useState<boolean>(false);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
 
@@ -81,12 +82,21 @@ const InputBox = () => {
     }
     setIsStreaming(true);
     setIsStartChat(true);
+    let requestSessionId = sessionId;
+    if (!requestSessionId) {
+      const newId = generateSessionId(
+        session?.user?.email as string,
+        Date.now().toString()
+      );
+      setSessionId(newId);
+      requestSessionId = newId;
+    }
     try {
       if (chatType === 0) {
-        await sendMessage(inputPrompt, []);
+        await sendMessage(inputPrompt, [], requestSessionId);
       } else {
         setProgress(0);
-        await generateResearch(inputPrompt);
+        await generateResearch(inputPrompt, requestSessionId);
       }
     } finally {
       setIsStreaming(false);
@@ -109,15 +119,9 @@ const InputBox = () => {
     }
   };
 
-  const sendMessage = async (prompt: string, learnings: string[], time = 0) => {
-    let requestSessionId = sessionId;
-    if (!requestSessionId) {
-      const newId = generateSessionId(
-        session?.user?.email as string,
-        Date.now().toString()
-      );
-      setSessionId(newId);
-      requestSessionId = newId;
+  const sendMessage = async (prompt: string, learnings: string[], requestSessionId: string, time = 0) => {
+    if (learnings.length == 0) {
+      setIsResearchAreaVisible(false);
     }
 
     try {
@@ -129,8 +133,13 @@ const InputBox = () => {
             prompt,
             response: "",
             timestamp: Date.now().toString(),
-            chatType: chatType
+            chatType: chatType,
+            inputToken: 0,
+            outputToken: 0,
+            inputTime: 0,
+            outputTime: 0
           });
+          console.log("Updated chatLog:", newLog);
           return newLog;
         });
       }
@@ -266,9 +275,12 @@ const InputBox = () => {
     }
   };
 
-  const generateResearch = async (prompt: string) => {
+  const generateResearch = async (prompt: string, requestSessionId: string) => {
     let time = 0;
     const startTime = Date.now();
+    setIsResearchAreaVisible(true);
+    setActiveChatId(requestSessionId);
+
     try {
       setChatLog((prevChatLog) => {
         const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
@@ -276,7 +288,11 @@ const InputBox = () => {
           prompt,
           response: "",
           timestamp: Date.now().toString(),
-          chatType: chatType
+          chatType: chatType,
+          inputToken: 0,
+          outputToken: 0,
+          inputTime: 0,
+          outputTime: 0
         });
         return newLog;
       });
@@ -312,7 +328,7 @@ const InputBox = () => {
       // Create a new log array based on the current state
       setResearchLog(newResearchLog);
       time = Date.now() - startTime;
-      await handleResearchStep(0, 0, newResearchLog, totalProgress, time);
+      await handleResearchStep(0, 0, newResearchLog, totalProgress, time, requestSessionId);
     } catch (error) {
       console.error(error);
       toast({
@@ -349,7 +365,7 @@ const InputBox = () => {
     }
   };
 
-  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[], totalProgress: number, time: number) => {
+  const handleResearchStep = async (researchStepIndex: number, stepIndex: number, log: IResearchLog[], totalProgress: number, time: number, requestSessionId: string) => {
     try {
       if (researchStepIndex == log.length - 1) {
         const learnings = log.flatMap((step) => step.learnings.map((learning) => learning));
@@ -357,7 +373,7 @@ const InputBox = () => {
           type: 1,
           researchStep: "Compiling research result..."
         });
-        await sendMessage(inputPrompt, learnings, time);
+        await sendMessage(inputPrompt, learnings, requestSessionId, time);
         setResearchStep(researchStepIndex + 1);
       } else {
         console.log(researchStepIndex, stepIndex);
@@ -416,7 +432,7 @@ const InputBox = () => {
             });
             return newLog;
           });
-          await handleResearchStep(researchStepIndex, 1, log, totalProgress, time);
+          await handleResearchStep(researchStepIndex, 1, log, totalProgress, time, requestSessionId);
         } else {
           const startTime = Date.now();
           const res = await fetch("/api/chat/analyzingResources", {
@@ -433,7 +449,7 @@ const InputBox = () => {
           });
           setProgress(Math.floor((researchStepIndex * 2 + 2) / totalProgress * 80) + 10);
           setResearchStep(researchStepIndex + 1);
-          await handleResearchStep(researchStepIndex + 1, 0, log, totalProgress, time);
+          await handleResearchStep(researchStepIndex + 1, 0, log, totalProgress, time, requestSessionId);
         }
       }
     } catch (error) {
@@ -453,13 +469,12 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } flex flex-nowrap sm:flex-wrap justify-between items-center gap-4 bg-inputBg mt-[10px] p-[21px] border-secondaryBorder border rounded-lg w-full lg:max-w-[700px]`}
+        } flex flex-nowrap justify-between items-center gap-4 bg-inputBg mt-[10px] px-[21px] py-[10px] border-secondaryBorder border rounded-lg w-full lg:max-w-[700px]`}
     >
       <div
         className={`${messageOver ? "order-0 basis-full" : "order-1"
-          } flex-grow flex gap-3`}
+          } flex flex-col gap-3`}
       >
-        <ChatTypeMenu />
         <textarea
           ref={textareaRef}
           className={`${isStreaming ? '' : "text-mainFont"} bg-transparent pt-2 border-none w-full h-[36px] font-semibold text-base placeholder:text-subButtonFont overflow-y-hidden outline-none resize-none`}
@@ -474,6 +489,12 @@ const InputBox = () => {
             maxHeight: TEXTAREA_MAX_HEIGHT,
           }}
         />
+        <button
+          className={`${chatType === 0 ? 'bg-transparent text-mainFont border-primaryBorder' : 'bg-[#D6D6D6] text-black border-[#D6D6D6]'} focus:outline-none hover:outline-none hover:border-[#D6D6D6] border-2 rounded-md px-2 py-0 text-[12px] w-fit h-fit leading-[2] font-semibold`}
+          onClick={() => setChatType(prev => prev === 0 ? 1 : 0)}
+        >
+          Pro Search
+        </button>
       </div>
       {/* <div className={`${messageOver ? "order-1" : "order-0"}`}>
         <DropdownMenu onOpenChange={setIsOpen}>
