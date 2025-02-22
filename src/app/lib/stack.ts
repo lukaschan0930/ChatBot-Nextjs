@@ -12,6 +12,16 @@ export const MenuItems = [
         id: "goland",
         label: "GOLAND",
         disable: true,
+      },
+      {
+        id: "eg",
+        label: "EG",
+        disable: true,
+      },
+      {
+        id: "router",
+        label: "ROUTER",
+        disable: true,
       }
     ],
   },
@@ -20,13 +30,13 @@ export const MenuItems = [
     label: "Infrastructure",
     subItems: [
       {
-        id: "data-label",
-        label: "Data Label",
+        id: "workers",
+        label: "WORKERS",
         disable: true,
       },
       {
-        id: "gpu",
-        label: "GPU",
+        id: "rwa",
+        label: "RWA",
         disable: true,
       }
     ],
@@ -36,8 +46,23 @@ export const MenuItems = [
     label: "Intelligence",
     subItems: [
       {
-        id: "lab",
-        label: "LAB",
+        id: "governance",
+        label: "GOVERNANCE",
+        disable: true,
+      },
+      {
+        id: "citizenship",
+        label: "CITIZENSHIP",
+        disable: true,
+      },
+      {
+        id: "studio",
+        label: "STUDIO",
+        disable: true,
+      },
+      {
+        id: "explorer",
+        label: "EXPLORER",
         disable: true,
       }
     ],

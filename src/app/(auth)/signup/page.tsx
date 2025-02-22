@@ -122,7 +122,7 @@ const SignUp = () => {
     <div className="relative h-screen w-screen flex flex-col items-center justify-center bg-[#0B0B0D]">
       <Box className="flex flex-col items-center justify-center shadow-signin bg-box-bg border-box-border border rounded-2xl px-6 py-7 max-w-full w-[438px] relative">
         {/* logo */}
-        <Image src="/image/login/pixels.png" alt="pixels" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[380px] h-auto" width={1000} height={1000} />
+        <Image src="/image/login/pixels.png" alt="pixels" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[380px] h-auto" width={380} height={380} />
         <button
           className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0"
           onClick={() => router.push("/")}
@@ -231,8 +231,8 @@ const SignUp = () => {
           <Link href="/signin" className="text-box-placeholder text-sm underline hover:text-box-placeholder">Sign In</Link>
         </div>
       </Box>
-      <Image src="/image/login/login-left.png" alt="logo" className="absolute bottom-0 left-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
-      <Image src="/image/login/login-right.png" alt="logo" className="absolute bottom-0 right-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
+      <Image src="/image/login/login-left.png" alt="logo" className="absolute bottom-0 left-0 w-[453px] h-auto max-xl:hidden" width={1000} height={1000} />
+      <Image src="/image/login/login-right.png" alt="logo" className="absolute bottom-0 right-0 w-[453px] h-auto max-xl:hidden" width={1000} height={1000} />
     </div>
   );
 };

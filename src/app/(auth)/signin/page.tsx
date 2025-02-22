@@ -42,7 +42,7 @@ const SignIn = () => {
       setIsLoading(prev => ({ ...prev, google: true }));
       const result = await signIn("google", {
         redirect: false,
-        callbackUrl: "/chatText",
+        callbackUrl: "/",
       });
       setIsLoading(prev => ({ ...prev, google: false }));
       if (result?.error) {
@@ -83,7 +83,7 @@ const SignIn = () => {
           setFormState({ ...formState, error: "Incorrect email address or password" });
           return;
         } else {
-          router.push("/chatText");
+          router.push("/");
         }
       } catch (error) {
         console.log("error", error);
@@ -104,7 +104,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (session) {
-      router.push("/chatText");
+      router.push("/");
     }
   }, [session]);
 
@@ -112,7 +112,7 @@ const SignIn = () => {
     <div className="relative h-screen w-screen flex flex-col items-center justify-center bg-[#0B0B0D]">
       <Box className="flex flex-col items-center justify-center shadow-signin bg-box-bg border-box-border border rounded-2xl px-6 py-7 max-w-full w-[438px] relative">
         {/* logo */}
-        <Image src="/image/login/pixels.png" alt="logo" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[380px] h-auto" width={1000} height={1000} />
+        <Image src="/image/login/pixels.png" alt="logo" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[380px] h-auto" width={380} height={380} />
         <button
           className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0"
           onClick={() => router.push("/")}
@@ -204,8 +204,8 @@ const SignIn = () => {
           <Link href="/signup" className="text-box-placeholder text-sm underline hover:text-box-placeholder">Sign Up</Link>
         </div>
       </Box>
-      <Image src="/image/login/login-left.png" alt="logo" className="absolute bottom-0 left-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
-      <Image src="/image/login/login-right.png" alt="logo" className="absolute bottom-0 right-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
+      <Image src="/image/login/login-left.png" alt="logo" className="absolute bottom-0 left-0 w-[453px] h-auto max-xl:hidden" width={1000} height={1000} />
+      <Image src="/image/login/login-right.png" alt="logo" className="absolute bottom-0 right-0 w-[453px] h-auto max-xl:hidden" width={1000} height={1000} />
     </div>
   );
 };
