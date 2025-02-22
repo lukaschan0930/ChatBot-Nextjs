@@ -1,40 +1,41 @@
 'use client'
 
 import { toast } from "@/app/hooks/use-toast";
-import { MailOutline, VisibilityOutlined, VisibilityOffOutlined } from "@mui/icons-material";
 import {
   Box,
-  Button,
   Divider,
-  FormControl,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { LoginProps } from "@/app/lib/interface";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import FormInput from "@/app/components/FormInput";
+import EmailIcon from "@/app/assets/email";
+import RockIcon from "@/app/assets/rock";
+import FormBtn from "@/app/components/FormBtn";
+import ShadowBtn from "@/app/components/ShadowBtn";
+import Loading from "@/app/assets/loading";
+import { validateEmail, validatePassword } from "@/app/lib/utils";
 
 const SignIn = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginProps>({});
-
   const [isLoading, setIsLoading] = useState({
     google: false,
-    twitter: false,
     form: false,
   });
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const [formState, setFormState] = useState({
+    email: "",
+    password: "",
+    error: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormState({ ...formState, [e.target.name]: e.target.value });
+  };
 
   const googleSignIn = async () => {
     try {
@@ -60,34 +61,44 @@ const SignIn = () => {
     }
   }
 
-  const onSubmit = async (data: LoginProps) => {
+  const emailSignIn = async (data: LoginProps) => {
+    if (!validateEmail(data.email)) {
+      setFormState({ ...formState, error: "Invalid email address" });
+      return;
+    }
+    if (!validatePassword(data.password)) {
+      setFormState({ ...formState, error: "Invalid password" });
+      return;
+    }
     setIsLoading((prev) => ({ ...prev, form: true }));
     try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        callbackUrl: "/chatText",
-      });
-      if (result?.error) {
-        toast({
-          variant: "destructive",
-          description:
-            "Sign in unsuccessful, please check your credentials.",
+      try {
+        const result = await signIn("credentials", {
+          email: data.email,
+          password: data.password,
+          redirect: false,
         });
+        if (result?.error) {
+          console.log("result", result.error);
+          setFormState({ ...formState, error: "Incorrect email address or password" });
+          return;
+        } else {
+          router.push("/chatText");
+        }
+      } catch (error) {
+        console.log("error", error);
+        setFormState({ ...formState, error: "Incorrect email address or password" });
         return;
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
       });
     } finally {
       setIsLoading((prev) => ({ ...prev, form: false }));
     }
-  };
+  }
 
   const { data: session } = useSession();
 
@@ -98,271 +109,104 @@ const SignIn = () => {
   }, [session]);
 
   return (
-    <Box className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2] max-md:w-full">
-
-      {/* logo */}
-      <button
-        className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0 !mb-5 md:px-[120px]"
-        onClick={() => router.push("/")}
-      >
-        <Image
-          src="/image/EDITH_logo_png.png"
-          alt="logo"
-          width={300}
-          height={300}
-          className="h-16 w-auto"
-        />
-      </button>
-
-      {/* form */}
-      <Box className="w-full max-w-sm p-6 space-y-6">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col items-start space-y-6"
+    <div className="relative h-screen w-screen flex flex-col items-center justify-center bg-[#0B0B0D]">
+      <Box className="flex flex-col items-center justify-center shadow-signin bg-box-bg border-box-border border rounded-2xl px-6 py-7 max-w-full w-[438px] relative">
+        {/* logo */}
+        <Image src="/image/login/pixels.png" alt="logo" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[380px] h-auto" width={1000} height={1000} />
+        <button
+          className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0"
+          onClick={() => router.push("/")}
         >
-          <FormControl
-            sx={{
-              width: "100%",
-              backgroundColor: "#FFFFFF0D",
-            }}
-            variant="outlined"
-          >
-            <InputLabel
-              htmlFor="outlined-adornment-password"
-              sx={{
-                color: "#E2E2E2",
-                "&.Mui-focused": {
-                  color: "#E2E2E2",
-                },
-              }}
-            >
-              Email
-            </InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-email"
-              type="email"
-              error={!!errors.email}
-              endAdornment={
-                <InputAdornment position="end">
-                  <MailOutline sx={{ color: "#FFFFFF" }} />
-                </InputAdornment>
-              }
-              label="Email"
-              sx={{
-                color: "#E2E2E2", // Change input text color
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF33", // Change border color
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF66", // Optional: Change border color on hover
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF66", // Optional: Change border color when focused
-                },
-              }}
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i,
-                  message: "Invalid email address",
-                },
-              })}
-            />
-            {errors.email && (
-              <Typography
-                variant="caption"
-                color="error"
-                sx={{ pt: 1, color: "#FF0000", bgcolor: "#000000" }}
-              >
-                {errors.email.message}
-              </Typography>
-            )}
-          </FormControl>
-          <FormControl
-            sx={{
-              width: "100%",
-              backgroundColor: "#FFFFFF0D",
-            }}
-            variant="outlined"
-          >
-            <InputLabel
-              htmlFor="outlined-adornment-password"
-              sx={{
-                color: "#E2E2E2",
-                "&.Mui-focused": {
-                  color: "#E2E2E2",
-                },
-              }}
-            >
-              Password
-            </InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
-              error={!!errors.password}
-              endAdornment={
-                <InputAdornment position="end">
-                  <Button
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    sx={{ minWidth: 0, padding: 0 }}
-                  >
-                    {showPassword ? (
-                      <VisibilityOffOutlined sx={{ color: "#FFFFFF" }} />
-                    ) : (
-                      <VisibilityOutlined sx={{ color: "#FFFFFF" }} />
-                    )}
-                  </Button>
-                </InputAdornment>
-              }
-              label="Password"
-              sx={{
-                color: "#E2E2E2",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF33",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF66",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#FFFFFF66",
-                },
-                "&:-webkit-autofill": {
-                  WebkitBoxShadow: "0 0 0 1000px #000000 inset !important",
-                  WebkitTextFillColor: "#E2E2E2 !important",
-                  transition: "background-color 5000s ease-in-out 0s !important",
-                },
-              }}
-              {...register("password", {
-                required: "Password is required",
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
-                  message: "Weak password",
-                }
-              })}
-            />
-
-            {errors.password && (
-              <Typography
-                variant="caption"
-                color="error"
-                sx={{ pt: 1, color: "#FF0000", bgcolor: "#000000" }}
-
-              >
-                {errors.password.message}
-              </Typography>
-            )}
-          </FormControl>
-
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={isLoading.form}
-            className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
-          >
-            {isLoading.form ? (
-              <span className="flex items-center gap-2">
-                Signing In...
-                <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              </span>
-            ) : (
-              "Sign In"
-            )}
-          </Button>
-        </form>
-
-        <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+          <Image
+            src="/image/login/logo.png"
+            alt="logo"
+            width={300}
+            height={300}
+            className="h-[60px] w-auto"
+          />
+        </button>
+        <div className="mt-6 text-white text-xl font-bold">Get Started</div>
+        <div className="mt-4 text-box-fontSub text-sm">Decentralized SuperAI Ecosystem</div>
+        <div
+          className="w-full flex flex-col items-center gap-4 mt-8"
+        >
+          {
+            formState.error && (
+              <div className="text-red-500 text-sm p-3 border-[#FF5A5A99] border rounded-md bg-[#FF5A5A1F] w-full">
+                {formState.error}
+              </div>
+            )
+          }
+          <FormInput
+            placeholder="Email Address"
+            type="email"
+            name="email"
+            value={formState.email}
+            onChange={handleChange}
+            icon={<EmailIcon />}
+            className="shadow-input"
+          />
+          <FormInput
+            placeholder="Password"
+            type="password"
+            name="password"
+            value={formState.password}
+            onChange={handleChange}
+            icon={<RockIcon />}
+            className="shadow-input"
+          />
+        </div>
+        <FormBtn
+          value="Sign In"
+          className="mt-6 shadow-btn-signin backdrop-blur-signin bg-btn-signin"
+          onClick={() => emailSignIn(formState)}
+          loading={isLoading.form}
+          loadingText="Signing in..."
+          loadingIcon={<Loading />}
+        />
+        <Link href="/signup" className="text-box-placeholder text-sm mt-6 underline hover:text-box-placeholder">Forgot Password?</Link>
+        <Box sx={{ display: "flex", alignItems: "center", width: "100%", marginTop: "28px" }}>
           <Divider
             sx={{
               flex: 1,
-              color: "#FFFFFF33",
+              color: "#808080",
               "&.MuiDivider-root": {
-                borderColor: "#FFFFFF33",
+                borderColor: "#808080",
               },
             }}
           />
           <Typography
-            sx={{ mx: 2, whiteSpace: "nowrap", color: "#FFFFFF" }}
+            sx={{ mx: 2, whiteSpace: "nowrap", color: "#808080", fontSize: "12px" }}
           >
             OR
           </Typography>
           <Divider
             sx={{
               flex: 1,
-              color: "#FFFFFF33",
+              color: "#808080",
               "&.MuiDivider-root": {
-                borderColor: "#FFFFFF33",
+                borderColor: "#808080",
               },
             }}
           />
         </Box>
-
-        {/* Social login */}
-        <div className="space-y-6">
-          {/* Google login */}
-          <Button
-            variant="contained"
-            fullWidth
-            disabled={isLoading.google}
-            onClick={googleSignIn}
-            className="!bg-[#FAFAFA]/80 hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-[#000000] !text-sm"
-          >
-            {isLoading.google ? (
-              <>
-                <span className="flex items-center gap-2">
-                  <Image src="/image/google.png" alt="google" className="w-6 h-6" width={24} height={24} />
-                  Sign in with Google...
-                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                </span>
-              </>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Image src="/image/google.png" alt="google" className="w-6 h-6" width={24} height={24} />
-                Sign in with Google
-              </span>
-            )}
-          </Button>
+        <ShadowBtn
+          className="w-full mt-6 rounded-md"
+          mainClassName="border-[#2C2B30] border bg-[#292929] rounded-md shadow-btn-google text-white flex items-center justify-center gap-2"
+          onClick={googleSignIn}
+          disabled={isLoading.google}
+        >
+          {isLoading.google ? <Loading /> : <Image src="/image/google.png" alt="google" className="w-6 h-6" width={24} height={24} />}
+          <span>{isLoading.google ? "Signing in with Google..." : "Sign In with Google"}</span>
+        </ShadowBtn>
+        <div className="flex items-center justify-center mt-4 gap-[2px]">
+          <span className="text-box-fontSub text-sm">Don't have an account?</span>
+          <Link href="/signup" className="text-box-placeholder text-sm underline hover:text-box-placeholder">Sign Up</Link>
         </div>
-
-        {/* Navigate sign in if you already have an account */}
-        <Typography variant="body2" className="mt-4 text-center">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-[#4169E1] hover:text-[#87CEEB]">
-            Sign Up
-          </Link>
-        </Typography>
       </Box>
-    </Box>
+      <Image src="/image/login/login-left.png" alt="logo" className="absolute bottom-0 left-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
+      <Image src="/image/login/login-right.png" alt="logo" className="absolute bottom-0 right-0 w-[453px] h-auto opacity-0 xl:opacity-100" width={1000} height={1000} />
+    </div>
   );
 };
 

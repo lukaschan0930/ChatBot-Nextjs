@@ -36,3 +36,13 @@ export const processChunkedString = (chunkedString: string): Promise<{ content: 
     }
   });
 };
+
+export const validateEmail = (email: string) => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(email);
+};
+
+export const validatePassword = (password: string) => {
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  return passwordPattern.test(password);
+};

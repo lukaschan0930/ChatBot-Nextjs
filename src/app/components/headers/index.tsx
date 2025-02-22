@@ -1,14 +1,18 @@
 'use client'
 import { usePathname, useRouter } from "next/navigation";
-// import DropDownMenu from "@/app/components/headers/DropDownMenu";
+import DropDownMenu from "@/app/components/headers/DropDownMenu";
 import MobileDropDownMenu from "@/app/components/headers/MobileDropDownMenu";
 import { useEffect, useRef, useState } from "react";
 import ProfileDropDownMenu from "@/app/components/headers/ProfileDropDownMenu";
 import Image from "next/image";
 import MobileAdminMenu from "./MobileAdminMenu";
-import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
+import ShadowBtn from "../ShadowBtn";
+import ChangeLog from "@/app/assets/changelog";
+import DocsIcon from "@/app/assets/docs";
+import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
-import { FiEdit } from "react-icons/fi";
+import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
+import Arrow from "@/app/assets/arrow";
 
 const Header = () => {
   const router = useRouter();
@@ -21,9 +25,6 @@ const Header = () => {
   const [isLeftSidebar, setIsLeftSidebar] = useState<boolean>(false);
   const [isRightSidebar, setIsRightSidebar] = useState<boolean>(false);
   const [isSidebarVisible, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
-  const [, setChatLog] = useAtom(chatLogAtom);
-  const [, setSessionId] = useAtom(sessionIdAtom);
-  const [, setIsStartChat] = useAtom(isStartChatAtom);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,72 +51,68 @@ const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b-2 bg-headerBg text-mainFont border-primaryBorder">
-        <div className="flex h-[72px] items-center px-4 sm:px-10 justify-between relative">
-          <div className="flex items-center gap-2 lg:gap-5">
-            <button
-              className="flex items-center justify-start gap-2 text-mainFont bg-transparent focus:outline-none hover:bg-inputBg w-fit p-2 border border-secondaryBorder rounded-md hover:border-mainFont"
-              onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-            >
-              <Image src="/image/collapse.svg" alt="collapse" width={20} height={20} />
-            </button>
-            <button
-              className="flex items-center justify-start gap-2 text-mainFont bg-transparent focus:outline-none hover:bg-inputBg w-fit p-2 border border-secondaryBorder rounded-md hover:border-mainFont"
-              onClick={() => {
-                router.push("/chatText");
-                setChatLog([]);
-                setSessionId(null);
-                setIsStartChat(false);
-                setIsSidebarVisible(false);
-              }}
-            >
-              <FiEdit size={20} />
-            </button>
-            <button
-              className="flex items-end p-0 bg-transparent border-none outline-none focus:outline-none text-buttonFont"
-              onClick={() => router.push("/")}
-            >
+        <div className="flex h-[72px] items-center pr-6 justify-between relative">
+          <div className={`flex items-center pl-4 h-full w-[260px] ${endPoint === "admin" ? "border-none" : "border-[#29292B] border-r"}`}>
+            <div className={`pr-2 py-[1px] border-[#29292B] mr-2 ${endPoint !== "admin" && "border-r-2"}`}>
               <Image
-                src="/image/symbol-edith.svg"
+                src="/image/logo-edith.png"
                 alt="logo"
-                className="h-10 w-auto"
                 width={100}
                 height={100}
+                className="h-5 w-auto"
+                onClick={() => {
+                  router.push("/");
+                }}
               />
-            </button>
-            {/* {
-              endPoint !== "admin" && (
-                <div className="hidden sm:flex">
+            </div>
+            {
+              endPoint !== "admin" &&
+                <>
                   <DropDownMenu />
-                </div>
-              )
-            } */}
+                  <ShadowBtn
+                    className="ml-4"
+                    mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[6px]"
+                    onClick={() => {
+                      setIsSidebarVisible(!isSidebarVisible);
+                    }}
+                  >
+                    <Arrow
+                      className={`${!isSidebarVisible ? "rotate-180" : ""
+                        } transition-all duration-150`}
+                    />
+                  </ShadowBtn>
+                </>  
+            }
           </div>
           {
             endPoint !== "admin" ? (
               <>
                 <div className="items-center hidden gap-10 lg:flex">
-                  <div className="flex items-center gap-4">
-                    <button
-                      className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
+                  <div className="flex items-center gap-3">
+                    <ShadowBtn
+                      className="rounded-md"
+                      mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
                       onClick={() => router.push("/changeLog")}
                     >
-                      Change Log
-                    </button>
-                    {/* <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
-                      Quests
-                    </button> */}
-                    {/* <button className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none">
-                      AI Agents
-                    </button> */}
-                    <button
-                      className="!rounded-sm flex items-center justify-center h-8 text-base transition-all duration-300 outline-none bg-buttonBg hover:bg-buttonHoverBg text-mainFont hover:text-hoverFont hover:border-transparent border-secondaryBorder focus:border-transparent hover:outline-none focus:outline-none"
+                      <ChangeLog />
+                      <span className="text-[14px]">Changelog</span>
+                    </ShadowBtn>
+                    <ShadowBtn
+                      className="rounded-md"
+                      mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
                       onClick={() => window.open("https://docs.edithx.ai", "_blank")}
                     >
-                      Docs
-                    </button>
-
+                      <DocsIcon />
+                      <span className="text-[14px]">Docs</span>
+                    </ShadowBtn>
+                    {/* <ShadowBtn
+                      className="rounded-full"
+                      mainClassName="rounded-full border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[7px] px-[7px] flex items-center justify-center gap-2"
+                    >
+                      <SunIcon />
+                    </ShadowBtn>
+                    <ProfileDropDownMenu /> */}
                   </div>
-                  <ProfileDropDownMenu />
                 </div>
                 <div className="lg:hidden">
                   <MobileDropDownMenu />
@@ -134,61 +131,6 @@ const Header = () => {
           }
         </div>
       </header>
-      {/* Left Sidebar */}
-      {/* <div ref={leftSidebarRef} className="fixed top-[74px] left-0 flex">
-        <div
-          className={`${
-            isLeftSidebar
-              ? "w-[260px] h-[calc(100vh-74px)]  bg-headerBg border-r  z-50 scale-100 opacity-100"
-              : "scale-0 opacity-0 origin-left"
-          }  transition-all duration-150 ease-out`}
-        ></div>
-        <button
-          className={`${
-            isLeftSidebar
-              ? "h-full -translate-x-[calc(100%+1px)] rounded-bl-lg border-r-transparent"
-              : "rounded-br-lg border-l-transparent"
-          } bg-buttonBg p-1   border-t-transparent rounded-none hover: focus:outline-none z-[51] transition-all duration-150 ease-out`}
-          onClick={() => {
-            setIsLeftSidebar(!isLeftSidebar);
-            setIsRightSidebar(false);
-          }}
-        >
-          {isLeftSidebar ? (
-            <RiMenuFoldLine className="w-5 h-5 text-mainFont" />
-          ) : (
-            <RiMenuUnfoldLine className="w-5 h-5 text-mainFont" />
-          )}
-        </button>
-      </div> */}
-
-      {/* Right Sidebar */}
-      {/* <div ref={rightSidebarRef} className="fixed top-[74px] right-0 flex">
-        <button
-          className={`${
-            isRightSidebar
-              ? "h-full translate-x-[calc(100%+1px)] rounded-br-lg border-l-transparent"
-              : "rounded-bl-lg border-r-transparent"
-          } bg-buttonBg p-1   border-t-transparent rounded-none hover: focus:outline-none z-[51] transition-all duration-150 ease-out`}
-          onClick={() => {
-            setIsRightSidebar(!isRightSidebar);
-            setIsLeftSidebar(false);
-          }}
-        >
-          {isRightSidebar ? (
-            <RiMenuUnfoldLine className="w-5 h-5 text-mainFont" />
-          ) : (
-            <RiMenuFoldLine className="w-5 h-5 text-mainFont" />
-          )}
-        </button>
-        <div
-          className={`${
-            isRightSidebar
-              ? "w-[260px] h-[calc(100vh-74px)]  bg-headerBg border-l  z-50 scale-100 opacity-100"
-              : "scale-0 opacity-0 origin-right"
-          }  transition-all duration-150 ease-out`}
-        ></div>
-      </div> */}
     </>
   );
 };

@@ -7,9 +7,64 @@ import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom, chatTypeA
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 import { IResearchLog } from "@/app/lib/interface";
-
+import { styled } from '@mui/material/styles';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch, { SwitchProps } from '@mui/material/Switch';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import PlusIcon from "../assets/plus";
+import VoiceIcon from "../assets/voice";
+import ShadowBtn from "./ShadowBtn";
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
+
+const AntSwitch = styled(Switch)(({ theme }) => ({
+  width: 28,
+  height: 16,
+  padding: 0,
+  display: 'flex',
+  '&:active': {
+    '& .MuiSwitch-thumb': {
+      width: 15,
+    },
+    '& .MuiSwitch-switchBase.Mui-checked': {
+      transform: 'translateX(9px)',
+    },
+  },
+  '& .MuiSwitch-switchBase': {
+    padding: 2,
+    '&.Mui-checked': {
+      transform: 'translateX(12px)',
+      color: '#fff',
+      '& + .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: '#1890ff',
+        ...theme.applyStyles('dark', {
+          backgroundColor: '#177ddc',
+        }),
+      },
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    transition: theme.transitions.create(['width'], {
+      duration: 200,
+    }),
+  },
+  '& .MuiSwitch-track': {
+    borderRadius: 16 / 2,
+    opacity: 1,
+    backgroundColor: 'rgba(0,0,0,.25)',
+    boxSizing: 'border-box',
+    ...theme.applyStyles('dark', {
+      backgroundColor: 'rgba(255,255,255,.35)',
+    }),
+  },
+}));
 
 const InputBox = () => {
   const [isStartChat, setIsStartChat] = useAtom(isStartChatAtom);
@@ -505,16 +560,13 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } flex flex-nowrap justify-between items-center gap-4 bg-inputBg mt-[10px] px-[21px] py-[10px] border-secondaryBorder border rounded-lg w-full lg:max-w-[700px]`}
+        } bg-box-bg mt-[10px] w-full lg:max-w-[700px] border rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
     >
-      <div
-        className={`${messageOver ? "order-0 basis-full" : "order-1"
-          } flex flex-col gap-3`}
-      >
+      <div className="flex w-full justify-between items-center p-4">
         <textarea
           ref={textareaRef}
-          className={`${isStreaming ? '' : "text-mainFont"} bg-transparent pt-2 border-none w-full h-[36px] font-semibold text-base placeholder:text-subButtonFont overflow-y-hidden outline-none resize-none`}
-          placeholder="Message EDITH..."
+          className={`${isStreaming ? '' : "text-mainFont"} bg-transparent pt-2 border-none w-full h-[36px] font-semibold text-base placeholder:text-[#FFFFFF33] overflow-y-hidden outline-none resize-none`}
+          placeholder="How can EDITH help you today?"
           onKeyDown={keyDownHandler}
           value={inputPrompt}
           onChange={(e) => handleChange(e)}
@@ -526,39 +578,42 @@ const InputBox = () => {
           }}
         />
         <button
-          className={`${chatType === 0 ? 'bg-transparent text-mainFont border-primaryBorder' : 'bg-[#D6D6D6] text-black border-[#D6D6D6]'} focus:outline-none hover:outline-none hover:border-[#D6D6D6] border-2 rounded-md px-2 py-0 text-[12px] w-fit h-fit leading-[2] font-semibold`}
-          onClick={() => setChatType(prev => prev === 0 ? 1 : 0)}
-        >
-          Pro Search
-        </button>
-      </div>
-      {/* <div className={`${messageOver ? "order-1" : "order-0"}`}>
-        <DropdownMenu onOpenChange={setIsOpen}>
-          <DropdownMenuTrigger className="flex items-center gap-2 bg-buttonBg p-0 border border-secondaryBorder hover:border-tertiaryBorder focus:border-secondaryBorder focus:outline-none rounded-full w-[62px] min-w-[62px] h-9">
-            <Image src="/image/Edith_Logo.png" alt="chat logo" width={32} height={32} className="rounded-full w-8 h-8" />
-            <FaChevronDown
-              className={`${isOpen ? "rotate-180" : ""
-                } transition-all duration-300 text-mainFont w-3 h-3`}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start"></DropdownMenuContent>
-        </DropdownMenu>
-      </div> */}
-      <div className="order-2">
-        <button
-          className="flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-buttonBg hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont"
+          className="flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont"
           onClick={(e) => handleClickSend(e)}
         >
           {isStreaming ? (
-            <FaSpinner className="w-auto h-full animate-spin" />
+            <FaSpinner className="w-auto h-full animate-spin text-black" />
           ) : (
-            <FaArrowUp className="w-auto h-full" />
+            <FaArrowUp className="w-auto h-full text-black" />
           )}
         </button>
       </div>
-
-    </div>
-  );
+      <div className="border-t border-[#25252799] p-4 flex gap-3 w-full bg-[url('/image/text-bg.png')]">
+        {/* <ShadowBtn
+          className="rounded-full"
+          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+        >
+          <PlusIcon />
+        </ShadowBtn> */}
+        <ShadowBtn
+          className="rounded-full"
+          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+        >
+          Pro Search
+          <AntSwitch 
+            inputProps={{ 'aria-label': 'Pro Search' }}
+            onChange={(e) => setChatType(e.target.checked ? 1 : 0)}
+          />
+        </ShadowBtn>
+        {/* <ShadowBtn
+          className="rounded-full"
+          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+        >
+          <VoiceIcon />
+        </ShadowBtn> */}
+      </div>
+    </div >
+  )
 };
 
 export default InputBox;

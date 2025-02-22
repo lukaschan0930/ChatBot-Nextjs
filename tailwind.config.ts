@@ -68,6 +68,28 @@ export default {
         primaryBorder: 'var(--border-primary)',
         secondaryBorder: 'var(--border-secondary)',
         tertiaryBorder: 'var(--border-tertiary)',
+        box: {
+          border: '#1C1C1E',
+          bg: '#0E0E10',
+          fontSub: '#525252',
+          placeholder: '#808080',
+        }
+      },
+      boxShadow: {
+        'signin': '0px 22px 28.4px 0px #00000040',
+        'input': '0px 0px 7.3px 0px #00000087 inset',
+        'btn-signin': '0px 19px 21.5px 0px #0000006B',
+        'btn-google': '0px 4px 6.7px -1px #00000040',
+        'input-box': '0px 10px 18px -7px #00000040'
+      },
+      backdropBlur: {
+        'btn-signin': '9.6px'
+      },
+      backgroundImage: {
+        'btn-signin': 'linear-gradient(180deg, #FFFFFF 0%, #999999 100%)',
+        'input-box': 'linear-gradient(180deg, #DFDFDF 0%, #BFBFBF 100%)',
+        'btn-shadow': 'linear-gradient(180deg, #454449 0%, rgba(69, 68, 73, 0) 100%), linear-gradient(0deg, #2C2B30, #2C2B30)',
+        'btn-new-chat': 'linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%), linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2))'
       }
     }
   },

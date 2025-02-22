@@ -5,6 +5,7 @@ import { useAdmin } from "@/app/context/AdminContext";
 import { useState } from "react";
 import { toast } from "@/app/hooks/use-toast";
 import CircularProgress from "@mui/material/CircularProgress";
+import { validateEmail, validatePassword } from "@/app/lib/utils";
 
 const AdminProfile = () => {
     const { user, setUser, useFetch } = useAdmin();
@@ -15,10 +16,7 @@ const AdminProfile = () => {
     const fetch = useFetch();
 
     const updateAdminProfile = async () => {
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailPattern.test(user?.email || "")) {
+        if (!validateEmail(user?.email || "")) {
             toast({
                 variant: "destructive",
                 description: "Invalid email format"
@@ -39,7 +37,7 @@ const AdminProfile = () => {
             });
             return;
         }
-        if (!passwordPattern.test(newPassword)) {
+        if (!validatePassword(newPassword)) {
             toast({
                 variant: "destructive",
                 description: "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character"

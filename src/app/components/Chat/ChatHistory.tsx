@@ -9,6 +9,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
+import ShadowBtn from "@/app/components/ShadowBtn";
+import { Divider } from "@mui/material";
 
 const ChatHistory = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
@@ -83,16 +85,19 @@ const ChatHistory = () => {
     useEffect(() => {
         const fetchChats = async () => {
             if (sessionId) {
-                setIsStartChat(true);
                 setIsLoading(true);
                 try {
                     const chats = await fetch(`/api/chat/log?sessionId=${sessionId}`);
                     const data = await chats.json();
-                    if (data.success && data.data.length > 0) {
+                    if (data.success && data.data && data.data.length > 0) {
                         setChatLog(data.data);
+                        setIsStartChat(true);
+                    } else {
+                        setIsStartChat(false);
                     }
                 } catch (error) {
                     console.error(error);
+                    setIsStartChat(false);
                 } finally {
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     setIsLoading(false);
@@ -105,111 +110,165 @@ const ChatHistory = () => {
         }
     }, [sessionId]);
 
+    const categorizeSessions = (sessions: ChatHistoryType[]) => {
+        const today = moment().startOf('day');
+        const yesterday = moment().subtract(1, 'days').startOf('day');
+        const last7Days = moment().subtract(7, 'days').startOf('day');
+        const last30Days = moment().subtract(30, 'days').startOf('day');
+
+        const categories = {
+            today: [] as ChatHistoryType[],
+            yesterday: [] as ChatHistoryType[],
+            last7Days: [] as ChatHistoryType[],
+            last30Days: [] as ChatHistoryType[],
+        };
+
+        sessions.forEach(session => {
+            const sessionTime = moment(Number(session.chats[session.chats.length - 1].timestamp));
+            if (sessionTime.isSameOrAfter(today)) {
+                categories.today.push(session);
+            } else if (sessionTime.isSameOrAfter(yesterday)) {
+                categories.yesterday.push(session);
+            } else if (sessionTime.isSameOrAfter(last7Days)) {
+                categories.last7Days.push(session);
+            } else if (sessionTime.isSameOrAfter(last30Days)) {
+                categories.last30Days.push(session);
+            }
+        });
+
+        return categories;
+    };
+
+    const categorizedSessions = categorizeSessions(chatHistory.sort((a, b) => Number(b.chats[b.chats.length - 1].timestamp) - Number(a.chats[a.chats.length - 1].timestamp)));
 
     return (
-        <div className={`border-primaryBorder flex flex-col items-start mt-[72px] max-h-[calc(100vh-72px)] transition-all duration-500 ease-in-out ${isSidebarVisible ? "w-[260px] px-4 border-r-2 opacity-100" : "w-0 px-0 border-0 opacity-0"} max-md:fixed max-md:inset-0 max-md:bg-black max-md:z-50`}>
+        <div className={`border-primaryBorder flex flex-col items-start mt-[72px] max-h-[calc(100vh-72px)] transition-all duration-500 ease-in-out ${isSidebarVisible ? "w-[260px] px-2 border-r-2 opacity-100" : "w-0 px-0 border-0 opacity-0"} max-md:fixed max-md:inset-0 max-md:bg-black max-md:z-50`}>
             {
                 isSidebarVisible && (
                     <>
-                        <button
-                            type="button"
-                            className="w-full mt-4 text-nowrap bg-inherit focus:outline-none flex justify-center items-center gap-4 border-1 border-gray-500 rounded-lg py-3 hover:border-tertiaryBorder"
-                            onClick={() => {
-                                setChatLog([]);
-                                setSessionId(generateSessionId(
-                                    session?.user?.email as string,
-                                    Date.now().toString()
-                                ));
-                                setIsStartChat(false);
-                                setIsSidebarVisible(false);
-                            }}
-                        >
-                            <Image src="/image/circle_plus.svg" alt="new chat" width={21} height={21} />
-                            New Chat
-                        </button>
-                        <div className="text-subButtonFont mt-7 mb-2">Chat History</div>
-                        <div className="text-left flex flex-col flex-auto overflow-y-auto gap-1 overflow-x-hidden">
+                        <div className="w-full px-2">
+                            <ShadowBtn
+                                className="bg-btn-new-chat w-full mt-6"
+                                mainClassName="bg-gradient-to-b from-[#DFDFDF] to-[#BFBFBF] flex py-2 px-[10px] justify-between items-center"
+                                onClick={() => {
+                                    setIsStartChat(false);
+                                    setSessionId(generateSessionId(
+                                        session?.user?.email as string,
+                                        Date.now().toString()
+                                    ));
+                                    setIsSidebarVisible(false);
+                                    setChatLog([]);
+                                }}
+                            >
+                                <span className="text-black font-semibold text-sm">New Thread</span>
+                                <ShadowBtn
+                                    mainClassName="px-1 py-[2px] text-[12px]"
+                                >
+                                    <span className="text-[10px]">⌘</span> N
+                                </ShadowBtn>
+                            </ShadowBtn>
+                        </div>
+                        <div className="text-subButtonFont mt-7 mb-3 px-2">History</div>
+                        <div className="w-full px-2">
+                            <Divider sx={{ color: "#29292B", width: "100%", "&.MuiDivider-root": { borderColor: "#29292B" } }} />
+                        </div>
+                        <div className="text-left flex flex-col flex-auto overflow-y-auto gap-1 overflow-x-hidden w-full">
                             {isLoadingHistory ? (
-                                <CircularProgress />
+                                <CircularProgress className="my-4" />
                             ) : (
-                                chatHistory.sort((a, b) => Number(b.chats[b.chats.length - 1].timestamp) - Number(a.chats[a.chats.length - 1].timestamp)).map((session: ChatHistoryType) => (
-                                    <div
-                                        key={session.id}
-                                        onClick={() => {setSessionId(session.id); setIsSidebarVisible(false)}}
-                                        className={`${session.id === sessionId ? "bg-inputBg text-mainFont" : "text-subButtonFont hover:bg-inputBg hover:border-tertiaryBorder hover:text-mainFont"} flex items-center justify-start group transition-colors duration-200 relative py-4 px-4 rounded-lg`}
-                                    >
-                                        <div className="w-[200px] flex flex-col gap-1">
-                                            {editingSessionId === session.id ? (
-                                                <input
-                                                    type="text"
-                                                    value={newTitle}
-                                                    onChange={(e) => setNewTitle(e.target.value)}
-                                                    onBlur={() => updateSessionTitle(session.id, newTitle)}
-                                                    className="text-white truncate text-sm bg-transparent border-2 border-gray-500 rounded-lg p-1"
-                                                />
-                                            ) : (
-                                                <>
-                                                    <div className="text-white truncate text-sm">{extractTitleFromMd(session.title) || "Untitled Chat"}</div>
-                                                    <div className="text-[10px]">{moment(Number(session.chats[session.chats.length - 1].timestamp)).format("YYYY/MM/DD HH:mm:ss")}</div>
-                                                </>
-                                            )}
+                                Object.entries(categorizedSessions).map(([category, sessions]) => (
+                                    sessions.length > 0 &&
+                                    <div key={category}>
+                                        <div className="w-full px-2">
+                                            <div className="text-subButtonFont my-4 border-b border-[#29292B] w-fit">{category.charAt(0).toUpperCase() + category.slice(1)}</div>
                                         </div>
-                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-inputBg pl-2 hidden group-hover:flex items-center rounded-r-lg gap-1">
-                                            {
-                                                editingSessionId !== session.id ? (
-                                                    <>
-                                                        <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setNewTitle(extractTitleFromMd(session.title));
-                                                            setEditingSessionId(session.id);
-                                                        }}>
-                                                            <FiEdit size={20} />
-                                                        </button>
-                                                        <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            deleteSession(session.id);
-                                                        }}>
-                                                            <FiTrash2 size={20} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            updateSessionTitle(session.id, newTitle);
-                                                        }}>
-                                                            <FiCheck size={20} />
-                                                        </button>
-                                                        <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingSessionId(null);
-                                                        }}>
-                                                            <FiX size={20} />
-                                                        </button>
-                                                    </>
-                                                )
-                                            }
-                                        </div>
+                                        {sessions.map((session: ChatHistoryType) => (
+                                            <div
+                                                key={session.id}
+                                                className={`${session.id === sessionId ?
+                                                        "text-mainFont p-[1px] bg-btn-shadow" :
+                                                        "cursor-pointer"} 
+                                                rounded-lg hover:text-mainFont focus:text-mainFont p-[1px] hover:bg-btn-shadow focus:bg-btn-shadow cursor-pointer mb-[2px]`
+                                                }
+                                            >
+                                                <div
+                                                    key={session.id}
+                                                    onClick={() => { setSessionId(session.id); setIsSidebarVisible(false) }}
+                                                    className={
+                                                        `${session.id === sessionId ?
+                                                            "bg-[#29292980] text-mainFont" :
+                                                            "text-subButtonFont"} 
+                                                        flex items-center justify-start group transition-colors duration-200 px-2 py-2 relative rounded-lg`
+                                                    }
+                                                >
+                                                    <div className="w-[200px] flex flex-col gap-1">
+                                                        {editingSessionId === session.id ? (
+                                                            <input
+                                                                type="text"
+                                                                value={newTitle}
+                                                                onChange={(e) => setNewTitle(e.target.value)}
+                                                                onBlur={() => updateSessionTitle(session.id, newTitle)}
+                                                                className="text-white truncate text-sm bg-transparent border-2 border-gray-500 rounded-lg p-1"
+                                                            />
+                                                        ) : (
+                                                            <>
+                                                                <div className="text-white truncate text-sm">{extractTitleFromMd(session.title) || "Untitled Chat"}</div>
+                                                                <div className="text-[12px] text-[#3E3E40]">{moment(Number(session.chats[session.chats.length - 1].timestamp)).format("Do MMM YY HH:mm:ss")}</div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pl-2 hidden group-hover:flex items-center rounded-r-lg gap-1">
+                                                        {
+                                                            editingSessionId !== session.id ? (
+                                                                <>
+                                                                    <button className="bg-transparent p-1 border-none" onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setNewTitle(extractTitleFromMd(session.title));
+                                                                        setEditingSessionId(session.id);
+                                                                    }}>
+                                                                        <FiEdit size={20} />
+                                                                    </button>
+                                                                    <button className="bg-transparent p-1 border-none text-[#FF5050]" onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        deleteSession(session.id);
+                                                                    }}>
+                                                                        <FiTrash2 size={20} />
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        updateSessionTitle(session.id, newTitle);
+                                                                    }}>
+                                                                        <FiCheck size={20} />
+                                                                    </button>
+                                                                    <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setEditingSessionId(null);
+                                                                    }}>
+                                                                        <FiX size={20} />
+                                                                    </button>
+                                                                </>
+                                                            )
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 ))
                             )}
                         </div>
-                        <div className="border-t border-gray-500 py-3 w-full flex flex-col gap-2">
-                            <button
-                                className="flex items-center justify-start gap-2 text-mainFont bg-transparent border-none focus:outline-none hover:bg-inputBg w-full"
+                        <div className="w-full px-2">
+                            <ShadowBtn
+                                className="w-full mb-7"
+                                mainClassName="py-2 px-[10px] text-white text-sm text-center"
                                 onClick={() => { router.push("/chatText/setting") }}
                             >
-                                <Image src="/image/settings.svg" alt="settings" width={20} height={20} />
                                 Settings
-                            </button>
-                            {/* <button
-                                className="flex items-center justify-start gap-2 text-mainFont bg-transparent border-none focus:outline-none hover:bg-inputBg w-full"
-                                onClick={() => setIsSidebarVisible(false)}
-                            >
-                                <Image src="/image/collapse.svg" alt="collapse" width={20} height={20} />
-                                Collapse Sidebar
-                            </button> */}
-                        </div >
+                            </ShadowBtn>
+                        </div>
                     </>
                 )
             }

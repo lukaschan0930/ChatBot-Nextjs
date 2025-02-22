@@ -1,7 +1,6 @@
 'use client'
 import { useState } from "react";
 import { FiLogOut, FiSettings } from "react-icons/fi";
-import { FaCheck } from "react-icons/fa6";
 import { IoClose, IoMenu } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 
@@ -19,8 +18,11 @@ import { signOut } from "next-auth/react";
 type MenuItem = {
   id: string;
   label: string;
-  checked: boolean;
-  disable: boolean;
+  subItems: {
+    id: string;
+    label: string;
+    disable: boolean;
+  }[];
 };
 
 const MobileDropDownMenu = () => {

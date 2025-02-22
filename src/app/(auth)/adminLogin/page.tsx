@@ -69,7 +69,7 @@ const AdminLogin = () => {
     };
 
     return (
-        <Box className="flex flex-col items-center justify-center min-h-screen bg-[#000000] text-[#E2E2E2] max-md:w-full">
+        <Box className="flex flex-col items-center justify-center min-h-screen text-[#E2E2E2] max-md:w-full">
             {/* logo */}
             <button
                 className="flex items-end bg-transparent border-none outline-none focus:outline-none py-0 !mb-5 md:px-[120px]"

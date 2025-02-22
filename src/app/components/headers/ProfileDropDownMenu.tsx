@@ -28,12 +28,12 @@ const ProfileDropDownMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="p-0 transition-all duration-200 ease-in border-none rounded-full hover:scale-105 focus:outline-none bg-transparent">
+      <DropdownMenuTrigger className="p-0 transition-all duration-200 ease-in border-none rounded-full hover:scale-105 focus:outline-none bg-transparent !w-[35px] !h-[35px]">
         {
           user?.avatar ? (
-            <Image src={user?.avatar} alt="avatar" className="h-[46px] w-[46px] rounded-full" width={46} height={46} />
+            <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
           ) : (
-            <div className="h-[50px] w-[50px] rounded-full bg-gradient-to-br from-[#7D2DFF] to-[#41DDFF] flex items-center justify-center"></div>
+            <Image src="/image/default-avatar.png" alt="avatar" className="!h-[35px] !w-auto max-w-[35px]" width={35} height={35} />
           )
         }
 

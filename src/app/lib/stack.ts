@@ -1,89 +1,47 @@
 export const MenuItems = [
   {
-    id: "chatText",
-    label: "E.CHAT",
-    checked: true,
-    disable: false,
+    id: "innovations",
+    label: "Innovations",
+    subItems: [
+      {
+        id: "chatText",
+        label: "ECHAT",
+        disable: false,
+      },
+      {
+        id: "goland",
+        label: "GOLAND",
+        disable: true,
+      }
+    ],
   },
   {
-    id: "echo",
-    label: "Echo",
-    checked: false,
-    disable: true,
-    // subItems: [
-    //   {
-    //     id: "llm-chat",
-    //     label: "LLM Chat",
-    //     checked: false,
-    //   },
-    //   {
-    //     id: "settings",
-    //     label: "Settings",
-    //     checked: false,
-    //   },
-    //   {
-    //     id: "project",
-    //     label: "Project",
-    //     checked: false,
-    //   },
-    //   {
-    //     id: "history",
-    //     label: "History",
-    //     checked: false,
-    //   },
-    // ],
+    id: "infrastructure",
+    label: "Infrastructure",
+    subItems: [
+      {
+        id: "data-label",
+        label: "Data Label",
+        disable: true,
+      },
+      {
+        id: "gpu",
+        label: "GPU",
+        disable: true,
+      }
+    ],
   },
   {
-    id: "chatImage",
-    label: "Workers",
-    checked: false,
-    disable: true,
-    // subItems: [
-    //   {
-    //     id: "normal-img-gen",
-    //     label: "Normal Image Generation",
-    //     checked: false,
-    //   },
-    // ],
-  },
-  {
-    id: "chatVideo",
+    id: "intelligence",
     label: "Intelligence",
-    checked: false,
-    disable: true,
-    // subItems: [
-    //   {
-    //     id: "short-film-gen",
-
-    //     label: "Short Film Generation",
-    //     checked: false,
-    //   },
-    //   {
-    //     id: "podcast",
-    //     label: "Podcast",
-    //     checked: false,
-    //   },
-    // ],
-  },
-  {
-    id: "chatAudio",
-    label: "Explorer",
-    checked: false,
-    disable: true,
-    // subItems: [
-    //   {
-
-    //     id: "normal-conversation",
-    //     label: "Normal Conversation",
-    //     checked: false,
-    //   },
-    //   {
-    //     id: "podcast",
-    //     label: "Podcast",
-    //     checked: false,
-    //   },
-    // ],
-  },
+    subItems: [
+      {
+        id: "lab",
+        label: "LAB",
+        disable: true,
+      }
+    ],
+  }
 ];
 
 export const AdminMenuItems = [

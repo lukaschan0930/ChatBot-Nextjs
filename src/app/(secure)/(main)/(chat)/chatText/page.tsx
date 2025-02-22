@@ -21,14 +21,14 @@ const ChatText = () => {
             <div className="text-3xl font-bold whitespace-nowrap w-full flex flex-col items-center">
               <div className="flex items-end justify-center border-none outline-none focus:outline-none">
                 <Image
-                  src="/image/EDITH_logo_png.png"
+                  src="/image/logo-chat.png"
                   alt="logo"
                   width={300}
                   height={300}
-                  className="h-16 w-auto"
+                  className="h-[92px] w-auto"
                 />
               </div>
-              <span className="hidden sm:block text-[24px] text-[#777777] mt-[45px] text-center">
+              <span className="hidden sm:block text-[24px] text-white mt-6 text-center mb-[60px]">
                 Every Day I&apos;m Theoretically Human
               </span>
               <InputBox />

@@ -1,115 +1,100 @@
 import { useEffect, useState } from "react";
-import { FaCheck, FaChevronDown } from "react-icons/fa6";
+import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuSub,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { MenuItems } from "@/app/lib/stack";
 import { useRouter } from "next/navigation";
-
-
-type MenuItem = {
-  id: string;
-  label: string;
-  checked: boolean;
-  disable: boolean;
-  // subItems: {
-  //   id: string;
-  //   label: string;
-  //   checked: boolean;
-  // }[];
-};
+import Image from "next/image";
+import ShadowBtn from "../ShadowBtn";
+import { Divider } from "@mui/material";
+import InfoIcon from "@/app/assets/info";
 
 const DropDownMenu = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const url = pathname.split("/")[1];
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(MenuItems);
-  const [menuTitle, setMenuTitle] = useState<string>();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  // const handleItemClick = (itemId: string, subItemId?: string) => {
-  //   setMenuItems((prevItems) =>
-  //     prevItems.map((item) => ({
-  //       ...item,
-  //       checked: item.id === itemId,
-  //       subItems: item.subItems.map((subItem) => ({
-  //         ...subItem,
-  //         checked: subItemId
-  //           ? subItem.id === subItemId && item.id === itemId
-  //           : false,
-  //       })),
-  //     }))
-  //   );
-  // };
+  const [, setIsOpen] = useState<boolean>(false);
+  const [itemId, setItemId] = useState<string>("");
+  const [menuId, setMenuId] = useState<string>("");
+  const [itemTitle, setItemTitle] = useState<string>("");
 
   const handleItemClick = (itemId: string) => {
-    setMenuItems((prevItems) =>
-      prevItems.map((item) => ({
-        ...item,
-        checked: item.id === itemId,
-      }))
-    );
+    const item = MenuItems.filter((menu) => menu.id === menuId)[0].subItems.find((subItem) => subItem.id === itemId);
+    if (item && !item.disable) {
+      setItemTitle(item.label);
+      setItemId(item.id);
+      router.push(`/${item.id}`);
+    }
   };
 
   useEffect(() => {
-    setMenuTitle(menuItems.find((item) => item.checked)?.label);
-  }, [menuItems]);
+    MenuItems.forEach((menu) => {
+      const subItem = menu.subItems.find((subItem) => subItem.id === url);
+      if (subItem) {
+        setItemTitle(subItem.label);
+        setItemId(subItem.id);
+        setMenuId(menu.id);
+        return;
+      }
+    });
+  }, [MenuItems, url]);
 
   return (
     <DropdownMenu onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger className="flex justify-between items-center bg-inputBg px-3 border-secondaryBorder hover:border-tertiaryBorder rounded-lg w-[160px] h-10 text-mainFont text-xl focus:outline-none">
-        <span className="flex-1 leading-none text-center">{menuTitle}</span>
-        <FaChevronDown
-          className={`${
-            isOpen ? "rotate-180" : ""
-          } transition-all duration-150`}
-        />
+      <DropdownMenuTrigger className="flex justify-between items-center gap-3 bg-transparent hover:border-transparent h-2 text-mainFont text-[16px] focus:outline-none w-fit p-0">
+        <span className="flex-1 leading-none text-center">{itemTitle}</span>
+        <Image src="/image/UpDown.png" alt="arrow-down" width={9} height={14} />
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="bg-inputBg mt-[14px] w-[160px] border-secondaryBorder"
+        className="bg-box-bg mt-[14px] border-box-border rounded-2xl flex flex-col"
         align="start"
       >
-        {menuItems.map((item) => (
-          <DropdownMenuSub key={item.id}>
-            <DropdownMenuCheckboxItem
-              checked={item.checked}
-              onCheckedChange={() => {
-                handleItemClick(item.id);
-                router.push(`/${item.id}`);
-              }}
-              disabled={item.disable}
-              className="text-mainFont hover:text-hoverFont flex items-center justify-between px-3 py-2 [&>span]:hidden text-md text-center"
-            >
-              <p className="flex-1">{item.label}</p>
-              <FaCheck
-                className={`${item.checked ? "visible" : "invisible"} w-4 h-4`}
-              />
-            </DropdownMenuCheckboxItem>
-            {/* <DropdownMenuSubTrigger>
-              <DropdownMenuCheckboxItem
-                checked={item.checked}
-                onCheckedChange={() => handleItemClick(item.id)}
-                onSelect={(e) => e.preventDefault()}
-              >
-                {item.label}
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              {item.subItems.map((subItem) => (
-                <DropdownMenuCheckboxItem
-                  key={subItem.id}
-                  checked={subItem.checked}
-                  onCheckedChange={() => handleItemClick(item.id, subItem.id)}
+        <div className="p-3">
+          <div className="flex items-center justify-between gap-1 rounded-xl bg-[#0B0B0D] p-2 w-full border border-[#25252799]">
+            {
+              MenuItems.map((menu) => (
+                <ShadowBtn 
+                  key={menu.id} 
+                  className={`w-full rounded-md ${menu.id !== menuId && "bg-transparent"}`}
+                  mainClassName={`px-3 py-1 text-[12px] text-white ${menu.id !== menuId && "bg-transparent"}`}
+                  onClick={() => setMenuId(menu.id)}
                 >
-                  {subItem.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuSubContent> */}
-          </DropdownMenuSub>
-        ))}
+                  {menu.label}
+                </ShadowBtn>
+              ))
+            }
+          </div>
+        </div>
+        <Divider sx={{
+          borderColor: "#25252799",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          width: "100%",
+        }} />
+        <div className="p-3 flex flex-col gap-3">
+          {
+            menuId && MenuItems.filter((menu) => menu.id === menuId)[0].subItems.map((subItem) => (
+              <ShadowBtn
+                key={subItem.id}
+                className={`w-full rounded-md`}
+                mainClassName={`text-white flex flex-col items-center justify-center py-7 relative ${subItem.id !== itemId && "bg-[#141415]"}`}
+                onClick={() => handleItemClick(subItem.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <Image src="/image/EDITH_logo_png.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={100} />
+                  <span className="text-[16px]">{subItem.label}</span>
+                </div>
+                <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
+                  <InfoIcon />
+                </div>
+              </ShadowBtn>
+            ))
+          }
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

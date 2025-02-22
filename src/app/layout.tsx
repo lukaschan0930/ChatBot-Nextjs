@@ -25,7 +25,7 @@ export default function RootLayout({
         <link rel="icon" href="/image/favicon.png" />
       </head>
       <body
-        className={`antialiased bg-[#000000] ${inter.className}`}
+        className={`antialiased bg-[#0B0B0D] ${inter.className}`}
       >
         <JotaiProvider>
           <Provider>
