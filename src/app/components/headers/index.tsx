@@ -110,8 +110,8 @@ const Header = () => {
                       mainClassName="rounded-full border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[7px] px-[7px] flex items-center justify-center gap-2"
                     >
                       <SunIcon />
-                    </ShadowBtn>
-                    <ProfileDropDownMenu /> */}
+                    </ShadowBtn> */}
+                    <ProfileDropDownMenu />
                   </div>
                 </div>
                 <div className="lg:hidden">
