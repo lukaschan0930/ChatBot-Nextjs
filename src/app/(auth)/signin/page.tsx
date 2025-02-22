@@ -158,7 +158,7 @@ const SignIn = () => {
         </div>
         <FormBtn
           value="Sign In"
-          className="mt-6 shadow-btn-signin backdrop-blur-signin bg-btn-signin"
+          className="mt-6 shadow-btn-signin backdrop-blur-signin bg-btn-signin text-[#0A0A0A]"
           onClick={() => emailSignIn(formState)}
           loading={isLoading.form}
           loadingText="Signing in..."

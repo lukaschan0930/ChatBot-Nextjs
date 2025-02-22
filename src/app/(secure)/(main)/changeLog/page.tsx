@@ -77,7 +77,7 @@ const ChangeLog = () => {
                             <CircularProgress />
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-12">
+                        <div className="flex flex-col gap-12 w-full">
                             {
                                 changeLogs
                                     .filter((item: IChangeLog) =>
@@ -89,7 +89,7 @@ const ChangeLog = () => {
                                     .map((item: IChangeLog, index: number) => (
                                         <div
                                             key={index}
-                                            className="flex flex-col bg-[#0E0E10] border-2 border-[#25252799] rounded-2xl mb-12 w-full"
+                                            className="flex flex-col bg-[#0E0E10] border-2 border-[#25252799] rounded-2xl w-full"
                                         >
                                             <div className="flex flex-col p-6 gap-3">
                                                 <h1 className="text-mainFont text-lg">{item.title}</h1>

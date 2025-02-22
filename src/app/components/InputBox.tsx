@@ -103,6 +103,12 @@ const InputBox = () => {
     setTextareaWidth(textareaRef.current?.clientWidth || 0);
   }, []);
 
+  useEffect(() => {
+    if (!sessionId) {
+      setSessionId(generateSessionId(session?.user?.email as string, Date.now().toString()));
+    }
+  }, [sessionId]);
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newPrompt = e.target.value;
     setInputPrompt(newPrompt);

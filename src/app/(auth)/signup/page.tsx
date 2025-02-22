@@ -186,7 +186,7 @@ const SignUp = () => {
         </div>
         <FormBtn
           value="Sign Up"
-          className="mt-6 shadow-btn-signin backdrop-blur-signin bg-btn-signin"
+          className="mt-6 shadow-btn-signin backdrop-blur-signin bg-btn-signin text-[#0A0A0A]"
           onClick={() => signUp()}
           loading={isLoading.form}
           loadingText="Sign up..."

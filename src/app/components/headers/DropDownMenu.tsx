@@ -39,6 +39,10 @@ const DropDownMenu = () => {
         setItemId(subItem.id);
         setMenuId(menu.id);
         return;
+      } else {
+        setItemTitle("ECHAT");
+        setItemId("chatText");
+        setMenuId("innovations");
       }
     });
   }, [MenuItems, url]);
