@@ -7,21 +7,25 @@ export const MenuItems = [
         id: "chatText",
         label: "ECHAT",
         disable: false,
+        tooltip: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor"
       },
       {
         id: "goland",
         label: "GOLAND",
         disable: true,
+        tooltip: ""
       },
       {
         id: "eg",
         label: "EG",
         disable: true,
+        tooltip: ""
       },
       {
         id: "router",
         label: "ROUTER",
         disable: true,
+        tooltip: ""
       }
     ],
   },
@@ -33,11 +37,13 @@ export const MenuItems = [
         id: "workers",
         label: "WORKERS",
         disable: true,
+        tooltip: ""
       },
       {
         id: "rwa",
         label: "RWA",
         disable: true,
+        tooltip: ""
       }
     ],
   },
@@ -49,21 +55,25 @@ export const MenuItems = [
         id: "governance",
         label: "GOVERNANCE",
         disable: true,
+        tooltip: ""
       },
       {
         id: "citizenship",
         label: "CITIZENSHIP",
         disable: true,
+        tooltip: ""
       },
       {
         id: "studio",
         label: "STUDIO",
         disable: true,
+        tooltip: ""
       },
       {
         id: "explorer",
         label: "EXPLORER",
         disable: true,
+        tooltip: ""
       }
     ],
   }

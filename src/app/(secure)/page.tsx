@@ -63,7 +63,7 @@ export default function Home() {
             MenuItems.map((item) => (
               <div key={item.id} className="flex flex-col py-4 px-3 gap-5 bg-[#0B0B0D] border border-[#25252799] rounded-[8px]">
                 <div className="text-white text-[14px]">{item.label}</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-3">
                   {item.subItems.map((subItem) => (
                     <ShadowBtn
                       key={subItem.id}
@@ -77,7 +77,7 @@ export default function Home() {
                         <span className="text-[16px] text-nowrap">{subItem.label}</span>
                       </div>
                       <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
-                        <MenuTooltip title="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor" placement="top" arrow>
+                        <MenuTooltip title={subItem.tooltip} placement="top" arrow>
                           <InfoComponent />
                         </MenuTooltip>
                       </div>

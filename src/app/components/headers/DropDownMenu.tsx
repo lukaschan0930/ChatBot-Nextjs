@@ -11,6 +11,32 @@ import Image from "next/image";
 import ShadowBtn from "../ShadowBtn";
 import { Divider } from "@mui/material";
 import InfoIcon from "@/app/assets/info";
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import React from "react";
+import { styled } from '@mui/material/styles';
+
+const MenuTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: "#151517",
+    color: '#808080',
+    boxShadow: theme.shadows[1],
+    border: '1px solid #2C2B3080',
+    padding: '16px 12px',
+    fontSize: 13,
+    width: '282px',
+    borderRadius: '6px',
+  },
+}));
+
+const InfoComponent = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(function InfoComponent(props, ref) {
+  return (
+    <div {...props} ref={ref}>
+      <InfoIcon />
+    </div>
+  );
+});
 
 const DropDownMenu = () => {
   const router = useRouter();
@@ -61,8 +87,8 @@ const DropDownMenu = () => {
           <div className="flex items-center justify-between gap-1 rounded-xl bg-[#0B0B0D] p-2 w-full border border-[#25252799]">
             {
               MenuItems.map((menu) => (
-                <ShadowBtn 
-                  key={menu.id} 
+                <ShadowBtn
+                  key={menu.id}
                   className={`w-full rounded-md ${menu.id !== menuId && "bg-transparent"}`}
                   mainClassName={`px-3 py-1 text-[12px] text-white ${menu.id !== menuId && "bg-transparent"}`}
                   onClick={() => setMenuId(menu.id)}
@@ -93,7 +119,9 @@ const DropDownMenu = () => {
                   <span className="text-[16px]">{subItem.label}</span>
                 </div>
                 <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
-                  <InfoIcon />
+                  <MenuTooltip title={subItem.tooltip} placement="top" arrow>
+                    <InfoComponent />
+                  </MenuTooltip>
                 </div>
               </ShadowBtn>
             ))
