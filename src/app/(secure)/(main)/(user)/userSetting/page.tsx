@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import { MdCheck, MdOutlineContentCopy } from "react-icons/md";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useRouter } from "next/navigation";
@@ -125,6 +125,11 @@ const UserSetting = () => {
     const handleClickCancel = () => {
         router.back();
     }
+
+    useEffect(() => {
+        setAvatar(user?.avatar || '');
+        setName(user?.name || '')
+    }, [user])
 
     return (
         <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen">
