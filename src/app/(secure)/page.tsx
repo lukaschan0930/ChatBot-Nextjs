@@ -76,11 +76,14 @@ export default function Home() {
                         <Divider orientation="vertical" flexItem className="w-[1px] bg-[#FFFFFF47]" />
                         <span className="text-[16px] text-nowrap">{subItem.label}</span>
                       </div>
-                      <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
-                        <MenuTooltip title={subItem.tooltip} placement="top" arrow>
-                          <InfoComponent />
-                        </MenuTooltip>
-                      </div>
+                      {
+                        subItem.tooltip &&
+                        <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
+                          <MenuTooltip title={subItem.tooltip} placement="top" arrow>
+                            <InfoComponent />
+                          </MenuTooltip>
+                        </div>
+                      }
                     </ShadowBtn>
                   ))}
                 </div>

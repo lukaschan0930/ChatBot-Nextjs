@@ -118,11 +118,14 @@ const DropDownMenu = () => {
                   <Image src="/image/EDITH_logo_png.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={100} />
                   <span className="text-[16px]">{subItem.label}</span>
                 </div>
-                <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
-                  <MenuTooltip title={subItem.tooltip} placement="top" arrow>
-                    <InfoComponent />
-                  </MenuTooltip>
-                </div>
+                {
+                  subItem.tooltip &&
+                  <div className="absolute right-3 top-3 w-4 h-4 bg-black border-2 border-[#2C2B30] rounded-full flex items-center justify-center">
+                    <MenuTooltip title={subItem.tooltip} placement="top" arrow>
+                      <InfoComponent />
+                    </MenuTooltip>
+                  </div>
+                }
               </ShadowBtn>
             ))
           }
