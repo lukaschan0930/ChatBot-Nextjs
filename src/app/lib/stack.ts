@@ -7,7 +7,7 @@ export const MenuItems = [
         id: "chatText",
         label: "ECHAT",
         disable: false,
-        tooltip: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor"
+        tooltip: "A dedicated platform where users can interact with EDITH AI."
       },
       {
         id: "goland",
