@@ -115,8 +115,9 @@ const DropDownMenu = () => {
                 onClick={() => handleItemClick(subItem.id)}
               >
                 <div className="flex items-center gap-3">
-                  <Image src="/image/EDITH_logo_png.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={100} />
-                  <span className="text-[16px]">{subItem.label}</span>
+                  <Image src="/image/EDITH_logo_png.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} />
+                  <Divider orientation="vertical" flexItem className="w-[1px] bg-[#FFFFFF47]" />
+                  <span className="text-[16px] text-nowrap">{subItem.label}</span>
                 </div>
                 {
                   subItem.tooltip &&

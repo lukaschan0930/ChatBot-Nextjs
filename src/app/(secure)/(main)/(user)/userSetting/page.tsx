@@ -127,10 +127,10 @@ const UserSetting = () => {
     }
 
     return (
-        <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4">
-            <h1 className="text-2xl font-medium text-left text-[#FFFFFF] mt-[180px]">Profile</h1>
+        <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen">
+            <h1 className="text-2xl font-medium text-left text-[#FFFFFF] md:mt-[180px] mt-[100px]">Profile</h1>
             <div
-                className="mt-7 bg-[#FFFFFF05] border border-[#25252799] rounded-3xl lg:w-[640px] w-full flex flex-col"
+                className="mt-7 bg-[#FFFFFF05] border border-[#25252799] rounded-3xl md:w-[640px] w-full flex flex-col"
             >
                 <div className="flex flex-col w-full items-center justify-center py-[52px] mx-auto bg-[url('/image/text-bg.png')]">
                     <Image
@@ -169,23 +169,23 @@ const UserSetting = () => {
                             </div>
                         </div>
                         <div className="text-[16px] text-mainFont mt-4">{name}</div>
-                        <div className="mt-9 flex gap-3 flex-wrap">
-                            <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md">
-                                <div className="bg-[#292929] px-4 py-2 border-r border-[#FFFFFF14] text-[#808080]">Username</div>
+                        <div className="mt-9 flex gap-3 max-sm:flex-col">
+                            <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full">
+                                <div className="bg-[#292929] px-4 py-2 border-r border-[#FFFFFF14] text-[#808080] w-[120px] text-center">Username</div>
                                 <input
-                                    className="px-3 py-2 text-white bg-[#FFFFFF05] max-w-[140px]"
+                                    className="px-3 py-2 text-white bg-[#FFFFFF05] md:max-w-[140px] max-md:w-full max-md:flex-auto "
                                     placeholder={`${user?.name}`}
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                 />
                             </div>
-                            <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md">
-                                <div className="bg-[#292929] px-4 py-2 border-r border-[#FFFFFF14] text-[#808080] text-nowrap">Invite Code</div>
-                                <div className="relative w-full">
+                            <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full">
+                                <div className="bg-[#292929] px-4 py-2 border-r border-[#FFFFFF14] text-[#808080] text-nowrap w-[120px] text-center">Invite Code</div>
+                                <div className="relative max-md:flex-auto">
                                     <input
                                         type="text"
-                                        className="px-3 py-2 text-white bg-[#FFFFFF05] max-w-[140px]"
+                                        className="px-3 py-2 text-white bg-[#FFFFFF05] md:max-w-[140px] max-md:w-full"
                                         value={user?.inviteCode}
                                         disabled
                                     />
