@@ -223,7 +223,7 @@ export async function readDatasource(sessionId: string, query: string) {
     });
     const index = await VectorStoreIndex.fromVectorStore(vectorStore);
     const queryEngine = index.asQueryEngine({
-        similarityTopK: 5,
+        similarityTopK: 10,
     });
     const result = await queryEngine.query({
         query: query
