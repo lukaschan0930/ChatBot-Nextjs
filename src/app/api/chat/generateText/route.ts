@@ -58,29 +58,27 @@ export async function POST(request: NextRequest) {
 
     const learningsString = trimPrompt(
         learnings
-          .map((learning: string) => `<learning>\n${learning}\n</learning>`)
-          .join('\n'),
+            .map((learning: string) => `<learning>\n${learning}\n</learning>`)
+            .join('\n'),
         150_000,
-      );
+    );
     const learningsPrompt = `Given the following prompt from the user, write a final report on the topic using the learnings from research. 
     Make it as as detailed as possible, aim for 3 or more pages, include ALL the learnings from research:
     \n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>
     Not using words "Final Report:" or "Final Report" in the response title.`;
 
     let context = "";
-    
+
     try {
-        if (datasource) {
-            const result = await readDatasource(sessionId, prompt);
-            if (typeof result === 'string') {
-                context = result;
-            } else if (Array.isArray(result.message?.content)) {
-                context = result.message.content.join(' '); // Join array elements into a single string
-            } else {
-                context = result.message?.content || "";
-            }
+        const result = await readDatasource(sessionId, prompt);
+        if (typeof result === 'string') {
+            context = result;
+        } else if (Array.isArray(result.message?.content)) {
+            context = result.message.content.join(' '); // Join array elements into a single string
+        } else {
+            context = result.message?.content || "";
         }
-    
+
         const systemPrompt = `${process.env.SYSTEM_PROMPT!}${context !== "" && `\n\nHere is the context from attatched files:\n\n${context}`}`;
         const stream = await cerebras.chat.completions.create({
             messages: [
@@ -98,7 +96,6 @@ export async function POST(request: NextRequest) {
         });
         const encoder = new TextEncoder();
         let fullResponse = "";
-        console.log("chatType", chatType);
 
         const streamResponse = new ReadableStream({
             async start(controller) {
@@ -170,7 +167,7 @@ export async function POST(request: NextRequest) {
                             } else {
                                 // Otherwise, just add a new chat message.
                                 currentSession.chats.push({
-                                    prompt, 
+                                    prompt,
                                     response: fullResponse,
                                     timestamp: new Date().valueOf().toString(),
                                     inputToken: inputToken,
@@ -247,7 +244,7 @@ export async function POST(request: NextRequest) {
         });
 
         return new NextResponse(streamResponse);
-        
+
     } catch (error) {
         console.error("Error generating text: ", error);
         return new NextResponse("Error generating text.", { status: 500 })

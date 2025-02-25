@@ -196,8 +196,13 @@ const InputBox = () => {
 
       const result = await response.json();
       console.log('Files uploaded successfully:', result);
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
+      return { success: true };
     } catch (error) {
       console.error('Error uploading files:', error);
+      return { success: false, error: error };
     }
   };
 
@@ -283,7 +288,14 @@ const InputBox = () => {
       }
 
       if (datasource) {
-        await fileUpload();
+        const result = await fileUpload();
+        if (!result.success) {
+          toast({
+            variant: "destructive",
+            title: 'Failed to upload files',
+          });
+          return;
+        }
       }
 
       const res = await fetch("/api/chat/generateText", {

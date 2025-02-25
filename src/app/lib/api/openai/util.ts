@@ -5,6 +5,7 @@ import * as xlsx from "xlsx";
 import {
     VectorStoreIndex,
     storageContextFromDefaults,
+    Document
 } from "llamaindex";
 import { SimpleDirectoryReader } from "@llamaindex/readers/directory";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
@@ -93,20 +94,111 @@ export const generateEmbeddingFromFile = async (file: Blob) => {
     return vector;
 }
 
-export async function generateDatasource(sessionId: string) {
-    console.log(`Generating storage context...`);
-    const vectorStore = new PineconeVectorStore({
-        indexName: "edith-chatapp-file",
-        apiKey: process.env.PINECONE_API_KEY!,
-        namespace: sessionId,
-    });
-    const storageContext = await storageContextFromDefaults({ vectorStore });
-    const documents = await new SimpleDirectoryReader().loadData({
-        directoryPath: "./public/uploads",
-    });
-    await VectorStoreIndex.fromDocuments(documents, {
-        storageContext,
-    });
+const generateDocument = async (file: File) => {
+    try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        let documents: Document[] = [];
+
+        switch (file.type) {
+            case "application/pdf":
+                documents = await new Promise<Document[]>((resolve, reject) => {
+                    const pages: string[] = [];
+                    new PdfReader().parseBuffer(buffer, (err, item) => {
+                        if (err) {
+                            reject(err);
+                        } else if (!item) {
+                            resolve(pages.map((pageText, index) => new Document({
+                                text: pageText.trim(),
+                                metadata: {
+                                    file_name: file.name,
+                                    page_number: index + 1,
+                                },
+                            })));
+                        } else if (item.page) {
+                            pages.push("");
+                        } else if (item.text) {
+                            pages[pages.length - 1] += item.text + " ";
+                        }
+                    });
+                });
+                break;
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                const mammothResult = await mammoth.extractRawText({ buffer });
+                documents = [new Document({
+                    text: mammothResult.value.trim(),
+                    metadata: {
+                        file_name: file.name,
+                    },
+                })];
+                break;
+            case "application/vnd.ms-excel":
+            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                const workbook = xlsx.read(buffer, { type: "buffer" });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const text = JSON.stringify(xlsx.utils.sheet_to_json(sheet));
+                documents = [new Document({
+                    text: text.trim(),
+                    metadata: {
+                        file_name: file.name,
+                    },
+                })];
+                break;
+            case "text/csv":
+            case "text/plain":
+            case "application/json":
+            case "text/html":
+                const textContent = buffer.toString('utf-8');
+                documents = [new Document({
+                    text: textContent.trim(),
+                    metadata: {
+                        file_name: file.name,
+                    },
+                })];
+                break;
+            default:
+                console.log(`Unsupported file type: ${file.type}`);
+                break;
+        }
+
+        return documents;
+    } catch (error) {
+        console.error(`Error processing file ${file.name}:`, error);
+    }
+}
+
+export async function generateDatasource(sessionId: string, files: File[]) {
+    try {
+        console.log(`Generating storage context...`);
+        const vectorStore = new PineconeVectorStore({
+            indexName: "edith-chatapp-file",
+            apiKey: process.env.PINECONE_API_KEY!,
+            namespace: sessionId,
+        });
+        const storageContext = await storageContextFromDefaults({ vectorStore });
+        const documents = [];
+
+        for (const file of files) {
+            try {
+                const document = await generateDocument(file);
+                if (document) {
+                    documents.push(...document);
+                }
+            } catch (error) {
+                console.error(`Error processing file ${file.name}:`, error);
+            }
+        }
+
+        await VectorStoreIndex.fromDocuments(documents, {
+            storageContext,
+        });
+
+        console.log("Documents generated");
+        return true;
+    } catch (error) {
+        console.error("Error generating documents:", error);
+        return false;
+    }
 }
 
 export async function readDatasource(sessionId: string, query: string) {
@@ -122,6 +214,7 @@ export async function readDatasource(sessionId: string, query: string) {
     const response = await queryEngine.query({
         query: query
     });
+    console.log("response", response);
     return response;
 }
 
