@@ -1,11 +1,9 @@
-import Cerebras from '@cerebras/cerebras_cloud_sdk';
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
-import { ChatRepo } from "@/app/lib/database/chatrepo";
-import { ChatHistory, ChatLog, IChatCompletionChoice } from '@/app/lib/interface';
+import { ChatLog, IChatCompletionChoice } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
-import { OpenAI } from "openai";
+import { openai } from '@/app/lib/api/openai/const';
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -48,11 +46,7 @@ export async function POST(request: NextRequest) {
                 { role: "assistant", content: chat.response }
             ]) || [];
 
-        const client = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY!,
-        });
-
-        const data = await client.chat.completions.create({
+        const data = await openai.chat.completions.create({
             messages: [
                 { role: "system", content: process.env.SYSTEM_PROMPT! },
                 ...history,

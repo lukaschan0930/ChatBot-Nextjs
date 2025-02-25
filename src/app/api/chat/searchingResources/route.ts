@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import FirecrawlApp, { SearchResponse } from '@mendable/firecrawl-js';
-import { OpenAI } from "openai";
 import { compact } from 'lodash-es';
 import { trimPrompt } from '@/app/lib/api/helper';
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-const firecrawl = new FirecrawlApp({
-    apiKey: process.env.FIRECRAWL_API_KEY ?? '',
-});
+import { openai, firecrawl } from '@/app/lib/api/openai/const';
 
 export async function POST(request: NextRequest) {
     const { title } = await request.json();

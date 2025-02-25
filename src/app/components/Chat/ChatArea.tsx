@@ -44,20 +44,31 @@ const ChatArea = () => {
               {
                 ((!chat.response || chat.response === null) && chatLog.length - 1 === id) &&
                 <>
-                {chat.response}
-                <div className="flex flex-col w-full items-start gap-2 md:pl-4 mb-4">
-                  <p className="text-2xl">EDITH is thinking...</p>
-                  {
-                    chatType == 1 &&
-                    <Progress progress={progress} />
-                  }
-                </div>
+                  {chat.response}
+                  <div className="flex flex-col w-full items-start gap-2 md:pl-4 mb-4">
+                    <p className="text-2xl">EDITH is thinking...</p>
+                    {
+                      chatType == 1 &&
+                      <Progress progress={progress} />
+                    }
+                  </div>
                 </>
               }
               {chatLog.length - 1 === id && activeChatId === sessionId && chatType == 1 && <AccordionResearchArea />}
               {
                 chat.response &&
-                <Response response={chat.response} timestamp={chat.timestamp} last={chatLog.length - 1 === id} inputToken={chat.inputToken} outputToken={chat.outputToken} inputTime={chat.inputTime} outputTime={chat.outputTime} totalTime={chat.totalTime} chatType={chat.chatType} />
+                <Response
+                  response={chat.response}
+                  timestamp={chat.timestamp}
+                  last={chatLog.length - 1 === id}
+                  inputToken={chat.inputToken}
+                  outputToken={chat.outputToken}
+                  inputTime={chat.inputTime}
+                  outputTime={chat.outputTime}
+                  totalTime={chat.totalTime}
+                  chatType={chat.chatType}
+                  datasource={chat.datasource}
+                />
               }
             </div>
           </div>

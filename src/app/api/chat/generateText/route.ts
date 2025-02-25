@@ -1,14 +1,15 @@
-import Cerebras from '@cerebras/cerebras_cloud_sdk';
 import { authOptions, trimPrompt } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
 import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
+import { cerebras } from '@/app/lib/api/openai/const';
+import { readDatasource } from "@/app/lib/api/openai/util";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
-    const { prompt, sessionId, chatLog, reGenerate, learnings, time } = await request.json();
+    const { prompt, sessionId, chatLog, reGenerate, learnings, time, datasource } = await request.json();
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -47,11 +48,6 @@ export async function POST(request: NextRequest) {
             { role: "assistant", content: chat.response }
         ]) || [];
 
-    const client = new Cerebras({
-        apiKey: process.env.CEREBRAS_API_KEY!,
-        baseURL: process.env.CEREBRAS_BASE_URL!,
-    });
-
     let inputToken = 0;
     let outputToken = 0;
     let inputTime = 0;
@@ -71,12 +67,26 @@ export async function POST(request: NextRequest) {
     \n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>
     Not using words "Final Report:" or "Final Report" in the response title.`;
 
+    let context = "";
+    
     try {
-        const stream = await client.chat.completions.create({
+        if (datasource) {
+            const result = await readDatasource(sessionId, prompt);
+            if (typeof result === 'string') {
+                context = result;
+            } else if (Array.isArray(result.message?.content)) {
+                context = result.message.content.join(' '); // Join array elements into a single string
+            } else {
+                context = result.message?.content || "";
+            }
+        }
+    
+        const systemPrompt = `${process.env.SYSTEM_PROMPT!}${context !== "" && `\n\nHere is the context from attatched files:\n\n${context}`}`;
+        const stream = await cerebras.chat.completions.create({
             messages: [
-                { role: "system", content: process.env.SYSTEM_PROMPT! },
+                { role: "system", content: systemPrompt },
                 ...history,
-                { role: "user", content: learnings.length > 0 ? learningsPrompt : prompt }
+                { role: "user", content: learnings.length > 0 ? learningsPrompt : prompt },
             ],
             model: "llama3.1-8b",
             stream: true,
@@ -139,7 +149,8 @@ export async function POST(request: NextRequest) {
                                         inputTime: inputTime,
                                         outputTime: outputTime,
                                         totalTime: totalTime + time / 1000,
-                                        chatType: chatType
+                                        chatType: chatType,
+                                        datasource: datasource
                                     };
                                 } else {
                                     // Should there be no messages, push the new chat instead.
@@ -152,13 +163,14 @@ export async function POST(request: NextRequest) {
                                         inputTime: inputTime,
                                         outputTime: outputTime,
                                         totalTime: totalTime + time / 1000,
-                                        chatType: chatType
+                                        chatType: chatType,
+                                        datasource: datasource
                                     });
                                 }
                             } else {
                                 // Otherwise, just add a new chat message.
                                 currentSession.chats.push({
-                                    prompt,
+                                    prompt, 
                                     response: fullResponse,
                                     timestamp: new Date().valueOf().toString(),
                                     inputToken: inputToken,
@@ -166,7 +178,8 @@ export async function POST(request: NextRequest) {
                                     inputTime: inputTime,
                                     outputTime: outputTime,
                                     totalTime: totalTime + time,
-                                    chatType: chatType
+                                    chatType: chatType,
+                                    datasource: datasource
                                 });
                             }
                             await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
@@ -184,7 +197,8 @@ export async function POST(request: NextRequest) {
                                     inputTime: inputTime,
                                     outputTime: outputTime,
                                     totalTime: totalTime + time,
-                                    chatType: chatType
+                                    chatType: chatType,
+                                    datasource: datasource
                                 }]
                             };
 
@@ -214,7 +228,8 @@ export async function POST(request: NextRequest) {
                                 inputTime: inputTime,
                                 outputTime: outputTime,
                                 totalTime: totalTime + time,
-                                chatType: chatType
+                                chatType: chatType,
+                                datasource: datasource
                             }]
                         };
                         const newHistory = {

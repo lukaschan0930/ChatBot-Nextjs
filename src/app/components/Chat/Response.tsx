@@ -25,7 +25,8 @@ const Response = (
     inputTime = 0,
     outputTime = 0,
     totalTime = 0,
-    chatType
+    chatType,
+    datasource
   }:
     {
       response: string,
@@ -36,7 +37,8 @@ const Response = (
       inputTime?: number,
       outputTime?: number,
       totalTime?: number,
-      chatType: number
+      chatType: number,
+      datasource: boolean
     }
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
@@ -119,6 +121,7 @@ const Response = (
       setChatLog((prevChatLog) => {
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
+        const datasource = chatLog[chatLog.length - 1].datasource;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
@@ -128,7 +131,8 @@ const Response = (
           inputTime: 0,
           outputTime: 0,
           totalTime: 0,
-          chatType: chatType
+          chatType: chatType,
+          datasource: datasource
         };
         return newLog;
       });
@@ -152,7 +156,8 @@ const Response = (
               outputToken: 0,
               inputTime: 0,
               outputTime: 0,
-              chatType: chatType
+              chatType: chatType,
+              datasource: datasource
             };
           } else {
             newLog.push({
@@ -163,7 +168,8 @@ const Response = (
               outputToken: 0,
               inputTime: 0,
               outputTime: 0,
-              chatType: chatType
+              chatType: chatType,
+              datasource: datasource
             });
           }
           return newLog;
@@ -217,7 +223,8 @@ const Response = (
             outputToken: 0,
             inputTime: 0,
             outputTime: 0,
-            chatType: chatType
+            chatType: chatType,
+            datasource: datasource
           };
         } else {
           newLog.push({
@@ -228,7 +235,8 @@ const Response = (
             outputToken: 0,
             inputTime: 0,
             outputTime: 0,
-            chatType: chatType
+            chatType: chatType,
+            datasource: datasource
           });
         }
         return newLog;
@@ -349,6 +357,7 @@ const Response = (
       setChatLog((prevChatLog) => {
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
+        const datasource = chatLog[chatLog.length - 1].datasource;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
@@ -358,14 +367,15 @@ const Response = (
           inputTime: 0,
           outputTime: 0,
           totalTime: 0,
-          chatType: chatType
+          chatType: chatType,
+          datasource: datasource
         };
         return newLog;
       });
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true, learnings, time }),
+        body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true, learnings, time, datasource }),
       });
       if (res.status != 200) {
         throw new Error("Failed to get response from server.");
@@ -400,7 +410,8 @@ const Response = (
               inputTime: inputTime,
               outputTime: outputTime,
               totalTime: totalTime,
-              chatType: chatLog[chatLog.length - 1].chatType
+              chatType: chatLog[chatLog.length - 1].chatType,
+              datasource: chatLog[chatLog.length - 1].datasource
             };
             return newLog;
           });
@@ -420,7 +431,8 @@ const Response = (
               inputTime: inputTime,
               outputTime: outputTime,
               totalTime: totalTime,
-              chatType: newLog[newLog.length - 1].chatType
+              chatType: newLog[newLog.length - 1].chatType,
+              datasource: chatLog[chatLog.length - 1].datasource
             };
             return newLog;
           });
@@ -440,7 +452,8 @@ const Response = (
           inputTime: 0,
           outputTime: 0,
           totalTime: 0,
-          chatType: newLog[newLog.length - 1].chatType
+          chatType: newLog[newLog.length - 1].chatType,
+          datasource: newLog[newLog.length - 1].datasource
         };
         return newLog;
       });

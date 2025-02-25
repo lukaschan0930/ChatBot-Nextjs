@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ISource } from '@/app/lib/interface';
-import { OpenAI } from 'openai';
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai } from '@/app/lib/api/openai/const';
 
 export async function POST(request: NextRequest) {
     const { sources, title } = await request.json();

@@ -129,5 +129,3 @@ export const ChatTypeItems = [
         image: "/image/pro.png"
     },
 ]
-
-

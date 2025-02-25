@@ -123,6 +123,7 @@ export interface ChatLog {
     outputTime?: number;
     totalTime?: number;
     chatType: number;
+    datasource: boolean;
 }
 
 export interface IChangeLog {

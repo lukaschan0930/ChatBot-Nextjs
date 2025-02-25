@@ -163,6 +163,10 @@ function chatModel() {
                 chatType: {
                     type: Number,
                     required: true
+                },
+                datasource: {
+                    type: Boolean,
+                    required: true
                 }
             }]
         }],
