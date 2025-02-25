@@ -211,10 +211,17 @@ export async function readDatasource(sessionId: string, query: string) {
     const queryEngine = index.asQueryEngine({
         similarityTopK: 5,
     });
-    const response = await queryEngine.query({
+    const result = await queryEngine.query({
         query: query
     });
-    console.log("response", response);
-    return response;
+    let context = "";
+    if (typeof result === 'string') {
+        context = result;
+    } else if (Array.isArray(result.message?.content)) {
+        context = result.message.content.join(' '); // Join array elements into a single string
+    } else {
+        context = result.message?.content || "";
+    }
+    return context;
 }
 

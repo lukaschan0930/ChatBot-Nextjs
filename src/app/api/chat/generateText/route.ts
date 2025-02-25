@@ -70,21 +70,34 @@ export async function POST(request: NextRequest) {
     let context = "";
 
     try {
-        const result = await readDatasource(sessionId, prompt);
-        if (typeof result === 'string') {
-            context = result;
-        } else if (Array.isArray(result.message?.content)) {
-            context = result.message.content.join(' '); // Join array elements into a single string
-        } else {
-            context = result.message?.content || "";
+        context = await readDatasource(sessionId, prompt);
+        let count = 0;
+        
+        while (context == "Empty Response" && datasource) {
+            context = await readDatasource(sessionId, prompt);
+            count++;
+            if (count > 3) {
+                break;
+            }
         }
 
-        const systemPrompt = `${process.env.SYSTEM_PROMPT!}${context !== "" && `\n\nHere is the context from attatched files:\n\n${context}`}`;
         const stream = await cerebras.chat.completions.create({
             messages: [
-                { role: "system", content: systemPrompt },
+                { role: "system", content: process.env.SYSTEM_PROMPT! },
                 ...history,
-                { role: "user", content: learnings.length > 0 ? learningsPrompt : prompt },
+                {
+                    role: "user",
+                    content: learnings.length > 0 ? 
+                        learningsPrompt :
+                        `${prompt}
+                        ${
+                            context && context != "" && context != "Empty Response" &&
+                            `\n\nHere is the context from the vector search results based on attached files:
+                            If the context is exist, pls focus on this context and use it to answer the prompt.
+                            \n\n
+                            ${context}`
+                        }`
+                },
             ],
             model: "llama3.1-8b",
             stream: true,
