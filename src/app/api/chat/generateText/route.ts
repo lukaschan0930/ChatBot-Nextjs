@@ -5,7 +5,7 @@ import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
 import { cerebras } from '@/app/lib/api/openai/const';
-import { readDatasource } from "@/app/lib/api/openai/util";
+import { readDatasource, sleep } from "@/app/lib/api/openai/util";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
         while (context == "Empty Response" && datasource) {
             context = await readDatasource(sessionId, prompt);
             count++;
-            if (count > 3) {
+            await sleep(1000);
+            if (count > 10) {
                 break;
             }
         }

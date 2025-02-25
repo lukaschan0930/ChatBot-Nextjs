@@ -10,7 +10,7 @@ import {
 import { SimpleDirectoryReader } from "@llamaindex/readers/directory";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const generateEmbeddings = async (text: string | string[]) => {
     const maxWords = 500;
