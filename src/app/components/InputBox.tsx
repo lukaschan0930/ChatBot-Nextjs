@@ -294,7 +294,7 @@ const InputBox = () => {
             variant: "destructive",
             title: 'Failed to upload files',
           });
-          return;
+          throw new Error('Failed to upload files');
         }
       }
 
@@ -306,7 +306,7 @@ const InputBox = () => {
 
       if (!res.body) {
         console.error("No response body");
-        return;
+        throw new Error('No response body');
       }
 
       const reader = res.body.getReader();

@@ -5,7 +5,8 @@ import * as xlsx from "xlsx";
 import {
     VectorStoreIndex,
     storageContextFromDefaults,
-    Document
+    Document,
+    SimpleDocumentStore
 } from "llamaindex";
 import { SimpleDirectoryReader } from "@llamaindex/readers/directory";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
@@ -193,7 +194,20 @@ export async function generateDatasource(sessionId: string, files: File[]) {
             storageContext,
         });
 
-        console.log("Documents generated");
+        // Wait until all documents are stored
+        const expectedNumberOfDocs = documents.length;
+        while (true) {
+            const numberOfDocs = Object.keys(
+                (storageContext.docStore as SimpleDocumentStore).toDict(),
+            ).length;
+            if (numberOfDocs >= expectedNumberOfDocs) {
+                break;
+            }
+            console.log("Waiting for documents to be stored...");
+            await sleep(1000);
+        }
+
+        console.log("Documents stored");
         return true;
     } catch (error) {
         console.error("Error generating documents:", error);
