@@ -90,14 +90,14 @@ export async function POST(request: NextRequest) {
                     role: "user",
                     content: learnings.length > 0 ? 
                         learningsPrompt :
-                        `${prompt}
-                        ${
+                        `${
                             context && context != "" && context != "Empty Response" &&
-                            `\n\nHere is the context from the vector search results based on attached files:
-                            If the context is exist, pls focus on this context and use it to answer the prompt.
-                            \n\n
-                            ${context}`
-                        }`
+                            `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
+                            \n\nContext from uploaded document:
+                            ${context}
+                            Remember: Only use information from the above context to answer the question. If the information is not in the context, say "I cannot find this information in the provided document."`
+                        }
+                        Question: ${prompt}`
                 },
             ],
             model: "llama3.1-8b",
