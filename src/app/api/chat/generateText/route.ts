@@ -77,9 +77,7 @@ export async function POST(request: NextRequest) {
             context = await readDatasource(sessionId, prompt);
             count++;
             await sleep(1000);
-            if (count > 10) {
-                break;
-            }
+            console.log("Waiting for datasource to be stored...", count);
         }
 
         const stream = await cerebras.chat.completions.create({

@@ -194,19 +194,6 @@ export async function generateDatasource(sessionId: string, files: File[]) {
             storageContext,
         });
 
-        // Wait until all documents are stored
-        const expectedNumberOfDocs = documents.length;
-        while (true) {
-            const numberOfDocs = Object.keys(
-                (storageContext.docStore as SimpleDocumentStore).toDict(),
-            ).length;
-            if (numberOfDocs >= expectedNumberOfDocs) {
-                break;
-            }
-            console.log("Waiting for documents to be stored...");
-            await sleep(1000);
-        }
-
         console.log("Documents stored");
         return true;
     } catch (error) {
@@ -223,7 +210,7 @@ export async function readDatasource(sessionId: string, query: string) {
     });
     const index = await VectorStoreIndex.fromVectorStore(vectorStore);
     const queryEngine = index.asQueryEngine({
-        similarityTopK: 5,
+        similarityTopK: 10,
     });
     const result = await queryEngine.query({
         query: query
