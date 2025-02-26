@@ -5,16 +5,24 @@ import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
 import { cerebras } from '@/app/lib/api/openai/const';
-import { readDatasource, sleep } from "@/app/lib/api/openai/util";
+import { readDatasource, sleep, generateDatasource } from "@/app/lib/api/openai/util";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
-    const { prompt, sessionId, chatLog, reGenerate, learnings, time, datasource } = await request.json();
+    const formData = await request.formData();
+    const prompt = formData.get('prompt') as string;
+    const sessionId = formData.get('sessionId') as string;
+    const chatLog = JSON.parse(formData.get('chatLog') as string);
+    const reGenerate = formData.get('reGenerate') as string;
+    const learnings = JSON.parse(formData.get('learnings') as string);
+    const time = Number(formData.get('time'));
+    const datasource = formData.get('datasource') == "true" ? true : false;
+    const formDataEntryValues = Array.from(formData.values());
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
-    const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
 
+    const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
     const chatType = learnings.length > 0 ? 1 : 0; // Determine chatType based on learnings length
 
     const recentChatType1Timestamps = await db.Chat.aggregate([
@@ -70,9 +78,17 @@ export async function POST(request: NextRequest) {
     let context = "";
 
     try {
+        const files = formDataEntryValues.filter(value => value instanceof File);
+        if (files.length > 0) {
+            const datasource = await generateDatasource(sessionId, files);
+            if (!datasource) {
+                return new NextResponse("Error uploading files.", { status: 500 });
+            }
+        }
+
         context = await readDatasource(sessionId, prompt);
         let count = 0;
-        
+
         while (context == "Empty Response" && datasource) {
             context = await readDatasource(sessionId, prompt);
             count++;
@@ -86,14 +102,14 @@ export async function POST(request: NextRequest) {
                 ...history,
                 {
                     role: "user",
-                    content: learnings.length > 0 ? 
+                    content: learnings.length > 0 ?
                         learningsPrompt :
-                        `${
-                            context && context != "" && context != "Empty Response" &&
-                            `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
+                        `${context && context != "" && context != "Empty Response" &&
+                        `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
                             \n\nContext from uploaded document:
                             ${context}
-                            Remember: Only use information from the above context to answer the question. If the information is not in the context, say "I cannot find this information in the provided document."`
+                            Remember: Only use information from the above context to answer the question. 
+                            If the information is not in the context, say "I cannot find this information in the provided document."`
                         }
                         Question: ${prompt}`
                 },

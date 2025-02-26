@@ -232,7 +232,7 @@ const InputBox = () => {
     }
     try {
       setInputPrompt("");
-      
+
       if (chatType === 0 || files.length > 0) {
         await sendMessage(inputPrompt, [], requestSessionId);
       } else {
@@ -287,20 +287,24 @@ const InputBox = () => {
         });
       }
 
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      formData.append("sessionId", requestSessionId);
+      formData.append("chatLog", JSON.stringify(chatLog.slice(-5)));
+      formData.append("reGenerate", "false");
+      formData.append("learnings", JSON.stringify(learnings));
+      formData.append("time", time.toString());
+      formData.append("datasource", datasource ? "true" : "false");
+
       if (datasource) {
-        const result = await fileUpload();
-        if (!result.success) {
-          toast({
-            variant: "destructive",
-            title: 'Failed to upload files',
-          });
-          throw new Error('Failed to upload files');
-        }
+        files.forEach(file => {
+          formData.append('files', file);
+        });
       }
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: requestSessionId, chatLog: chatLog.slice(-5), reGenerate: false, learnings, time, datasource }),
+        body: formData,
       });
       setProgress(100);
 

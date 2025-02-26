@@ -6,9 +6,9 @@ import {
     VectorStoreIndex,
     storageContextFromDefaults,
     Document,
-    SimpleDocumentStore
+    ContextChatEngine,
+    LLM,
 } from "llamaindex";
-import { SimpleDirectoryReader } from "@llamaindex/readers/directory";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -224,5 +224,27 @@ export async function readDatasource(sessionId: string, query: string) {
         context = result.message?.content || "";
     }
     return context;
+}
+
+export async function createChatEngine(llm: LLM, sessionId: string) {
+    const index = await getDataSource(llm, sessionId);
+    const retriever = index.asRetriever({
+        similarityTopK: 5,
+    });
+
+    return new ContextChatEngine({
+        chatModel: llm,
+        retriever,
+    });
+}
+
+const getDataSource = async (llm: LLM, sessionId: string) => {
+    const vectorStore = new PineconeVectorStore({
+        indexName: "edith-chatapp-file",
+        apiKey: process.env.PINECONE_API_KEY!,
+        namespace: sessionId,
+    });
+    const index = await VectorStoreIndex.fromVectorStore(vectorStore);
+    return index;
 }
 
