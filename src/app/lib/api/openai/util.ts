@@ -10,6 +10,8 @@ import {
     LLM,
 } from "llamaindex";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
+import fs from "fs";
+import path from "path";
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -168,6 +170,38 @@ const generateDocument = async (file: File) => {
     }
 }
 
+export async function clearCache(directory: string = 'cache'): Promise<void> {
+    const cachePath = path.join(process.cwd(), directory);
+
+    if (!fs.existsSync(cachePath)) {
+        console.log(`Cache directory ${cachePath} does not exist`);
+        return;
+    }
+
+    try {
+        const files = fs.readdirSync(cachePath);
+
+        for (const file of files) {
+            const filePath = path.join(cachePath, file);
+
+            const stat = fs.statSync(filePath);
+
+            if (stat.isFile()) {
+                await fs.unlinkSync(filePath);
+                console.log(`Deleted file: ${file}`);
+            } else if (stat.isDirectory()) {
+                await fs.rmdirSync(filePath, { recursive: true });
+                console.log(`Deleted directory: ${file}`);
+            }
+        }
+
+        console.log('Cache cleared successfully');
+    } catch (error) {
+        console.error('Error clearing cache:', error);
+        throw error;
+    }
+}
+
 export async function generateDatasource(sessionId: string, files: File[]) {
     try {
         console.log(`Generating storage context...`);
@@ -176,7 +210,9 @@ export async function generateDatasource(sessionId: string, files: File[]) {
             apiKey: process.env.PINECONE_API_KEY!,
             namespace: sessionId,
         });
+        await clearCache();
         const storageContext = await storageContextFromDefaults({ vectorStore });
+        const localStorageContext = await storageContextFromDefaults({ persistDir: "./cache" });
         const documents = [];
 
         for (const file of files) {
@@ -190,25 +226,34 @@ export async function generateDatasource(sessionId: string, files: File[]) {
             }
         }
 
-        await VectorStoreIndex.fromDocuments(documents, {
-            storageContext,
+        const index = await VectorStoreIndex.fromDocuments(documents, {
+            storageContext: localStorageContext
         });
-
+        
+        VectorStoreIndex.fromDocuments(documents, {
+            storageContext: storageContext
+        });
         console.log("Documents stored");
-        return true;
+        
+        return index;
+
     } catch (error) {
         console.error("Error generating documents:", error);
         return false;
     }
 }
 
-export async function readDatasource(sessionId: string, query: string) {
+export async function readDatasource(sessionId: string) {
     const vectorStore = new PineconeVectorStore({
         indexName: "edith-chatapp-file",
         apiKey: process.env.PINECONE_API_KEY!,
         namespace: sessionId,
     });
     const index = await VectorStoreIndex.fromVectorStore(vectorStore);
+    return index;
+}
+
+export async function readDataSourceFromIndex(index: VectorStoreIndex, query: string) {
     const queryEngine = index.asQueryEngine({
         similarityTopK: 10,
     });
@@ -226,8 +271,7 @@ export async function readDatasource(sessionId: string, query: string) {
     return context;
 }
 
-export async function createChatEngine(llm: LLM, sessionId: string) {
-    const index = await getDataSource(llm, sessionId);
+export async function createChatEngine(index: VectorStoreIndex, llm: LLM) {
     const retriever = index.asRetriever({
         similarityTopK: 5,
     });
@@ -235,10 +279,11 @@ export async function createChatEngine(llm: LLM, sessionId: string) {
     return new ContextChatEngine({
         chatModel: llm,
         retriever,
+        systemPrompt: process.env.SYSTEM_PROMPT!,
     });
 }
 
-const getDataSource = async (llm: LLM, sessionId: string) => {
+export const getDataSource = async (sessionId: string) => {
     const vectorStore = new PineconeVectorStore({
         indexName: "edith-chatapp-file",
         apiKey: process.env.PINECONE_API_KEY!,

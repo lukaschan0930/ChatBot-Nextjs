@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# High School Athlete Scout
 
-## Getting Started
+This tool helps identify and gather information about high school athletes from X/Twitter. It searches for relevant posts and profiles, collecting data about potential recruits.
 
-First, run the development server:
+## Features
 
+- Searches X/Twitter for high school athletes using multiple search strategies
+- Filters users based on bio information and content
+- Collects key information including:
+  - Username and bio
+  - Location
+  - Follower count
+  - Recent posts and engagement metrics
+- Exports data to CSV for easy analysis
+
+## Setup
+
+1. Install the required dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pip install -r requirements.txt
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Get your X/Twitter API Bearer Token:
+   - Go to the [X Developer Portal](https://developer.twitter.com/en/portal/dashboard)
+   - Create a new project/app
+   - Generate a Bearer Token
+   - Replace `YOUR_BEARER_TOKEN` in the script with your actual token
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the script:
+```bash
+python athlete_finder.py
+```
 
-## Learn More
+The script will:
+1. Search for recent tweets matching the specified criteria
+2. Filter for likely high school athletes
+3. Export the data to a CSV file
+4. Display a sample of the found athletes
 
-To learn more about Next.js, take a look at the following resources:
+## Customization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can modify the search terms and athlete keywords in the script to better target specific:
+- Sports
+- Graduating classes
+- Geographic regions
+- Types of content
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Legal Note
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Please ensure you comply with X's Terms of Service and API usage guidelines when using this tool. This tool is designed for legitimate recruitment purposes and should be used responsibly.

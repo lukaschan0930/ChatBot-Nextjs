@@ -372,10 +372,17 @@ const Response = (
         };
         return newLog;
       });
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      formData.append("sessionId", sessionId ?? "");
+      formData.append("chatLog", JSON.stringify(chatHistory));
+      formData.append("reGenerate", "true");
+      formData.append("learnings", JSON.stringify(learnings));
+      formData.append("time", time.toString());
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
-        body: JSON.stringify({ prompt, sessionId: sessionId, chatLog: chatHistory, reGenerate: true, learnings, time, datasource }),
+        body: formData,
       });
       if (res.status != 200) {
         throw new Error("Failed to get response from server.");

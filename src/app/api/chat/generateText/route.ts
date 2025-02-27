@@ -5,7 +5,23 @@ import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
 import { cerebras } from '@/app/lib/api/openai/const';
-import { readDatasource, sleep, generateDatasource } from "@/app/lib/api/openai/util";
+import {
+    readDatasource,
+    sleep,
+    generateDatasource,
+    getDataSource,
+    createChatEngine,
+    readDataSourceFromIndex
+} from "@/app/lib/api/openai/util";
+import {
+    OpenAI,
+    VectorStoreIndex
+} from "llamaindex";
+
+const llm = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY!,
+    model: "gpt-4o-mini",
+});
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -75,22 +91,48 @@ export async function POST(request: NextRequest) {
     \n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>
     Not using words "Final Report:" or "Final Report" in the response title.`;
 
+
     let context = "";
+
+    // const contextPrompt = `${context && context != "" && context != "Empty Response" &&
+    //     `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
+    //             \n\nContext from uploaded document:
+    //             ${context}
+    //             Remember: Only use information from the above context to answer the question. 
+    //             If the information is not in the context, say "I cannot find this information in the provided document."`
+    //     }
+    //             Question: ${prompt}`
 
     try {
         const files = formDataEntryValues.filter(value => value instanceof File);
+        let index: VectorStoreIndex | false = false;
         if (files.length > 0) {
-            const datasource = await generateDatasource(sessionId, files);
-            if (!datasource) {
+            index = await generateDatasource(sessionId, files);
+            if (!index) {
                 return new NextResponse("Error uploading files.", { status: 500 });
+            }
+        } else {
+            index = await readDatasource(sessionId);
+            if (!index) {
+                return new NextResponse("Error getting datasource.", { status: 500 });
             }
         }
 
-        context = await readDatasource(sessionId, prompt);
+        // const chatEngine = await createChatEngine(index, llm);
+        // const stream = await chatEngine.chat({
+        //     message: learnings.length > 0 ?
+        //         learningsPrompt :
+        //         `Question: ${prompt}`,
+        //     stream: true,
+        //     chatHistory: history,
+        // });
+
+
+        context = await readDataSourceFromIndex(index, prompt);
         let count = 0;
 
         while (context == "Empty Response" && datasource) {
-            context = await readDatasource(sessionId, prompt);
+            context = await readDataSourceFromIndex(index, prompt);
             count++;
             await sleep(1000);
             console.log("Waiting for datasource to be stored...", count);
@@ -154,7 +196,20 @@ export async function POST(request: NextRequest) {
                 }
                 totalTime = (Date.now() - startTime) / 1000;
                 outputTime = totalTime - inputTime - queueTime;
-                controller.enqueue(encoder.encode(JSON.stringify({ content: "", inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                controller.enqueue(
+                    encoder.encode(
+                        JSON.stringify(
+                            {
+                                content: "",
+                                inputToken: inputToken,
+                                outputToken: outputToken,
+                                inputTime: inputTime,
+                                outputTime: outputTime,
+                                totalTime: totalTime + time / 1000
+                            }
+                        )
+                    )
+                );
                 controller.close();
 
                 try {
