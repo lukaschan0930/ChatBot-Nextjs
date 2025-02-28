@@ -295,12 +295,13 @@ const InputBox = () => {
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
       formData.append("datasource", datasource ? "true" : "false");
-
+      setFiles([]);
       if (datasource) {
         files.forEach(file => {
           formData.append('files', file);
         });
       }
+
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",

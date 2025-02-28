@@ -18,10 +18,7 @@ import {
     VectorStoreIndex
 } from "llamaindex";
 
-const llm = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY!,
-    model: "gpt-4o-mini",
-});
+const llm = new OpenAI();
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -94,14 +91,14 @@ export async function POST(request: NextRequest) {
 
     let context = "";
 
-    // const contextPrompt = `${context && context != "" && context != "Empty Response" &&
-    //     `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
-    //             \n\nContext from uploaded document:
-    //             ${context}
-    //             Remember: Only use information from the above context to answer the question. 
-    //             If the information is not in the context, say "I cannot find this information in the provided document."`
-    //     }
-    //             Question: ${prompt}`
+    const contextPrompt = `${context && context != "" && context != "Empty Response" &&
+        `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
+                \n\nContext from uploaded document:
+                ${context}
+                Remember: Only use information from the above context to answer the question. 
+                If the information is not in the context, say "I cannot find this information in the provided document."`
+        }
+                Question: ${prompt}`
 
     try {
         const files = formDataEntryValues.filter(value => value instanceof File);
@@ -118,52 +115,52 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // const chatEngine = await createChatEngine(index, llm);
-        // const stream = await chatEngine.chat({
-        //     message: learnings.length > 0 ?
-        //         learningsPrompt :
-        //         `Question: ${prompt}`,
-        //     stream: true,
-        //     chatHistory: history,
-        // });
-
-
-        context = await readDataSourceFromIndex(index, prompt);
-        let count = 0;
-
-        while (context == "Empty Response" && datasource) {
-            context = await readDataSourceFromIndex(index, prompt);
-            count++;
-            await sleep(1000);
-            console.log("Waiting for datasource to be stored...", count);
-        }
-
-        const stream = await cerebras.chat.completions.create({
-            messages: [
-                { role: "system", content: process.env.SYSTEM_PROMPT! },
-                ...history,
-                {
-                    role: "user",
-                    content: learnings.length > 0 ?
-                        learningsPrompt :
-                        `${context && context != "" && context != "Empty Response" &&
-                        `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
-                            \n\nContext from uploaded document:
-                            ${context}
-                            Remember: Only use information from the above context to answer the question. 
-                            If the information is not in the context, say "I cannot find this information in the provided document."`
-                        }
-                        Question: ${prompt}`
-                },
-            ],
-            model: "llama3.1-8b",
+        const chatEngine = await createChatEngine(index, llm);
+        const stream = await chatEngine.chat({
+            message: learnings.length > 0 ?
+                learningsPrompt :
+                `Question: ${prompt}`,
             stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-            stream_options: {
-                include_usage: true
-            }
+            chatHistory: history,
         });
+
+
+        // context = await readDataSourceFromIndex(index, prompt);
+        // let count = 0;
+
+        // while (context == "Empty Response" && datasource) {
+        //     context = await readDataSourceFromIndex(index, prompt);
+        //     count++;
+        //     await sleep(1000);
+        //     console.log("Waiting for datasource to be stored...", count);
+        // }
+
+        // const stream = await cerebras.chat.completions.create({
+        //     messages: [
+        //         { role: "system", content: process.env.SYSTEM_PROMPT! },
+        //         ...history,
+        //         {
+        //             role: "user",
+        //             content: learnings.length > 0 ?
+        //                 learningsPrompt :
+        //                 `${context && context != "" && context != "Empty Response" &&
+        //                 `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
+        //                     \n\nContext from uploaded document:
+        //                     ${context}
+        //                     Remember: Only use information from the above context to answer the question. 
+        //                     If the information is not in the context, say "I cannot find this information in the provided document."`
+        //                 }
+        //                 Question: ${prompt}`
+        //         },
+        //     ],
+        //     model: "llama3.1-8b",
+        //     stream: true,
+        //     temperature: 0.7,
+        //     max_tokens: 2000,
+        //     stream_options: {
+        //         include_usage: true
+        //     }
+        // });
         const encoder = new TextEncoder();
         let fullResponse = "";
 
@@ -172,24 +169,37 @@ export async function POST(request: NextRequest) {
                 try {
                     // Iterate over each streamed chunk
                     for await (const chunk of stream) {
-                        const data = chunk as { choices?: { delta?: { content?: string } }[] };
+                        const data = chunk as {
+                            message: {
+                                content: string
+                            },
+                            raw: {
+                                choices: {
+                                    delta: {
+                                        content: string
+                                    }
+                                }
+                            }
+                        }
+                        console.log("data", data.raw?.choices);
+                        // const data = chunk as { choices?: { delta?: { content?: string } }[] };
                         // Cerebras returns the text in data.choices[0]?.delta?.content
-                        const content = data.choices?.[0]?.delta?.content || "";
+                        const content = chunk.message.content || "";
                         if (content) {
                             fullResponse += content;
                             controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
                             await new Promise(resolve => setTimeout(resolve, 5));
                         }
-                        if (chunk.usage) {
-                            const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
-                            inputToken = usage.prompt_tokens;
-                            outputToken = usage.completion_tokens;
-                        }
-                        if (chunk.time_info) {
-                            const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
-                            inputTime = timeInfo.prompt_time;
-                            queueTime = timeInfo.queue_time;
-                        }
+                        // if (chunk.usage) {
+                        //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
+                        //     inputToken = usage.prompt_tokens;
+                        //     outputToken = usage.completion_tokens;
+                        // }
+                        // if (chunk.time_info) {
+                        //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
+                        //     inputTime = timeInfo.prompt_time;
+                        //     queueTime = timeInfo.queue_time;
+                        // }
                     }
                 } catch (error) {
                     console.error("Streaming error: ", error);
