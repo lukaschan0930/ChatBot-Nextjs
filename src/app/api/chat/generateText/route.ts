@@ -169,26 +169,25 @@ export async function POST(request: NextRequest) {
                 try {
                     // Iterate over each streamed chunk
                     for await (const chunk of stream) {
-                        const data = chunk as {
-                            message: {
-                                content: string
-                            },
-                            raw: {
-                                choices: {
-                                    delta: {
-                                        content: string
-                                    }
-                                }
-                            }
-                        }
-                        console.log("data", data.raw?.choices);
+                        // const data = chunk as {
+                        //     message: {
+                        //         content: string
+                        //     },
+                        //     raw: {
+                        //         choices: {
+                        //             delta: {
+                        //                 content: string
+                        //             }
+                        //         }
+                        //     }
+                        // }
                         // const data = chunk as { choices?: { delta?: { content?: string } }[] };
                         // Cerebras returns the text in data.choices[0]?.delta?.content
                         const content = chunk.message.content || "";
                         if (content) {
                             fullResponse += content;
                             controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
-                            await new Promise(resolve => setTimeout(resolve, 5));
+                            await new Promise(resolve => setTimeout(resolve, 2));
                         }
                         // if (chunk.usage) {
                         //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
