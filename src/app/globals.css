@@ -408,3 +408,36 @@ button:focus-visible {
     box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5);
   }
 }
+
+.loading-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ffffff; /* Change color as needed */
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+  background-color: #FFFFFF99;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+  background-color: #FFFFFFCC;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+  } 
+  40% { 
+    transform: scale(1);
+  }
+}

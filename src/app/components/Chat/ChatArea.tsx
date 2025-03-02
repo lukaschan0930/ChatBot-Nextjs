@@ -34,16 +34,27 @@ const ChatArea = () => {
         <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[700px] px-0 md:px-4">
           <UserPrompt prompt={chat.prompt} />
           <div className="flex justify-start flex-col gap-3">
-            <div className={`w-10 h-10 rounded-lg border border-gray-500 bg-[#181818] relative`}>
-              <Image 
-                src="/image/logo-chat.png"
-                alt="chat loading"
-                width={100}
-                height={100}
-                className={`w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`}
-              />
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-lg border border-gray-500 bg-[#181818] relative`}>
+                <Image
+                  src="/image/logo-chat.png"
+                  alt="chat loading"
+                  width={100}
+                  height={100}
+                  className={`w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`}
+                />
+              </div>
+              {
+                ((!chat.response || chat.response === null) && chatLog.length - 1 === id) &&
+                <>
+                  <div className="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </>
+              }
             </div>
-            {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             <div className="flex flex-col w-full items-start">
               {
                 ((!chat.response || chat.response === null) && chatLog.length - 1 === id) &&
