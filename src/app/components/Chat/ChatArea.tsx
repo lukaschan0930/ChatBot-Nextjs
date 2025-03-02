@@ -33,19 +33,23 @@ const ChatArea = () => {
       {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
         <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[700px] px-0 md:px-4">
           <UserPrompt prompt={chat.prompt} />
-          <div className="flex justify-start flex-col md:flex-row gap-1 md:gap-0">
-            <div className="flex items-center gap-2 md:gap-0 h-fit md:!w-14 md:!h-14 md:hidden">
-              <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} !w-10 !h-10 md:!w-14 md:!h-14 rounded-lg border-2 border-gray-500`} />
-              <div className="text-lg md:hidden">EDITH</div>
+          <div className="flex justify-start flex-col gap-3">
+            <div className={`w-10 h-10 rounded-lg border border-gray-500 bg-[#181818] relative`}>
+              <Image 
+                src="/image/logo-chat.png"
+                alt="chat loading"
+                width={100}
+                height={100}
+                className={`w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`}
+              />
             </div>
-            <Image src="/image/Edith_Logo.png" alt="chat loading" width={100} height={100} className={`${chatLog.length === id ? 'rotate' : ''} w-14 h-14 hidden md:block rounded-lg border-2 border-gray-500`} />
             {/* <p className="text-2xl pl-4">{chatLog.length === id ? "Edith is thinking..." : "Answer"}</p> */}
             <div className="flex flex-col w-full items-start">
               {
                 ((!chat.response || chat.response === null) && chatLog.length - 1 === id) &&
                 <>
                   {chat.response}
-                  <div className="flex flex-col w-full items-start gap-2 md:pl-4 mb-4">
+                  <div className="flex flex-col w-full items-start gap-2 mb-4">
                     <p className="text-2xl">EDITH is thinking...</p>
                     {
                       chatType == 1 &&

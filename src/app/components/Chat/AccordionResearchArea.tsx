@@ -28,7 +28,7 @@ const AccordionResearchArea = () => {
     }, [researchStep]);
 
     return (
-        <div className={`px-[19px] py-4 md:w-[calc(100%-32px)] w-full border-secondaryBorder bg-inputBg rounded-lg md:ml-8 mb-4 xl:hidden border`}>
+        <div className={`py-4 md:w-[calc(100%-32px)] w-full border-secondaryBorder bg-inputBg rounded-lg mb-4 xl:hidden border`}>
             <div className='w-full flex justify-between items-center' onClick={() => setIsOpen(!isOpen)}>
                 <div className='flex items-center gap-2'>
                     <div className='text-mainFont text-sm'>Pro Search</div>

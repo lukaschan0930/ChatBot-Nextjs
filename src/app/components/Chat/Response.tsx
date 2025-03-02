@@ -476,7 +476,7 @@ const Response = (
 
   return (
     <div className="flex flex-col text-mainFont w-full">
-      <div className="overflow-x-auto text-justify break-words mb-4 md:mb-8 md:pl-8 w-full">
+      <div className="overflow-x-auto text-justify break-words mb-3 w-full">
         {splitResponse(response).map((part, index) => (
           <React.Fragment key={index}>
             {part.type === "text" && (
@@ -505,8 +505,8 @@ const Response = (
           </React.Fragment>
         ))}
       </div>
-      <div className="flex items-center justify-between md:pl-8 gap-1">
-        <div className="flex items-center gap-1 md:gap-3">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
           {
             last && <button
               className="p-1 transition-colors duration-100 ease-linear bg-transparent border-none text-subButtonFont focus:outline-none hover:scale-105 hover:text-white hover:bg-inputBg"

@@ -51,7 +51,7 @@ const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b-2 bg-headerBg text-mainFont border-primaryBorder">
-        <div className="flex h-[72px] items-center pr-6 justify-between relative">
+        <div className="flex h-[72px] items-center pr-2 md:pr-6 justify-between relative">
           <div className={`flex items-center pl-4 h-full w-[260px] ${endPoint === "admin" ? "border-none" : "border-[#29292B] border-r"}`}>
             <div className={`pr-2 py-[1px] border-[#29292B] mr-2 ${endPoint !== "admin" && "border-r-2"}`}>
               <Image
