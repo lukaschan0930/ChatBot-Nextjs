@@ -15,13 +15,11 @@ import {
 } from "@/app/lib/api/openai/util";
 import {
     OpenAI,
-    VectorStoreIndex
+    VectorStoreIndex,
+    DeepSeekLLM
 } from "llamaindex";
 
-const llm = new OpenAI({
-    apiKey: process.env.CEREBRAS_API_KEY!,
-    model: "llama3.1-8b",
-});
+const llm = new OpenAI();
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
