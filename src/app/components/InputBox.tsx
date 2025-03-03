@@ -1,9 +1,17 @@
 import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
-import { FaArrowUp, FaSpinner } from "react-icons/fa6";
+import { FaArrowUp, FaSpinner, FaFile } from "react-icons/fa6";
 import { useAtom } from "jotai";
 import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom } from "@/app/lib/store";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom, researchLogAtom, chatTypeAtom, progressAtom, isResearchAreaVisibleAtom } from "@/app/lib/store";
+import {
+  chatLogAtom,
+  sessionIdAtom,
+  isStreamingAtom,
+  researchLogAtom,
+  chatTypeAtom,
+  progressAtom,
+  isResearchAreaVisibleAtom
+} from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 import { IResearchLog } from "@/app/lib/interface";
@@ -11,6 +19,7 @@ import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
+import ChatFileMenu from "./Chat/ChatFileMenu";
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
 
@@ -86,6 +95,11 @@ const FileCard = ({ file, handleRemoveFile, index }: { file: File, handleRemoveF
   );
 };
 
+interface FileWithUrl {
+  file: File;
+  url: string;
+}
+
 const InputBox = () => {
   const [isStartChat, setIsStartChat] = useAtom(isStartChatAtom);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -99,6 +113,8 @@ const InputBox = () => {
   const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
   const [, setActiveChatId] = useAtom(activeChatIdAtom);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
+  const [isFileMenuOpen, setIsFileMenuOpen] = useState<boolean>(false);
+  const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
 
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
@@ -107,7 +123,7 @@ const InputBox = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileWithUrl[]>([]);
   const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
   const adjustTextareaHeight = () => {
@@ -147,7 +163,7 @@ const InputBox = () => {
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (selectedFiles) {
       const filesArray = Array.from(selectedFiles);
@@ -161,13 +177,16 @@ const InputBox = () => {
         return;
       }
 
+      const uploadFiles = filesArray.filter((file) => {
+        return !files.some(
+          (prevFile) => prevFile.file.name === file.name && prevFile.file.size === file.size
+        );
+      });
+
+      const fileUrls = await fileUpload(uploadFiles);
+
       setFiles((prevFiles) => {
-        const newFiles = filesArray.filter((file) => {
-          return !prevFiles.some(
-            (prevFile) => prevFile.name === file.name && prevFile.size === file.size
-          );
-        });
-        return [...prevFiles, ...newFiles];
+        return [...prevFiles, ...fileUrls];
       });
 
       // Disable Pro Search when a file is uploaded
@@ -176,13 +195,12 @@ const InputBox = () => {
     event.target.value = '';
   };
 
-  const fileUpload = async () => {
+  const fileUpload = async (fileData: File[]) => {
+    setIsFileUploading(true);
     const formData = new FormData();
-    files.forEach(file => {
+    fileData.forEach(file => {
       formData.append('files', file);
     });
-    formData.append('sessionId', sessionId as string);
-    setFiles([]);
 
     try {
       const response = await fetch('/api/chat/upload', {
@@ -197,12 +215,20 @@ const InputBox = () => {
       const result = await response.json();
       console.log('Files uploaded successfully:', result);
       if (!result.success) {
-        return { success: false, error: result.error };
+        throw new Error('Failed to upload files');
       }
-      return { success: true };
+      
+      const uploadedResult = fileData.map((file, index) => ({ file, url: result.fileUrl[index] as string }));
+      return uploadedResult;
     } catch (error) {
       console.error('Error uploading files:', error);
-      return { success: false, error: error };
+      toast({
+        variant: "destructive",
+        title: 'Failed to upload files',
+      });
+      return [];
+    } finally {
+      setIsFileUploading(false);
     }
   };
 
@@ -266,7 +292,6 @@ const InputBox = () => {
     }
 
     try {
-      // Add an initial empty chat log entry for the prompt.
       const datasource = files.length > 0;
       if (learnings.length == 0) {
         setChatLog((prevChatLog) => {
@@ -280,7 +305,8 @@ const InputBox = () => {
             outputToken: 0,
             inputTime: 0,
             outputTime: 0,
-            datasource: datasource
+            datasource: datasource,
+            fileUrls: []
           });
           console.log("Updated chatLog:", newLog);
           return newLog;
@@ -295,14 +321,8 @@ const InputBox = () => {
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
       formData.append("datasource", datasource ? "true" : "false");
-      setFiles([]);
-      if (datasource) {
-        files.forEach(file => {
-          formData.append('files', file);
-        });
-      }
-
-
+      formData.append("fileUrls", JSON.stringify(files.map((file) => file.url)));
+      
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
         body: formData,
@@ -343,7 +363,8 @@ const InputBox = () => {
                 inputTime: inputTime,
                 outputTime: outputTime,
                 chatType: chatType,
-                datasource: datasource
+                datasource: datasource,
+                fileUrls: []
               };
             } else {
               newLog.push({
@@ -355,7 +376,8 @@ const InputBox = () => {
                 inputTime: inputTime,
                 outputTime: outputTime,
                 chatType: chatType,
-                datasource: datasource
+                datasource: datasource,
+                fileUrls: []
               });
             }
             return newLog;
@@ -377,7 +399,8 @@ const InputBox = () => {
                 inputTime: inputTime,
                 outputTime: outputTime,
                 chatType: chatType,
-                datasource: datasource
+                datasource: datasource,
+                fileUrls: []
               };
             } else {
               newLog.push({
@@ -389,7 +412,8 @@ const InputBox = () => {
                 inputTime: inputTime,
                 outputTime: outputTime,
                 chatType: chatType,
-                datasource: datasource
+                datasource: datasource,
+                fileUrls: []
               });
             }
             return newLog;
@@ -416,7 +440,8 @@ const InputBox = () => {
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false
+            datasource: false,
+            fileUrls: []
           };
         } else {
           newLog.push({
@@ -428,7 +453,8 @@ const InputBox = () => {
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false
+            datasource: false,
+            fileUrls: []
           });
         }
         return newLog;
@@ -458,7 +484,8 @@ const InputBox = () => {
           outputToken: 0,
           inputTime: 0,
           outputTime: 0,
-          datasource: false
+          datasource: false,
+          fileUrls: []
         });
         return newLog;
       });
@@ -483,7 +510,8 @@ const InputBox = () => {
               inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: false
+              datasource: false,
+              fileUrls: []
             };
           } else {
             newLog.push({
@@ -495,7 +523,8 @@ const InputBox = () => {
               inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: false
+              datasource: false,
+              fileUrls: []
             });
           }
           return newLog;
@@ -550,7 +579,8 @@ const InputBox = () => {
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false
+            datasource: false,
+            fileUrls: []
           };
         } else {
           newLog.push({
@@ -562,7 +592,8 @@ const InputBox = () => {
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false
+            datasource: false,
+            fileUrls: []
           });
         }
         return newLog;
@@ -688,15 +719,6 @@ const InputBox = () => {
         } bg-box-bg mt-[10px] w-full lg:max-w-[700px] border rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
     >
       <div className="flex flex-col py-2">
-        {
-          files.length > 0 && (
-            <div className="file-list flex flex-wrap gap-2 px-4 py-2">
-              {files.map((file, index) => (
-                <FileCard key={index} file={file} handleRemoveFile={handleRemoveFile} index={index} />
-              ))}
-            </div>
-          )
-        }
         <div className="flex w-full justify-between items-center px-4 py-2">
           <textarea
             ref={textareaRef}
@@ -725,21 +747,43 @@ const InputBox = () => {
         </div>
       </div>
       <div className="border-t border-[#25252799] p-4 flex gap-3 w-full bg-[url('/image/text-bg.png')]">
-        <ShadowBtn
-          className="rounded-full"
-          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
-          onClick={handleClickPlusIcon}
-        >
-          <PlusIcon />
-          <input
-            type="file"
-            accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            multiple
-          />
-        </ShadowBtn>
+        {
+          isFileUploading ? (
+            <ShadowBtn
+              className="rounded-full"
+              mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+              disabled={true}
+            >
+              <FaSpinner className="w-auto h-full animate-spin text-black" />
+            </ShadowBtn>
+          ) :
+            files.length > 0 ? (
+              <ChatFileMenu
+                files={files}
+                handleClickPlusIcon={handleClickPlusIcon}
+                handleRemoveFile={handleRemoveFile}
+                setFiles={setFiles}
+                isFileMenuOpen={isFileMenuOpen}
+                setIsFileMenuOpen={setIsFileMenuOpen}
+              />
+            ) : (
+              <ShadowBtn
+                className="rounded-full"
+                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+                onClick={handleClickPlusIcon}
+              >
+                <PlusIcon />
+              </ShadowBtn>
+            )
+        }
+        <input
+          type="file"
+          accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          multiple
+        />
         <ShadowBtn
           className="rounded-full"
           mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"

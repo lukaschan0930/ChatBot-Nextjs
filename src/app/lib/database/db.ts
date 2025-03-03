@@ -167,10 +167,12 @@ function chatModel() {
                 datasource: {
                     type: Boolean,
                     required: true
-                }
+                },
+                fileUrls: [{
+                    type: String,
+                }]
             }]
         }],
-
 
         updatedAt: {
             type: Date,

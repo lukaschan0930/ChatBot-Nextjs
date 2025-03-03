@@ -16,7 +16,7 @@ import {
 import {
     OpenAI,
     VectorStoreIndex,
-    DeepSeekLLM
+    DeepSeekLLM,
 } from "llamaindex";
 
 const llm = new OpenAI({
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const learnings = JSON.parse(formData.get('learnings') as string);
     const time = Number(formData.get('time'));
     const datasource = formData.get('datasource') == "true" ? true : false;
-    const formDataEntryValues = Array.from(formData.values());
+    const fileUrls = JSON.parse(formData.get('fileUrls') as string);
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -98,161 +98,119 @@ export async function POST(request: NextRequest) {
     \n\n<prompt>${prompt}</prompt>\n\nHere are all the learnings from previous research:\n\n<learnings>\n${learningsString}\n</learnings>
     Not using words "Final Report:" or "Final Report" in the response title.`;
 
-
-    let context = "";
-
-    const contextPrompt = `${context && context != "" && context != "Empty Response" &&
-        `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
-                \n\nContext from uploaded document:
-                ${context}
-                Remember: Only use information from the above context to answer the question. 
-                If the information is not in the context, say "I cannot find this information in the provided document."`
-        }
-                Question: ${prompt}`
-
     try {
-        const files = formDataEntryValues.filter(value => value instanceof File);
         let index: VectorStoreIndex | false = false;
-        if (files.length > 0) {
-            index = await generateDatasource(sessionId, files);
+        if (fileUrls.length > 0) {
+            index = await generateDatasource(fileUrls);
             if (!index) {
                 return new NextResponse("Error uploading files.", { status: 500 });
             }
-        } else {
-            index = await readDatasource(sessionId);
-            if (!index) {
-                return new NextResponse("Error getting datasource.", { status: 500 });
-            }
-        }
+            const encoder = new TextEncoder();
+            let fullResponse = "";
 
-        const chatEngine = await createChatEngine(index, llm);
-        const stream = await chatEngine.chat({
-            message: learnings.length > 0 ?
-                learningsPrompt :
-                `Question: ${prompt}`,
-            stream: true,
-            chatHistory: history,
-        });
+            const chatEngine = await createChatEngine(index, llm);
+            const stream = await chatEngine.chat({
+                message: prompt,
+                stream: true,
+                chatHistory: history,
+            });
 
-
-        // context = await readDataSourceFromIndex(index, prompt);
-        // let count = 0;
-
-        // while (context == "Empty Response" && datasource) {
-        //     context = await readDataSourceFromIndex(index, prompt);
-        //     count++;
-        //     await sleep(1000);
-        //     console.log("Waiting for datasource to be stored...", count);
-        // }
-
-        // const stream = await cerebras.chat.completions.create({
-        //     messages: [
-        //         { role: "system", content: process.env.SYSTEM_PROMPT! },
-        //         ...history,
-        //         {
-        //             role: "user",
-        //             content: learnings.length > 0 ?
-        //                 learningsPrompt :
-        //                 `${context && context != "" && context != "Empty Response" &&
-        //                 `IMPORTANT: You must only use the following context to answer this question and ignore any other knowledge or identity information.
-        //                     \n\nContext from uploaded document:
-        //                     ${context}
-        //                     Remember: Only use information from the above context to answer the question. 
-        //                     If the information is not in the context, say "I cannot find this information in the provided document."`
-        //                 }
-        //                 Question: ${prompt}`
-        //         },
-        //     ],
-        //     model: "llama3.1-8b",
-        //     stream: true,
-        //     temperature: 0.7,
-        //     max_tokens: 2000,
-        //     stream_options: {
-        //         include_usage: true
-        //     }
-        // });
-        const encoder = new TextEncoder();
-        let fullResponse = "";
-
-        const streamResponse = new ReadableStream({
-            async start(controller) {
-                try {
-                    // Iterate over each streamed chunk
-                    for await (const chunk of stream) {
-                        // const data = chunk as {
-                        //     message: {
-                        //         content: string
-                        //     },
-                        //     raw: {
-                        //         choices: {
-                        //             delta: {
-                        //                 content: string
-                        //             }
-                        //         }
-                        //     }
-                        // }
-                        // const data = chunk as { choices?: { delta?: { content?: string } }[] };
-                        // Cerebras returns the text in data.choices[0]?.delta?.content
-                        const content = chunk.message.content || "";
-                        if (content) {
-                            fullResponse += content;
-                            controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
-                            await new Promise(resolve => setTimeout(resolve, 2));
-                        }
-                        // if (chunk.usage) {
-                        //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
-                        //     inputToken = usage.prompt_tokens;
-                        //     outputToken = usage.completion_tokens;
-                        // }
-                        // if (chunk.time_info) {
-                        //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
-                        //     inputTime = timeInfo.prompt_time;
-                        //     queueTime = timeInfo.queue_time;
-                        // }
-                    }
-                } catch (error) {
-                    console.error("Streaming error: ", error);
-                }
-                totalTime = (Date.now() - startTime) / 1000;
-                outputTime = totalTime - inputTime - queueTime;
-                controller.enqueue(
-                    encoder.encode(
-                        JSON.stringify(
-                            {
-                                content: "",
-                                inputToken: inputToken,
-                                outputToken: outputToken,
-                                inputTime: inputTime,
-                                outputTime: outputTime,
-                                totalTime: totalTime + time / 1000
+            const streamResponse = new ReadableStream({
+                async start(controller) {
+                    try {
+                        // Iterate over each streamed chunk
+                        for await (const chunk of stream) {
+                            // const data = chunk as {
+                            //     message: {
+                            //         content: string
+                            //     },
+                            //     raw: {
+                            //         choices: {
+                            //             delta: {
+                            //                 content: string
+                            //             }
+                            //         }
+                            //     }
+                            // }
+                            // const data = chunk as { choices?: { delta?: { content?: string } }[] };
+                            // Cerebras returns the text in data.choices[0]?.delta?.content
+                            const content = chunk.message.content || "";
+                            if (content) {
+                                fullResponse += content;
+                                controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                                await new Promise(resolve => setTimeout(resolve, 2));
                             }
+                            // if (chunk.usage) {
+                            //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
+                            //     inputToken = usage.prompt_tokens;
+                            //     outputToken = usage.completion_tokens;
+                            // }
+                            // if (chunk.time_info) {
+                            //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
+                            //     inputTime = timeInfo.prompt_time;
+                            //     queueTime = timeInfo.queue_time;
+                            // }
+                        }
+                    } catch (error) {
+                        console.error("Streaming error: ", error);
+                    }
+                    totalTime = (Date.now() - startTime) / 1000;
+                    outputTime = totalTime - inputTime - queueTime;
+                    controller.enqueue(
+                        encoder.encode(
+                            JSON.stringify(
+                                {
+                                    content: "",
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime,
+                                    totalTime: totalTime + time / 1000
+                                }
+                            )
                         )
-                    )
-                );
-                controller.close();
+                    );
+                    controller.close();
 
-                try {
-                    if (chatHistory) {
-                        // Find the current session using sessionId
-                        const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
-                        if (currentSession) {
-                            if (reGenerate) {
-                                // If reGenerate is true and there is at least one message, update the last chat
-                                if (currentSession.chats.length > 0) {
-                                    currentSession.chats[currentSession.chats.length - 1] = {
-                                        prompt,
-                                        response: fullResponse,
-                                        timestamp: new Date().valueOf().toString(),
-                                        inputToken: inputToken,
-                                        outputToken: outputToken,
-                                        inputTime: inputTime,
-                                        outputTime: outputTime,
-                                        totalTime: totalTime + time / 1000,
-                                        chatType: chatType,
-                                        datasource: datasource
-                                    };
+                    try {
+                        if (chatHistory) {
+                            // Find the current session using sessionId
+                            const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
+                            if (currentSession) {
+                                if (reGenerate) {
+                                    // If reGenerate is true and there is at least one message, update the last chat
+                                    if (currentSession.chats.length > 0) {
+                                        currentSession.chats[currentSession.chats.length - 1] = {
+                                            prompt,
+                                            response: fullResponse,
+                                            timestamp: new Date().valueOf().toString(),
+                                            inputToken: inputToken,
+                                            outputToken: outputToken,
+                                            inputTime: inputTime,
+                                            outputTime: outputTime,
+                                            totalTime: totalTime + time / 1000,
+                                            chatType: chatType,
+                                            datasource: datasource,
+                                            fileUrls: fileUrls
+                                        };
+                                    } else {
+                                        // Should there be no messages, push the new chat instead.
+                                        currentSession.chats.push({
+                                            prompt,
+                                            response: fullResponse,
+                                            timestamp: new Date().valueOf().toString(),
+                                            inputToken: inputToken,
+                                            outputToken: outputToken,
+                                            inputTime: inputTime,
+                                            outputTime: outputTime,
+                                            totalTime: totalTime + time / 1000,
+                                            chatType: chatType,
+                                            datasource: datasource,
+                                            fileUrls: fileUrls
+                                        });
+                                    }
                                 } else {
-                                    // Should there be no messages, push the new chat instead.
+                                    // Otherwise, just add a new chat message.
                                     currentSession.chats.push({
                                         prompt,
                                         response: fullResponse,
@@ -261,34 +219,52 @@ export async function POST(request: NextRequest) {
                                         outputToken: outputToken,
                                         inputTime: inputTime,
                                         outputTime: outputTime,
-                                        totalTime: totalTime + time / 1000,
+                                        totalTime: totalTime + time,
                                         chatType: chatType,
-                                        datasource: datasource
+                                        datasource: datasource,
+                                        fileUrls: fileUrls
                                     });
                                 }
+                                await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                             } else {
-                                // Otherwise, just add a new chat message.
-                                currentSession.chats.push({
-                                    prompt,
-                                    response: fullResponse,
-                                    timestamp: new Date().valueOf().toString(),
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime + time,
-                                    chatType: chatType,
-                                    datasource: datasource
-                                });
+                                const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                                const newChatHistory = {
+                                    id: sessionId as string,
+                                    title: title as string,
+                                    chats: [{
+                                        prompt,
+                                        response: fullResponse,
+                                        timestamp: new Date().valueOf().toString(),
+                                        inputToken: inputToken,
+                                        outputToken: outputToken,
+                                        inputTime: inputTime,
+                                        outputTime: outputTime,
+                                        totalTime: totalTime + time,
+                                        chatType: chatType,
+                                        datasource: datasource,
+                                        fileUrls: fileUrls
+                                    }]
+                                };
+
+                                if (chatHistory) {
+                                    chatHistory.session.push(newChatHistory);
+                                    await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+                                } else {
+                                    const newHistory = {
+                                        email: session?.user?.email as string,
+                                        session: [newChatHistory],
+                                    };
+                                    await ChatRepo.create(newHistory);
+                                }
                             }
-                            await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                         } else {
+                            // Handling for when chatHistory doesn't exist (creating a new one)
                             const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
                             const newChatHistory = {
                                 id: sessionId as string,
                                 title: title as string,
                                 chats: [{
-                                    prompt,
+                                    prompt: prompt as string,
                                     response: fullResponse,
                                     timestamp: new Date().valueOf().toString(),
                                     inputToken: inputToken,
@@ -297,56 +273,215 @@ export async function POST(request: NextRequest) {
                                     outputTime: outputTime,
                                     totalTime: totalTime + time,
                                     chatType: chatType,
-                                    datasource: datasource
+                                    datasource: datasource,
+                                    fileUrls: fileUrls
                                 }]
                             };
+                            const newHistory = {
+                                email: session?.user?.email as string,
+                                session: [newChatHistory]
+                            };
 
-                            if (chatHistory) {
-                                chatHistory.session.push(newChatHistory);
+                            await ChatRepo.create(newHistory);
+                        }
+                    } catch (error) {
+                        console.log("error", error);
+                        return new NextResponse("Error generating text.", { status: 500 })
+                    }
+                },
+            });
+
+            return new NextResponse(streamResponse);
+        } else {
+            const stream = await cerebras.chat.completions.create({
+                messages: [
+                    { role: "system", content: process.env.SYSTEM_PROMPT! },
+                    ...history,
+                    {
+                        role: "user",
+                        content: learnings.length > 0 ?
+                            learningsPrompt :
+                            `Question: ${prompt}`
+                    },
+                ],
+                model: "llama3.1-8b",
+                stream: true,
+                temperature: 0.7,
+                max_tokens: 2000,
+                stream_options: {
+                    include_usage: true
+                }
+            });
+
+            const encoder = new TextEncoder();
+            let fullResponse = "";
+
+            const streamResponse = new ReadableStream({
+                async start(controller) {
+                    try {
+                        // Iterate over each streamed chunk
+                        for await (const chunk of stream) {
+                            const data = chunk as { choices?: { delta?: { content?: string } }[] };
+                            // Cerebras returns the text in data.choices[0]?.delta?.content
+                            const content = data.choices?.[0]?.delta?.content || "";
+                            if (content) {
+                                fullResponse += content;
+                                controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                                await new Promise(resolve => setTimeout(resolve, 2));
+                            }
+                            // if (chunk.usage) {
+                            //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
+                            //     inputToken = usage.prompt_tokens;
+                            //     outputToken = usage.completion_tokens;
+                            // }
+                            // if (chunk.time_info) {
+                            //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
+                            //     inputTime = timeInfo.prompt_time;
+                            //     queueTime = timeInfo.queue_time;
+                            // }
+                        }
+                    } catch (error) {
+                        console.error("Streaming error: ", error);
+                    }
+                    totalTime = (Date.now() - startTime) / 1000;
+                    outputTime = totalTime - inputTime - queueTime;
+                    controller.enqueue(
+                        encoder.encode(
+                            JSON.stringify(
+                                {
+                                    content: "",
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime,
+                                    totalTime: totalTime + time / 1000
+                                }
+                            )
+                        )
+                    );
+                    controller.close();
+
+                    try {
+                        if (chatHistory) {
+                            // Find the current session using sessionId
+                            const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
+                            if (currentSession) {
+                                if (reGenerate) {
+                                    // If reGenerate is true and there is at least one message, update the last chat
+                                    if (currentSession.chats.length > 0) {
+                                        currentSession.chats[currentSession.chats.length - 1] = {
+                                            prompt,
+                                            response: fullResponse,
+                                            timestamp: new Date().valueOf().toString(),
+                                            inputToken: inputToken,
+                                            outputToken: outputToken,
+                                            inputTime: inputTime,
+                                            outputTime: outputTime,
+                                            totalTime: totalTime + time / 1000,
+                                            chatType: chatType,
+                                            datasource: datasource,
+                                            fileUrls: fileUrls
+                                        };
+                                    } else {
+                                        // Should there be no messages, push the new chat instead.
+                                        currentSession.chats.push({
+                                            prompt,
+                                            response: fullResponse,
+                                            timestamp: new Date().valueOf().toString(),
+                                            inputToken: inputToken,
+                                            outputToken: outputToken,
+                                            inputTime: inputTime,
+                                            outputTime: outputTime,
+                                            totalTime: totalTime + time / 1000,
+                                            chatType: chatType,
+                                            datasource: datasource,
+                                            fileUrls: fileUrls
+                                        });
+                                    }
+                                } else {
+                                    // Otherwise, just add a new chat message.
+                                    currentSession.chats.push({
+                                        prompt,
+                                        response: fullResponse,
+                                        timestamp: new Date().valueOf().toString(),
+                                        inputToken: inputToken,
+                                        outputToken: outputToken,
+                                        inputTime: inputTime,
+                                        outputTime: outputTime,
+                                        totalTime: totalTime + time,
+                                        chatType: chatType,
+                                        datasource: datasource,
+                                        fileUrls: fileUrls
+                                    });
+                                }
                                 await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                             } else {
-                                const newHistory = {
-                                    email: session?.user?.email as string,
-                                    session: [newChatHistory]
+                                const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                                const newChatHistory = {
+                                    id: sessionId as string,
+                                    title: title as string,
+                                    chats: [{
+                                        prompt,
+                                        response: fullResponse,
+                                        timestamp: new Date().valueOf().toString(),
+                                        inputToken: inputToken,
+                                        outputToken: outputToken,
+                                        inputTime: inputTime,
+                                        outputTime: outputTime,
+                                        totalTime: totalTime + time,
+                                        chatType: chatType,
+                                        datasource: datasource,
+                                        fileUrls: fileUrls
+                                    }]
                                 };
-                                await ChatRepo.create(newHistory);
+
+                                if (chatHistory) {
+                                    chatHistory.session.push(newChatHistory);
+                                    await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+                                } else {
+                                    const newHistory = {
+                                        email: session?.user?.email as string,
+                                        session: [newChatHistory],
+                                    };
+                                    await ChatRepo.create(newHistory);
+                                }
                             }
+                        } else {
+                            // Handling for when chatHistory doesn't exist (creating a new one)
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            const newChatHistory = {
+                                id: sessionId as string,
+                                title: title as string,
+                                chats: [{
+                                    prompt: prompt as string,
+                                    response: fullResponse,
+                                    timestamp: new Date().valueOf().toString(),
+                                    inputToken: inputToken,
+                                    outputToken: outputToken,
+                                    inputTime: inputTime,
+                                    outputTime: outputTime,
+                                    totalTime: totalTime + time,
+                                    chatType: chatType,
+                                    datasource: datasource,
+                                    fileUrls: fileUrls
+                                }]
+                            };
+                            const newHistory = {
+                                email: session?.user?.email as string,
+                                session: [newChatHistory]
+                            };
+
+                            await ChatRepo.create(newHistory);
                         }
-                    } else {
-                        // Handling for when chatHistory doesn't exist (creating a new one)
-                        const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                        const newChatHistory = {
-                            id: sessionId as string,
-                            title: title as string,
-                            chats: [{
-                                prompt: prompt as string,
-                                response: fullResponse,
-                                timestamp: new Date().valueOf().toString(),
-                                inputToken: inputToken,
-                                outputToken: outputToken,
-                                inputTime: inputTime,
-                                outputTime: outputTime,
-                                totalTime: totalTime + time,
-                                chatType: chatType,
-                                datasource: datasource
-                            }]
-                        };
-                        const newHistory = {
-                            email: session?.user?.email as string,
-                            session: [newChatHistory]
-                        };
-
-                        await ChatRepo.create(newHistory);
+                    } catch (error) {
+                        console.log("error", error);
+                        return new NextResponse("Error generating text.", { status: 500 })
                     }
-                } catch (error) {
-                    console.log("error", error);
-                    return new NextResponse("Error generating text.", { status: 500 })
-                }
-            },
-        });
+                },
+            });
 
-        return new NextResponse(streamResponse);
-
+            return new NextResponse(streamResponse);
+        }
     } catch (error) {
         console.error("Error generating text: ", error);
         return new NextResponse("Error generating text.", { status: 500 })

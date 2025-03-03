@@ -83,6 +83,7 @@ const ChatArea = () => {
                   totalTime={chat.totalTime}
                   chatType={chat.chatType}
                   datasource={chat.datasource}
+                  fileUrls={chat.fileUrls}
                 />
               }
             </div>

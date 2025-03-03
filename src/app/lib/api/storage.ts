@@ -16,17 +16,17 @@ interface UploadFileError extends Error {
 }
 
 // Upload file function
-export async function uploadFile(file: Buffer | Blob | string, fileName: string): Promise<string> {
+export async function uploadFile(file: ArrayBuffer, fileName: string): Promise<string> {
   try {
     const command = new PutObjectCommand({
       Bucket: "edith", // Your bucket name
       Key: fileName,
-      Body: file,
+      Body: Buffer.from(file),
       ACL: "public-read", // Makes the file publicly accessible
     });
 
     await s3Client.send(command);
-    return `${process.env.AWS_ENDPOINT_URL}/${fileName}`;
+    return fileName;
   } catch (error) {
     console.error("Error uploading file:", error);
     throw error as UploadFileError;

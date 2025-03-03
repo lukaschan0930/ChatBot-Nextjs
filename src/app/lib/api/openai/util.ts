@@ -10,6 +10,7 @@ import {
     LLM,
 } from "llamaindex";
 import { PineconeVectorStore } from "@llamaindex/pinecone";
+import { SimpleDirectoryReader } from "@llamaindex/readers/directory";
 import fs from "fs";
 import path from "path";
 
@@ -202,37 +203,22 @@ export async function clearCache(directory: string = 'cache'): Promise<void> {
     }
 }
 
-export async function generateDatasource(sessionId: string, files: File[]) {
+export async function generateDatasource(fileUrls: string[]) {
     try {
         console.log(`Generating storage context...`);
-        const vectorStore = new PineconeVectorStore({
-            indexName: "edith-chatapp-file",
-            apiKey: process.env.PINECONE_API_KEY!,
-            namespace: sessionId,
-        });
-        await clearCache();
-        const storageContext = await storageContextFromDefaults({ vectorStore });
-        const localStorageContext = await storageContextFromDefaults({ persistDir: "./cache" });
-        const documents = [];
-
-        for (const file of files) {
-            try {
-                const document = await generateDocument(file);
-                if (document) {
-                    documents.push(...document);
-                }
-            } catch (error) {
-                console.error(`Error processing file ${file.name}:`, error);
-            }
+        const reader = new SimpleDirectoryReader();
+        const documents: Document[] = [];
+        for (const fileUrl of fileUrls) {
+            const document = await reader.loadData(`${process.env.AWS_CDN_URL}/${fileUrl}`);
+            documents.push(...document);
         }
+        await clearCache();
+        const localStorageContext = await storageContextFromDefaults({ persistDir: "./cache" });
 
         const index = await VectorStoreIndex.fromDocuments(documents, {
             storageContext: localStorageContext
         });
         
-        VectorStoreIndex.fromDocuments(documents, {
-            storageContext: storageContext
-        });
         console.log("Documents stored");
         
         return index;

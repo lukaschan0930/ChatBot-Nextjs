@@ -1,22 +1,28 @@
-import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
-import {
-    generateDatasource,
-} from "@/app/lib/api/openai/util";
-// import { generateEmbeddingFromFile } from "@/app/lib/api/openai/util";
+import { uploadFile } from "@/app/lib/api/storage";
 
 export async function POST(req: NextRequest) {
     const formData = await req.formData();
-    const sessionId = formData.get('sessionId');
     try {
         const formDataEntryValues = Array.from(formData.values());
         const files = formDataEntryValues.filter(value => value instanceof File);
-        const result = await generateDatasource(sessionId as string, files);
-        if (result) {
-            return NextResponse.json({ success: true });
-        } else {
-            return NextResponse.json({ success: false, error: "Failed to generate datasource" });
+        const fileUrl = await Promise.all(files.map(async (file) => {
+            try {
+                const fileBuffer = await file.arrayBuffer();
+                const fileName = `${Date.now()}-${file.name}`;
+                const fileUrl = await uploadFile(fileBuffer, fileName);
+                return fileUrl;
+            } catch (error) {
+                console.error("Error uploading file:", error);
+                return null;
+            }
+        }));
+
+        const fileUrls = fileUrl.filter(url => url !== null);
+        if (fileUrls.length === 0) {
+            return NextResponse.json({ success: false, error: "Failed to upload files" });
         }
+        return NextResponse.json({ success: true, fileUrl });
     } catch (error) {
         return NextResponse.json({ success: false, error: error });
     }

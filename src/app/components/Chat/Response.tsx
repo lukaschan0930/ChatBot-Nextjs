@@ -26,7 +26,8 @@ const Response = (
     outputTime = 0,
     totalTime = 0,
     chatType,
-    datasource
+    datasource,
+    fileUrls
   }:
     {
       response: string,
@@ -38,7 +39,8 @@ const Response = (
       outputTime?: number,
       totalTime?: number,
       chatType: number,
-      datasource: boolean
+      datasource: boolean,
+      fileUrls: string[]
     }
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
@@ -122,6 +124,7 @@ const Response = (
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
         const datasource = chatLog[chatLog.length - 1].datasource;
+        const fileUrls = chatLog[chatLog.length - 1].fileUrls;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
@@ -132,7 +135,8 @@ const Response = (
           outputTime: 0,
           totalTime: 0,
           chatType: chatType,
-          datasource: datasource
+          datasource: datasource,
+          fileUrls: fileUrls
         };
         return newLog;
       });
@@ -157,7 +161,8 @@ const Response = (
               inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: datasource
+              datasource: datasource,
+              fileUrls: fileUrls
             };
           } else {
             newLog.push({
@@ -169,7 +174,8 @@ const Response = (
               inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: datasource
+              datasource: datasource,
+              fileUrls: fileUrls
             });
           }
           return newLog;
@@ -224,7 +230,8 @@ const Response = (
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: datasource
+            datasource: datasource,
+            fileUrls: fileUrls
           };
         } else {
           newLog.push({
@@ -236,7 +243,8 @@ const Response = (
             inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: datasource
+            datasource: datasource,
+            fileUrls: fileUrls
           });
         }
         return newLog;
@@ -358,6 +366,7 @@ const Response = (
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
         const datasource = chatLog[chatLog.length - 1].datasource;
+        const fileUrls = chatLog[chatLog.length - 1].fileUrls;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
@@ -368,7 +377,8 @@ const Response = (
           outputTime: 0,
           totalTime: 0,
           chatType: chatType,
-          datasource: datasource
+          datasource: datasource,
+          fileUrls: fileUrls
         };
         return newLog;
       });
@@ -418,7 +428,8 @@ const Response = (
               outputTime: outputTime,
               totalTime: totalTime,
               chatType: chatLog[chatLog.length - 1].chatType,
-              datasource: chatLog[chatLog.length - 1].datasource
+              datasource: chatLog[chatLog.length - 1].datasource,
+              fileUrls: chatLog[chatLog.length - 1].fileUrls
             };
             return newLog;
           });
@@ -439,7 +450,8 @@ const Response = (
               outputTime: outputTime,
               totalTime: totalTime,
               chatType: newLog[newLog.length - 1].chatType,
-              datasource: chatLog[chatLog.length - 1].datasource
+              datasource: chatLog[chatLog.length - 1].datasource,
+              fileUrls: chatLog[chatLog.length - 1].fileUrls
             };
             return newLog;
           });
@@ -460,7 +472,8 @@ const Response = (
           outputTime: 0,
           totalTime: 0,
           chatType: newLog[newLog.length - 1].chatType,
-          datasource: newLog[newLog.length - 1].datasource
+          datasource: newLog[newLog.length - 1].datasource,
+          fileUrls: newLog[newLog.length - 1].fileUrls
         };
         return newLog;
       });

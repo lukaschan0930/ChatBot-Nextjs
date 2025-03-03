@@ -124,6 +124,7 @@ export interface ChatLog {
     totalTime?: number;
     chatType: number;
     datasource: boolean;
+    fileUrls: string[];
 }
 
 export interface IChangeLog {
