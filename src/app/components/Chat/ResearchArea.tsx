@@ -13,26 +13,46 @@ const ResearchArea = () => {
 
     return (
         <div className={`${isResearchAreaVisible && 'xl:block'} hidden pr-[19px] pt-[108px] h-screen pb-4`}>
-            <div className='xl:w-[370px] rounded-md border border-secondaryBorder bg-inputBg h-full py-7 px-6 overflow-y-auto'>
-                <div className='flex items-center'>
-                    {
-                        researchTabs.map((tab, index) => (
-                            <div
-                                key={index}
-                                className={`px-4 py-1 border-b-2 cursor-pointer ${tabValue === index ? "border-mainFont" : "border-transparent"}`}
-                                onClick={() => setTabValue(index)}
-                            >
-                                <div className={`${tabValue === index ? 'text-mainFont' : 'text-subButtonFont'}`}>{tab}</div>
-                            </div>
-                        ))
-                    }
+            <div className='xl:w-[370px] rounded-md border border-secondaryBorder bg-inputBg h-full pb-7 overflow-y-auto'>
+                <div className='flex flex-col items-center py-3 border-b border-secondaryBorder'>
+                    <div className='flex items-center p-2 border border-[#25252799] bg-[#0B0B0D] rounded-full'>
+                        {
+                            researchTabs.map((tab, index) => (
+                                tabValue === index ?
+                                    <div
+                                        className={`flex 
+                                        items-start justify-between h-full 
+                                        gap-4 p-[2px] w-fit bg-inputBg group text-mainFont
+                                        bg-btn-shadow rounded-full border-0 focus:outline-none text-sm cursor-pointer
+                                        `}
+                                        onClick={() => setTabValue(index)}
+                                    >
+                                        <span className="flex-1 bg-[#181818] border-0 px-3 py-2 rounded-full">{tab}</span>
+                                    </div> :
+                                    <div
+                                        key={index}
+                                        className={`px-4 py-1 border rounded-full cursor-pointer ${tabValue === index ? "bg-[#292929] border-[#2C2B30]" : "border-transparent"}`}
+                                        onClick={() => setTabValue(index)}
+                                    >
+                                        <div className='text-mainFont text-sm'>
+                                            {tab}
+                                            (
+                                                {researchLog.reduce((acc, step) => (
+                                                    acc + step.sources.length
+                                                ), 0)}
+                                            )
+                                        </div>
+                                    </div>
+                            ))
+                        }
+                    </div>
                 </div>
                 <div
                     role="tabpanel"
                     hidden={tabValue !== 0}
                     id={`tabpanel-activity`}
                     aria-labelledby={`tab-activity`}
-                    className='py-3'
+                    className='py-3 px-6'
                 >
                     <div className="flex flex-col">
                         {researchLog.map((step, index) => (
@@ -84,12 +104,12 @@ const ResearchArea = () => {
                     hidden={tabValue !== 1}
                     id={`tabpanel-sources`}
                     aria-labelledby={`tab-sources`}
-                    className='py-3'
+                    className='py-3 px-6'
                 >
                     <div className="flex flex-col gap-3">
                         {researchLog.map((step, index) => (
                             step.sources.map((source, index) => (
-                                <div 
+                                <div
                                     key={index} className='rounded-md bg-[#FFFFFF08] py-4 px-6 flex flex-col cursor-pointer'
                                     onClick={() => window.open(source.url, '_blank')}
                                 >

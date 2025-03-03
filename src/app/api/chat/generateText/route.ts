@@ -19,7 +19,16 @@ import {
     DeepSeekLLM
 } from "llamaindex";
 
-const llm = new OpenAI();
+const llm = new OpenAI({
+    model: "gpt-4o-mini",
+    temperature: 0.7,
+    apiKey: process.env.OPENAI_API_KEY!,
+});
+
+// const deepseekLlm = new DeepSeekLLM({
+//     apiKey: process.env.DEEPSEEK_API_KEY!,
+//     model: "deepseek-chat",
+// });
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);

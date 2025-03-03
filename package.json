@@ -19,6 +19,7 @@
     "@llamaindex/openai": "^0.1.54",
     "@llamaindex/pinecone": "^0.0.7",
     "@llamaindex/readers": "^2.0.2",
+    "@llamaindex/replicate": "^0.0.37",
     "@mendable/firecrawl-js": "^1.17.0",
     "@mui/icons-material": "^6.4.2",
     "@mui/material": "^6.4.2",
