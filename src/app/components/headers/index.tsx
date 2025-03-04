@@ -9,10 +9,14 @@ import MobileAdminMenu from "./MobileAdminMenu";
 import ShadowBtn from "../ShadowBtn";
 import ChangeLog from "@/app/assets/changelog";
 import DocsIcon from "@/app/assets/docs";
-import SunIcon from "@/app/assets/sun";
+// import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
-import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom } from "@/app/lib/store";
-import Arrow from "@/app/assets/arrow";
+import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom } from "@/app/lib/store";
+import HistoryIcon from "@/app/assets/history";
+import NewChatIcon from "@/app/assets/newChat";
+import { IFileWithUrl } from "@/app/lib/interface";
+import { generateSessionId } from "@/app/lib/utils";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
   const router = useRouter();
@@ -25,6 +29,11 @@ const Header = () => {
   const [isLeftSidebar, setIsLeftSidebar] = useState<boolean>(false);
   const [isRightSidebar, setIsRightSidebar] = useState<boolean>(false);
   const [isSidebarVisible, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
+  const [, setIsStartChat] = useAtom(isStartChatAtom);
+  const [, setSessionId] = useAtom(sessionIdAtom);
+  const [, setChatLog] = useAtom(chatLogAtom);
+  const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,10 +59,10 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 border-b-2 bg-headerBg text-mainFont border-primaryBorder">
-        <div className="flex h-[72px] items-center pr-2 md:pr-6 justify-between relative">
-          <div className={`flex items-center pl-4 h-full w-[260px] ${endPoint === "admin" ? "border-none" : "border-[#29292B] border-r"}`}>
-            <div className={`pr-2 py-[1px] border-[#29292B] mr-2 ${endPoint !== "admin" && "border-r-2"}`}>
+      <header className="fixed top-0 left-0 right-0 z-10 text-mainFont">
+        <div className="flex h-[72px] items-center max-sm:px-3 max-sm:pt-4 pr-2 md:pr-6 justify-between relative">
+          <div className={`items-center pl-4 h-full hidden sm:flex`}>
+            <div className={`pr-2 mr-2 ${endPoint !== "admin" && "border-r border-[#29292B]"}`}>
               <Image
                 src="/image/logo-edith.png"
                 alt="logo"
@@ -67,22 +76,78 @@ const Header = () => {
             </div>
             {
               endPoint !== "admin" &&
-                <>
-                  <DropDownMenu />
-                  <ShadowBtn
-                    className="ml-4"
-                    mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[6px]"
-                    onClick={() => {
-                      setIsSidebarVisible(!isSidebarVisible);
-                    }}
-                  >
-                    <Arrow
-                      className={`${!isSidebarVisible ? "rotate-180" : ""
-                        } transition-all duration-150`}
-                    />
-                  </ShadowBtn>
-                </>  
+              <>
+                <DropDownMenu />
+                <ShadowBtn
+                  className="ml-8"
+                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsSidebarVisible(!isSidebarVisible);
+                  }}
+                >
+                  <HistoryIcon />
+                  <span className="text-sm">History</span>
+                </ShadowBtn>
+                <ShadowBtn
+                  className="ml-3"
+                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsStartChat(false);
+                    setSessionId(generateSessionId(
+                      session?.user?.email as string,
+                      Date.now().toString()
+                    ));
+                    setFiles([]);
+                    setIsSidebarVisible(false);
+                    setChatLog([]);
+                  }}
+                >
+                  <NewChatIcon />
+                  <span className="text-sm">New Chat</span>
+                </ShadowBtn>
+              </>
             }
+          </div>
+          {
+            endPoint !== "admin" &&
+            <div className="flex items-center gap-2 sm:hidden">
+              <ShadowBtn
+                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+                onClick={() => {
+                  setIsSidebarVisible(!isSidebarVisible);
+                }}
+              >
+                <HistoryIcon />
+              </ShadowBtn>
+              <ShadowBtn
+                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+                onClick={() => {
+                  setIsStartChat(false);
+                  setSessionId(generateSessionId(
+                    session?.user?.email as string,
+                    Date.now().toString()
+                  ));
+                  setFiles([]);
+                  setIsSidebarVisible(false);
+                  setChatLog([]);
+                }}
+              >
+                <NewChatIcon />
+              </ShadowBtn>
+            </div>
+          }
+          <div className="flex items-center gap-2 sm:hidden">
+            <Image
+              src="/image/logo-chat.png"
+              alt="logo"
+              width={100}
+              height={100}
+              className="h-5 w-auto"
+              onClick={() => {
+                router.push("/");
+              }}
+            />
+            <DropDownMenu />
           </div>
           {
             endPoint !== "admin" ? (
@@ -122,7 +187,7 @@ const Header = () => {
               <>
                 <div className="text-white text-2xl font-bold flex items-center gap-2">
                   Admin
-                  <div className="lg:hidden">
+                  <div className="md:hidden">
                     <MobileAdminMenu />
                   </div>
                 </div>

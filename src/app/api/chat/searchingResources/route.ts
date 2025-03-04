@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         const results = await Promise.all(queryResult.queries.map(async (query: string) => {
             const result = await firecrawl.search(query, {
                 timeout: 15000,
-                limit: 2,
+                limit: 1,
                 scrapeOptions: { formats: ['markdown'] },
             });
             const titles = compact(result.data.map(item => item.metadata?.title));

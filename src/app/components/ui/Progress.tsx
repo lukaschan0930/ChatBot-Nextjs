@@ -24,20 +24,20 @@ const Progress: React.FC<ProgressProps> = ({ progress }) => {
     }, [progress]);
 
     return (
-        <div className="w-full bg-subButtonFont rounded-full h-2.5 dark:bg-gray-700 relative">
+        <div className="w-full bg-[#FFFFFF14] rounded-full h-2.5 relative">
             <div
-                className="h-2.5 rounded-full transition-width duration-500 ease-in-out relative bg-white"
+                className="h-2.5 rounded-full transition-width duration-500 ease-in-out relative progress-bar-striped"
                 style={{
                     width: `${progress}%`,
                 }}
             >
-                <div
+                {/* <div
                     className="absolute inset-0 rounded-full -right-1"
                     style={{
                         background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(255, 255, 255))',
                         filter: 'blur(8px)',
                     }}
-                ></div>
+                ></div> */}
                 {/* <div
                     className="absolute -right-1 -top-1 h-[18px] w-full max-w-[100px] rounded-full bg-gradient-to-r from-transparent to-white opacity-50 animate-pulse"
                     style={{
@@ -46,7 +46,7 @@ const Progress: React.FC<ProgressProps> = ({ progress }) => {
                 ></div> */}
             </div>
             <div className='absolute -top-5 right-1'>
-                <p className='text-sm text-gray-500'>{displayedProgress}%</p>
+                <p className='text-sm text-mainFont'>{displayedProgress}%</p>
             </div>
         </div>
     );

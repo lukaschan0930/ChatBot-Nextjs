@@ -1,8 +1,12 @@
 'use client'
 import { useState } from "react";
 import { FiLogOut, FiSettings } from "react-icons/fi";
-import { IoClose, IoMenu } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import ShadowBtn from "../ShadowBtn";
+import SettingIcon from "@/app/assets/settingIcon";
+import Image from "next/image";
+import { useAuth } from "@/app/context/AuthContext";
 
 import {
   DropdownMenu,
@@ -12,6 +16,7 @@ import {
   DropdownMenuSub,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import EditIcon from "@/app/assets/editIcon";
 import { MenuItems } from "@/app/lib/stack";
 import { signOut } from "next-auth/react";
 
@@ -27,6 +32,7 @@ type MenuItem = {
 
 const MobileDropDownMenu = () => {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(MenuItems);
@@ -48,12 +54,23 @@ const MobileDropDownMenu = () => {
   };
 
   return (
-    <DropdownMenu onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger className="w-10 h-10 p-2 transition-all duration-300 border-transparent rounded-full outline-none bg-buttonBg hover:border-transparent hover:bg-buttonHoverBg text-mainFont focus:outline-none hover:text-hoverFont">
-        {isOpen ? <IoClose size={24} /> : <IoMenu size={24} />}
+    <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+      <DropdownMenuTrigger className="bg-transparent border-none focus:outline-none hover:bg-transparent hover:outline-none p-0">
+        <ShadowBtn
+          className="rounded-md"
+          mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+        >
+          {
+            isOpen ?
+              <IoClose size={18} /> :
+              <>
+                <SettingIcon />
+              </>
+          }
+        </ShadowBtn>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="bg-inputBg mt-[14px] w-[200px] border-secondaryBorder"
+        className="bg-inputBg sm:mt-[14px] sm:w-[200px] w-screen max-sm:h-screen border-secondaryBorder -mt-[67px]"
         align="end"
       >
         {/* <div className="block sm:hidden">
@@ -75,9 +92,19 @@ const MobileDropDownMenu = () => {
           ))}
         </div>
         <DropdownMenuSeparator className="block sm:hidden bg-[#FFFFFF]/10" /> */}
+        <div className="flex w-full justify-between px-3 py-4 items-center sm:hidden">
+          <span className="text-mainFont text-base">Settings</span>
+          <ShadowBtn
+            className="rounded-md"
+            mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <IoClose size={18} />
+          </ShadowBtn>
+        </div>
         <DropdownMenuSub>
           <DropdownMenuItem
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden"
             onClick={() => router.push("/changeLog")}
           >
             Change Log
@@ -88,27 +115,64 @@ const MobileDropDownMenu = () => {
           {/* <DropdownMenuItem className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:">
             AI Agents
           </DropdownMenuItem> */}
-          <DropdownMenuItem 
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+          <DropdownMenuItem
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden"
             onClick={() => window.open("https://docs.edithx.ai", "_blank")}
           >
             Docs
           </DropdownMenuItem>
         </DropdownMenuSub>
-        <DropdownMenuSeparator className="bg-[#FFFFFF]/10" />
+        <DropdownMenuSeparator className="bg-[#FFFFFF]/10 max-sm:mx-3" />
+        <div className="w-full py-[50px] flex flex-col items-center justify-center sm:hidden">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="relative w-fit">
+              {
+                user?.avatar ? (
+                  <Image src={user?.avatar} alt="avatar" className="h-[80px] w-[80px] rounded-full" width={80} height={80} />
+                ) : (
+                  <Image src="/image/default-avatar.png" alt="avatar" className="!h-[80px] !w-auto max-w-[80px]" width={80} height={80} />
+                )
+              }
+              <div className="absolute -right-1 -bottom-1">
+                <ShadowBtn
+                  className="bg-btn-new-chat rounded-full"
+                  mainClassName="bg-gradient-to-b from-[#DFDFDF] to-[#BFBFBF] rounded-full p-[6px]"
+                  onClick={handleSetting}
+                >
+                  <EditIcon />
+                </ShadowBtn>
+              </div>
+            </div>
+            <div className="text-mainFont text-base">
+              {user?.name}
+            </div>
+          </div>
+        </div>
         <DropdownMenuItem
-          className="flex items-center justify-between h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+          className="max-sm:hidden flex items-center justify-between h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
           onClick={handleSetting}
         >
           Setting
           <FiSettings className="!w-5 !h-5" />
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="flex items-center justify-between h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+          className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont sm:hidden border-b rounded-none border-[#29292B]"
+          onClick={() => router.push("/changeLog")}
+        >
+          Change Log
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont sm:hidden border-b rounded-none border-[#29292B]"
+          onClick={() => window.open("https://docs.edithx.ai", "_blank")}
+        >
+          Docs
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="flex items-center justify-start text-red-500 h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg hover:"
           onClick={handleLogout}
         >
-          Log Out
           <FiLogOut className="!w-5 !h-5" />
+          Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

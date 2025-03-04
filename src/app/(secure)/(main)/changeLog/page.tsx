@@ -38,10 +38,10 @@ const ChangeLog = () => {
 
     return (
         <div className="min-h-screen w-screen flex flex-col items-center">
-            <div className="mt-[120px] lg:mt-[152px] lg:max-w-[700px] w-full flex flex-col mb-10 items-center px-6 lg:px-0">
-                <div className="text-[24px] font-semibold text-mainFont">Changelog</div>
-                <div className="flex max-md:flex-col lg:items-center justify-between mb-6 gap-x-[36px] gap-y-4 mt-[60px]">
-                    <div className="flex items-center gap-1 rounded-2xl p-2 border-2 border-[#25252799]">
+            <div className="mt-6 sm:mt-[120px] lg:mt-[152px] lg:max-w-[700px] w-full flex flex-col mb-10 items-center px-6 lg:px-0">
+                <div className="text-[24px] font-semibold text-mainFont max-sm:hidden">Changelog</div>
+                <div className="flex items-center justify-between mb-6 max-sm:gap-x-3 w-full gap-x-[36px] gap-y-4 mt-[60px]">
+                    <div className="max-sm:hidden flex items-center gap-1 rounded-2xl p-2 border-2 border-[#25252799]">
                         <ShadowBtn
                             className={category !== "" ? "bg-transparent" : ""}
                             mainClassName={`py-1 px-2 text-mainFont max-md:text-[12px] ${category !== "" && "bg-transparent"}`}
@@ -60,7 +60,7 @@ const ChangeLog = () => {
                             </ShadowBtn>
                         ))}
                     </div>
-                    <div className="relative">
+                    <div className="relative max-sm:w-full">
                         <input
                             type="text"
                             placeholder="Search"
@@ -70,6 +70,15 @@ const ChangeLog = () => {
                         />
                         <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-mainFont" />
                     </div>
+                    <select
+                        className="text-[12px] p-3 rounded-2xl border border-[#25252799] bg-[#0E0E10] text-mainFont sm:hidden"
+                        onChange={(e) => setCategory(e.target.value)}
+                    >
+                        <option value="all">All</option>
+                        {logCategory.map((item: { id: string, label: string }, index: number) => (
+                            <option value={item.id} key={index}>{item.label}</option>
+                        ))}
+                    </select>
                 </div>
                 {
                     isLoading ? (

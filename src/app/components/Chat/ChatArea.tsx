@@ -5,16 +5,18 @@ import Response from "./Response";
 import { chatLogAtom, chatTypeAtom, sessionIdAtom } from "@/app/lib/store";
 import { useAtom } from "jotai";
 import Image from "next/image";
-import { isSidebarVisibleAtom, progressAtom } from "@/app/lib/store";
+import { isSidebarVisibleAtom, progressAtom, researchLogAtom } from "@/app/lib/store";
 import Progress from "@/app/components/ui/Progress";
 import AccordionResearchArea from "./AccordionResearchArea";
 import { activeChatIdAtom } from "@/app/lib/store";
+import ProgressSite from "@/app/assets/progressSite";
 
 const ChatArea = () => {
   const [chatLog,] = useAtom(chatLogAtom);
   const [chatType,] = useAtom(chatTypeAtom);
   const [progress,] = useAtom(progressAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
+  const [researchLog,] = useAtom(researchLogAtom);
   const chatLogEndRef = useRef<HTMLDivElement>(null);
   const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
   const [activeChatId,] = useAtom(activeChatIdAtom);
@@ -63,13 +65,28 @@ const ChatArea = () => {
                   <div className="flex flex-col w-full items-start gap-2 mb-4">
                     <p className="text-2xl">EDITH is thinking...</p>
                     {
-                      chatType == 1 &&
-                      <Progress progress={progress} />
+                      (chatType == 1 || chat.chatType == 1) &&
+                      <>
+                        <Progress progress={progress} />
+                        <div className="max-sm:hidden mt-4 rounded-full bg-[#0E0E10] border border-[#25252799] shadow-input-box p-[6px] flex gap-2 items-center">
+                          <ProgressSite />
+                          <span className="text-mainFont text-sm">
+                            {
+                              researchLog.reduce((acc, step) => (
+                                acc + step.sources.length
+                              ), 0)
+                            } web pages
+                          </span>
+                        </div>
+                      </>
                     }
                   </div>
                 </>
               }
-              {chatLog.length - 1 === id && activeChatId === sessionId && chatType == 1 && <AccordionResearchArea />}
+              {
+                chatLog.length - 1 === id && activeChatId === sessionId && (chatType == 1 || chat.chatType == 1) &&
+                <AccordionResearchArea />
+              }
               {
                 chat.response &&
                 <Response
