@@ -384,6 +384,152 @@ button:focus-visible {
   }
 }
 
+@media (width < 40rem) {
+  .answer-markdown {
+    a {
+      text-decoration: none;
+      color: hsl(221.2 83.2% 53.3%);
+      text-align: left;
+    }
+
+    code {
+      background-color: rgba(17, 24, 39, 1);
+      ;
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      padding: 0.05rem 0.15rem;
+    }
+
+    h3 {
+      font-size: 1em;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+      text-align: left;
+      margin-top: 0.5rem;
+    }
+
+    p {
+      font-size: 14px;
+      text-align: left;
+      font-weight: 350;
+    }
+
+    p>strong {
+      font-size: 1em;
+      text-align: left;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    ol {
+      padding-left: 0.5em;
+      text-align: left;
+      margin-top: 0;
+      font-size: 14px;
+    }
+
+    li {
+      padding-left: 0.375em;
+      margin-bottom: 0.2em;
+      text-align: left;
+      margin-top: 0.2em;
+      font-size: 14px;
+    }
+
+    ul {
+      text-align: left;
+      padding-left: 0.5em;
+      font-size: 14px;
+    }
+
+    menu,
+    ol,
+    ul {
+      list-style: none;
+      list-style-type: disc;
+      text-align: left;
+      margin-bottom: 0.5em;
+      font-size: 14px;
+    }
+
+    hr {
+      border-top-width: 1px;
+      margin-bottom: 1em;
+      text-align: left;
+      margin-top: 1em;
+    }
+
+    strong {
+      font-size: 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    table {
+      text-indent: 0;
+      font-size: 14px;
+      width: 100%;
+      text-align: left;
+      border-spacing: 0;
+      border-collapse: separate;
+      text-align: left;
+      border-radius: 0.2rem;
+    }
+
+    thead tr th {
+      border-color: #FFFFFF33;
+      border-left-width: 1px;
+      border-top-width: 1px;
+      border-bottom-width: 1px;
+      background-color: rgba(17, 24, 39, 0.7);
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      font-weight: 600;
+      text-align: center;
+      text-align: left;
+      font-weight: bold;
+    }
+
+    thead tr th:first-child {
+      text-align: left;
+      border-top-left-radius: 0.2rem;
+    }
+
+    thead tr th:last-child {
+      border-top-right-radius: 0.2rem;
+      text-align: left;
+      border-right-width: 1px;
+    }
+
+    tbody tr td {
+      background-color: rgba(17, 24, 39, 1);
+      border-color: #FFFFFF33;
+      border-left-width: 1px;
+      border-bottom-width: 1px;
+      text-align: left;
+      padding: 0.25rem 0.5rem;
+    }
+
+    tbody tr td:last-child {
+      border-right-width: 1px;
+      text-align: left;
+      padding-right: 0.5rem;
+    }
+
+    tbody tr:last-child td:first-child {
+      text-align: left;
+      border-bottom-left-radius: 0.2rem;
+    }
+
+    tbody tr:last-child td:last-child {
+      text-align: left;
+      border-bottom-right-radius: 0.2rem;
+    }
+  }
+}
+
 .ql-container {
   height: 300px;
   /* Set the height of the editor */

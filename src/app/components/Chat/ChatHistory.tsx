@@ -218,6 +218,7 @@ const ChatHistory = () => {
                                         setFiles([]);
                                         setIsSidebarVisible(false);
                                         setChatLog([]);
+                                        router.push("/chatText");
                                     }}
                                 >
                                     <span className="text-black font-semibold text-sm">New</span>
@@ -241,7 +242,20 @@ const ChatHistory = () => {
                                 className="text-subButtonFont mt-7 mb-3 px-2 flex justify-between items-center w-full cursor-pointer"
                             >
                                 <span>History</span>
-                                <div className="flex items-center text-mainFont">
+                                <div
+                                    className="sm:hidden flex items-center text-mainFont"
+                                    onClick={() => {
+                                        setIsStartChat(false);
+                                        setSessionId(generateSessionId(
+                                            session?.user?.email as string,
+                                            Date.now().toString()
+                                        ));
+                                        setFiles([]);
+                                        setIsSidebarVisible(false);
+                                        setChatLog([]);
+                                        router.push("/chatText");
+                                    }}
+                                >
                                     New
                                     <FiPlus />
                                 </div>
@@ -425,7 +439,10 @@ const ChatHistory = () => {
                                 <ShadowBtn
                                     className="w-full mb-7"
                                     mainClassName="py-2 px-[10px] text-white text-sm text-center"
-                                    onClick={() => { router.push("/chatText/setting") }}
+                                    onClick={() => {
+                                        router.push("/chatText/setting");
+                                        setIsSidebarVisible(false);
+                                    }}
                                 >
                                     Settings
                                 </ShadowBtn>

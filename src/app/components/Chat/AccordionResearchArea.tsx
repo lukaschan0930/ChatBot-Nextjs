@@ -41,20 +41,20 @@ const AccordionResearchArea = () => {
                     </div>
                 </div>
                 <div className='flex items-center gap-2'>
-                    <div className='flex items-center p-2 border border-[#25252799] bg-[#0B0B0D] rounded-full'>
+                    <div className='flex items-center p-[6px] border border-[#25252799] bg-[#0B0B0D] rounded-full'>
                         {
                             researchTabs.map((tab, index) => (
                                 tabValue === index ?
                                     <div
                                         className={`flex 
                                         items-start justify-between h-full 
-                                        gap-4 p-[2px] w-fit bg-inputBg group text-mainFont
-                                        bg-btn-shadow rounded-full border-0 focus:outline-none text-sm cursor-pointer
+                                        gap-4 p-[1px] w-fit bg-inputBg group text-mainFont
+                                        bg-btn-shadow rounded-full border-0 focus:outline-none text-[12px] cursor-pointer
                                         `}
                                         key={index}
                                         onClick={() => setTabValue(index)}
                                     >
-                                        <span className="flex-1 bg-[#181818] border-0 px-3 py-2 rounded-full">
+                                        <span className="flex-1 bg-[#181818] border-0 px-2 py-1 rounded-full">
                                             {tab}
                                             {index === 1 && `(${researchLog.reduce((acc, step) => (
                                                 acc + step.sources.length
@@ -66,7 +66,7 @@ const AccordionResearchArea = () => {
                                         className={`px-4 py-1 border rounded-full cursor-pointer ${tabValue === index ? "bg-[#292929] border-[#2C2B30]" : "border-transparent"}`}
                                         onClick={() => setTabValue(index)}
                                     >
-                                        <div className='text-mainFont text-sm'>
+                                        <div className='text-mainFont text-[12px]'>
                                             {tab}
                                             {index === 1 && `(${researchLog.reduce((acc, step) => (
                                                 acc + step.sources.length
@@ -82,13 +82,13 @@ const AccordionResearchArea = () => {
                     />
                 </div>
             </div>
-            <div className={`h-full overflow-y-auto transition-all duration-300 ${isOpen ? 'max-h-[calc(100vh-450px)]' : 'max-h-0 overflow-hidden'}`}>
+            <div className={`h-full overflow-y-auto transition-all duration-300 ${isOpen ? 'max-h-[calc(100vh-450px)]' : 'max-h-[50px] overflow-hidden'}`}>
                 <div
                     role="tabpanel"
                     hidden={tabValue !== 0}
                     id={`tabpanel-activity`}
                     aria-labelledby={`tab-activity`}
-                    className='py-3 px-3'
+                    className='py-3 px-3 mb-[2px]'
                 >
                     <div className="flex flex-col">
                         {researchLog.map((step, index) => (
@@ -166,7 +166,7 @@ const AccordionResearchArea = () => {
                     hidden={tabValue !== 1}
                     id={`tabpanel-sources`}
                     aria-labelledby={`tab-sources`}
-                    className='py-3 px-3'
+                    className='py-3 px-3 mb-[2px]'
                 >
                     <div className="flex flex-col gap-3">
                         {researchLog.map((step, index) => (

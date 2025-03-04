@@ -19,6 +19,8 @@ import {
 import EditIcon from "@/app/assets/editIcon";
 import { MenuItems } from "@/app/lib/stack";
 import { signOut } from "next-auth/react";
+import ChangeLog from "@/app/assets/changelog";
+import DocsIcon from "@/app/assets/docs";
 
 type MenuItem = {
   id: string;
@@ -38,10 +40,12 @@ const MobileDropDownMenu = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(MenuItems);
   const handleSetting = () => {
     router.push("/userSetting");
+    setIsOpen(false);
   }
 
   const handleLogout = () => {
     signOut();
+    setIsOpen(false);
   }
 
   const handleItemClick = (itemId: string) => {
@@ -104,7 +108,7 @@ const MobileDropDownMenu = () => {
         </div>
         <DropdownMenuSub>
           <DropdownMenuItem
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden"
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden flex items-center gap-2"
             onClick={() => router.push("/changeLog")}
           >
             Change Log
@@ -116,7 +120,7 @@ const MobileDropDownMenu = () => {
             AI Agents
           </DropdownMenuItem> */}
           <DropdownMenuItem
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden"
+            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden flex items-center gap-2"
             onClick={() => window.open("https://docs.edithx.ai", "_blank")}
           >
             Docs
@@ -149,26 +153,28 @@ const MobileDropDownMenu = () => {
           </div>
         </div>
         <DropdownMenuItem
-          className="max-sm:hidden flex items-center justify-between h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont hover:"
+          className="max-sm:hidden flex items-center justify-between h-10 py-3 text-base transition-all duration-300 text-mainFont hover:"
           onClick={handleSetting}
         >
           Setting
           <FiSettings className="!w-5 !h-5" />
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont sm:hidden border-b rounded-none border-[#29292B]"
+          className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => router.push("/changeLog")}
         >
+          <ChangeLog />
           Change Log
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont sm:hidden border-b rounded-none border-[#29292B]"
+          className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => window.open("https://docs.edithx.ai", "_blank")}
         >
+          <DocsIcon />
           Docs
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="flex items-center justify-start text-red-500 h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg hover:"
+          className="max-sm:hover:bg-[#ffffff80] max-sm:focus:bg-[#ffffff80] flex items-center justify-start text-red-500 h-10 py-3 text-base transition-all duration-300"
           onClick={handleLogout}
         >
           <FiLogOut className="!w-5 !h-5" />

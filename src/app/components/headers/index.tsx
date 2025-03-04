@@ -100,6 +100,7 @@ const Header = () => {
                     setFiles([]);
                     setIsSidebarVisible(false);
                     setChatLog([]);
+                    router.push("/chatText");
                   }}
                 >
                   <NewChatIcon />
@@ -130,6 +131,7 @@ const Header = () => {
                   setFiles([]);
                   setIsSidebarVisible(false);
                   setChatLog([]);
+                  router.push("/chatText");
                 }}
               >
                 <NewChatIcon />

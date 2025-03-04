@@ -210,7 +210,7 @@ const UserSetting = () => {
                 <div className="flex justify-end gap-3 border-t border-[#25252799] p-3 w-full max-sm:justify-between">
                     <button
                         onClick={handleClickCancel}
-                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-[#000000] border border-[#FAFAFA]/80 focus:outline-none text-[14px] text-[#FAFAFA]/80 hover:scale-105 hover:border-[#FAFAFA]/80 transition-transform duration-300 ease-linear"
+                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-transparent border border-[#FAFAFA]/80 focus:outline-none text-[14px] text-[#FAFAFA]/80 hover:scale-105 hover:border-[#FAFAFA]/80 transition-transform duration-300 ease-linear"
                     >
                         Cancel
                     </button>
