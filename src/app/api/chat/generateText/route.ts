@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const prompt = formData.get('prompt') as string;
     const sessionId = formData.get('sessionId') as string;
     const chatLog = JSON.parse(formData.get('chatLog') as string);
-    const reGenerate = formData.get('reGenerate') as string;
+    const reGenerate = formData.get('reGenerate') == "true" ? true : false;
     const learnings = JSON.parse(formData.get('learnings') as string);
     const time = Number(formData.get('time'));
     const datasource = formData.get('datasource') == "true" ? true : false;
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
 
     if (recentChatType1Timestamps.length === 24) {
         const oldestTimestamp = recentChatType1Timestamps[23].session.chats.timestamp;
+        console.log("oldestTimestamp", oldestTimestamp, oneHourAgo, recentChatType1Timestamps[0].session.chats.timestamp);
         if (oldestTimestamp > oneHourAgo) {
             return NextResponse.json({
                 error: "Rate Limit Reached.",
@@ -173,120 +174,86 @@ export async function POST(request: NextRequest) {
                     controller.close();
 
                     try {
-                        if (chatHistory) {
-                            // Find the current session using sessionId
-                            const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
-                            if (currentSession) {
-                                if (reGenerate) {
-                                    // If reGenerate is true and there is at least one message, update the last chat
-                                    if (currentSession.chats.length > 0) {
-                                        currentSession.chats[currentSession.chats.length - 1] = {
-                                            prompt,
-                                            response: fullResponse,
-                                            timestamp: new Date().valueOf().toString(),
-                                            inputToken: inputToken,
-                                            outputToken: outputToken,
-                                            inputTime: inputTime,
-                                            outputTime: outputTime,
-                                            totalTime: totalTime + time / 1000,
-                                            chatType: chatType,
-                                            datasource: datasource,
-                                            fileUrls: fileUrls
-                                        };
-                                    } else {
-                                        // Should there be no messages, push the new chat instead.
-                                        currentSession.chats.push({
-                                            prompt,
-                                            response: fullResponse,
-                                            timestamp: new Date().valueOf().toString(),
-                                            inputToken: inputToken,
-                                            outputToken: outputToken,
-                                            inputTime: inputTime,
-                                            outputTime: outputTime,
-                                            totalTime: totalTime + time / 1000,
-                                            chatType: chatType,
-                                            datasource: datasource,
-                                            fileUrls: fileUrls
-                                        });
-                                    }
-                                } else {
-                                    // Otherwise, just add a new chat message.
-                                    currentSession.chats.push({
-                                        prompt,
-                                        response: fullResponse,
-                                        timestamp: new Date().valueOf().toString(),
-                                        inputToken: inputToken,
-                                        outputToken: outputToken,
-                                        inputTime: inputTime,
-                                        outputTime: outputTime,
-                                        totalTime: totalTime + time,
-                                        chatType: chatType,
-                                        datasource: datasource,
-                                        fileUrls: fileUrls
-                                    });
-                                }
-                                await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                            } else {
-                                const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                                const newChatHistory = {
-                                    id: sessionId as string,
-                                    title: title as string,
+                        console.log("chatHistory", chatHistory);
+                        if (!chatHistory) {
+                            // Create new chat history if none exists
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            const newHistory = {
+                                email: session?.user?.email as string,
+                                session: [{
+                                    id: sessionId,
+                                    title: title,
                                     chats: [{
                                         prompt,
                                         response: fullResponse,
-                                        timestamp: new Date().valueOf().toString(),
-                                        inputToken: inputToken,
-                                        outputToken: outputToken,
-                                        inputTime: inputTime,
-                                        outputTime: outputTime,
+                                        timestamp: Date.now().toString(),
+                                        inputToken,
+                                        outputToken,
+                                        inputTime,
+                                        outputTime,
                                         totalTime: totalTime + time,
-                                        chatType: chatType,
-                                        datasource: datasource,
-                                        fileUrls: fileUrls
+                                        chatType,
+                                        datasource,
+                                        fileUrls
                                     }]
-                                };
-
-                                if (chatHistory) {
-                                    chatHistory.session.push(newChatHistory);
-                                    await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                                } else {
-                                    const newHistory = {
-                                        email: session?.user?.email as string,
-                                        session: [newChatHistory],
-                                    };
-                                    await ChatRepo.create(newHistory);
-                                }
-                            }
-                        } else {
-                            // Handling for when chatHistory doesn't exist (creating a new one)
-                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                            const newChatHistory = {
-                                id: sessionId as string,
-                                title: title as string,
-                                chats: [{
-                                    prompt: prompt as string,
-                                    response: fullResponse,
-                                    timestamp: new Date().valueOf().toString(),
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime + time,
-                                    chatType: chatType,
-                                    datasource: datasource,
-                                    fileUrls: fileUrls
                                 }]
                             };
-                            const newHistory = {
-                                email: session?.user?.email as string,
-                                session: [newChatHistory]
+                            await ChatRepo.create(newHistory);
+                            return;
+                        }
+
+                        // Find existing session
+                        const sessionIndex = chatHistory.session.findIndex((chat: ChatHistory) => chat.id === sessionId);
+                        
+                        if (sessionIndex === -1) {
+                            // Create new session if not found
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            chatHistory.session.push({
+                                id: sessionId,
+                                title: title,
+                                chats: [{
+                                    prompt,
+                                    response: fullResponse,
+                                    timestamp: Date.now().toString(),
+                                    inputToken,
+                                    outputToken,
+                                    inputTime,
+                                    outputTime,
+                                    totalTime: totalTime + time,
+                                    chatType,
+                                    datasource,
+                                    fileUrls
+                                }]
+                            });
+                        } else {
+                            // Update existing session
+                            const currentSession = chatHistory.session[sessionIndex];
+                            const newChat = {
+                                prompt,
+                                response: fullResponse,
+                                timestamp: Date.now().toString(),
+                                inputToken,
+                                outputToken,
+                                inputTime,
+                                outputTime,
+                                totalTime: totalTime + time,
+                                chatType,
+                                datasource,
+                                fileUrls
                             };
 
-                            await ChatRepo.create(newHistory);
+                            if (reGenerate && currentSession.chats.length > 0) {
+                                currentSession.chats[currentSession.chats.length - 1] = newChat;
+                            } else {
+                                currentSession.chats.push(newChat);
+                            }
+                            chatHistory.session[sessionIndex] = currentSession;
                         }
+
+                        await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                     } catch (error) {
-                        console.log("error", error);
-                        return new NextResponse("Error generating text.", { status: 500 })
+                        console.error("Error updating chat history:", error);
+                        return new NextResponse("Error generating text.", { status: 500 });
                     }
                 },
             });
@@ -362,120 +329,85 @@ export async function POST(request: NextRequest) {
                     controller.close();
 
                     try {
-                        if (chatHistory) {
-                            // Find the current session using sessionId
-                            const currentSession = chatHistory.session.find((chat: ChatHistory) => chat.id === sessionId);
-                            if (currentSession) {
-                                if (reGenerate) {
-                                    // If reGenerate is true and there is at least one message, update the last chat
-                                    if (currentSession.chats.length > 0) {
-                                        currentSession.chats[currentSession.chats.length - 1] = {
-                                            prompt,
-                                            response: fullResponse,
-                                            timestamp: new Date().valueOf().toString(),
-                                            inputToken: inputToken,
-                                            outputToken: outputToken,
-                                            inputTime: inputTime,
-                                            outputTime: outputTime,
-                                            totalTime: totalTime + time / 1000,
-                                            chatType: chatType,
-                                            datasource: datasource,
-                                            fileUrls: fileUrls
-                                        };
-                                    } else {
-                                        // Should there be no messages, push the new chat instead.
-                                        currentSession.chats.push({
-                                            prompt,
-                                            response: fullResponse,
-                                            timestamp: new Date().valueOf().toString(),
-                                            inputToken: inputToken,
-                                            outputToken: outputToken,
-                                            inputTime: inputTime,
-                                            outputTime: outputTime,
-                                            totalTime: totalTime + time / 1000,
-                                            chatType: chatType,
-                                            datasource: datasource,
-                                            fileUrls: fileUrls
-                                        });
-                                    }
-                                } else {
-                                    // Otherwise, just add a new chat message.
-                                    currentSession.chats.push({
-                                        prompt,
-                                        response: fullResponse,
-                                        timestamp: new Date().valueOf().toString(),
-                                        inputToken: inputToken,
-                                        outputToken: outputToken,
-                                        inputTime: inputTime,
-                                        outputTime: outputTime,
-                                        totalTime: totalTime + time,
-                                        chatType: chatType,
-                                        datasource: datasource,
-                                        fileUrls: fileUrls
-                                    });
-                                }
-                                await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                            } else {
-                                const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                                const newChatHistory = {
-                                    id: sessionId as string,
-                                    title: title as string,
+                        if (!chatHistory) {
+                            // Create new chat history if none exists
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            const newHistory = {
+                                email: session?.user?.email as string,
+                                session: [{
+                                    id: sessionId,
+                                    title: title,
                                     chats: [{
                                         prompt,
                                         response: fullResponse,
-                                        timestamp: new Date().valueOf().toString(),
-                                        inputToken: inputToken,
-                                        outputToken: outputToken,
-                                        inputTime: inputTime,
-                                        outputTime: outputTime,
+                                        timestamp: Date.now().toString(),
+                                        inputToken,
+                                        outputToken,
+                                        inputTime,
+                                        outputTime,
                                         totalTime: totalTime + time,
-                                        chatType: chatType,
-                                        datasource: datasource,
-                                        fileUrls: fileUrls
+                                        chatType,
+                                        datasource,
+                                        fileUrls
                                     }]
-                                };
-
-                                if (chatHistory) {
-                                    chatHistory.session.push(newChatHistory);
-                                    await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
-                                } else {
-                                    const newHistory = {
-                                        email: session?.user?.email as string,
-                                        session: [newChatHistory],
-                                    };
-                                    await ChatRepo.create(newHistory);
-                                }
-                            }
-                        } else {
-                            // Handling for when chatHistory doesn't exist (creating a new one)
-                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
-                            const newChatHistory = {
-                                id: sessionId as string,
-                                title: title as string,
-                                chats: [{
-                                    prompt: prompt as string,
-                                    response: fullResponse,
-                                    timestamp: new Date().valueOf().toString(),
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime + time,
-                                    chatType: chatType,
-                                    datasource: datasource,
-                                    fileUrls: fileUrls
                                 }]
                             };
-                            const newHistory = {
-                                email: session?.user?.email as string,
-                                session: [newChatHistory]
+                            await ChatRepo.create(newHistory);
+                            return;
+                        }
+
+                        // Find existing session
+                        const sessionIndex = chatHistory.session.findIndex((chat: ChatHistory) => chat.id === sessionId);
+                        
+                        if (sessionIndex === -1) {
+                            // Create new session if not found
+                            const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
+                            chatHistory.session.push({
+                                id: sessionId,
+                                title: title,
+                                chats: [{
+                                    prompt,
+                                    response: fullResponse,
+                                    timestamp: Date.now().toString(),
+                                    inputToken,
+                                    outputToken,
+                                    inputTime,
+                                    outputTime,
+                                    totalTime: totalTime + time,
+                                    chatType,
+                                    datasource,
+                                    fileUrls
+                                }]
+                            });
+                        } else {
+                            // Update existing session
+                            const currentSession = chatHistory.session[sessionIndex];
+                            const newChat = {
+                                prompt,
+                                response: fullResponse,
+                                timestamp: Date.now().toString(),
+                                inputToken,
+                                outputToken,
+                                inputTime,
+                                outputTime,
+                                totalTime: totalTime + time,
+                                chatType,
+                                datasource,
+                                fileUrls
                             };
 
-                            await ChatRepo.create(newHistory);
+                            if (reGenerate && currentSession.chats.length > 0) {
+                                currentSession.chats[currentSession.chats.length - 1] = newChat;
+                            } else {
+                                currentSession.chats.push(newChat);
+                            }
+                            chatHistory.session[sessionIndex] = currentSession;
                         }
+
+                        await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
                     } catch (error) {
-                        console.log("error", error);
-                        return new NextResponse("Error generating text.", { status: 500 })
+                        console.error("Error updating chat history:", error);
+                        return new NextResponse("Error generating text.", { status: 500 });
                     }
                 },
             });

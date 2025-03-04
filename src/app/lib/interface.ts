@@ -157,3 +157,8 @@ export interface ISource {
     image: string;
     title: string;
 }
+
+export interface IFileWithUrl {
+    file: File;
+    url: string;
+}

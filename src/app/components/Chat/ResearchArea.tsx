@@ -25,6 +25,7 @@ const ResearchArea = () => {
                                         gap-4 p-[2px] w-fit bg-inputBg group text-mainFont
                                         bg-btn-shadow rounded-full border-0 focus:outline-none text-sm cursor-pointer
                                         `}
+                                        key={index}
                                         onClick={() => setTabValue(index)}
                                     >
                                         <span className="flex-1 bg-[#181818] border-0 px-3 py-2 rounded-full">{tab}</span>

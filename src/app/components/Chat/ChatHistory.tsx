@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { FiCheck, FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import { useAtom } from "jotai";
-import { ChatHistory as ChatHistoryType } from "@/app/lib/interface";
-import { chatHistoryAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, isSidebarVisibleAtom } from "@/app/lib/store";
+import { ChatHistory as ChatHistoryType, IFileWithUrl } from "@/app/lib/interface";
+import { chatHistoryAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, isSidebarVisibleAtom, fileAtom } from "@/app/lib/store";
 import CircularProgress from "@mui/material/CircularProgress";
 import moment from "moment";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
@@ -22,6 +21,7 @@ const ChatHistory = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [newTitle, setNewTitle] = useState<string>("");
+    const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
     const router = useRouter();
     const { data: session } = useSession();
 
@@ -156,6 +156,7 @@ const ChatHistory = () => {
                                         session?.user?.email as string,
                                         Date.now().toString()
                                     ));
+                                    setFiles([]);
                                     setIsSidebarVisible(false);
                                     setChatLog([]);
                                 }}
@@ -193,7 +194,7 @@ const ChatHistory = () => {
                                             >
                                                 <div
                                                     key={session.id}
-                                                    onClick={() => { setSessionId(session.id); setIsSidebarVisible(false) }}
+                                                    onClick={() => { setSessionId(session.id); setIsSidebarVisible(false); setFiles([]); }}
                                                     className={
                                                         `${session.id === sessionId ?
                                                             "bg-[#29292980] text-mainFont" :

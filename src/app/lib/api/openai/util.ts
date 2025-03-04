@@ -152,6 +152,9 @@ const generateDocument = async (file: File) => {
             case "text/plain":
             case "application/json":
             case "text/html":
+            case "application/xml":
+            case "text/css":
+            case "text/javascript":
                 const textContent = buffer.toString('utf-8');
                 documents = [new Document({
                     text: textContent.trim(),
@@ -206,21 +209,80 @@ export async function clearCache(directory: string = 'cache'): Promise<void> {
 export async function generateDatasource(fileUrls: string[]) {
     try {
         console.log(`Generating storage context...`);
-        const reader = new SimpleDirectoryReader();
         const documents: Document[] = [];
+        const reader = new SimpleDirectoryReader()
+
         for (const fileUrl of fileUrls) {
-            const document = await reader.loadData(`${process.env.AWS_CDN_URL}/${fileUrl}`);
-            documents.push(...document);
+            // const file = await reader.loadData(`s3://${process.env.AWS_BUCKET_NAME!}/${fileUrl}`);
+            // documents.push(...file);
+            // Fetch the file from CDN
+
+            const response = await fetch(`${process.env.AWS_CDN_URL}/${fileUrl}`);
+            const blob = await response.blob();
+
+            // Get the file extension and determine MIME type
+            const fileName = fileUrl.split('/').pop() || 'file';
+            const fileExtension = fileName.split('.').pop()?.toLowerCase();
+            let mimeType = 'application/octet-stream';
+
+            switch (fileExtension) {
+                case 'pdf':
+                    mimeType = 'application/pdf';
+                    break;
+                case 'docx':
+                    mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                    break;
+                case 'xlsx':
+                    mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                    break;
+                case 'xls':
+                    mimeType = 'application/vnd.ms-excel';
+                    break;
+                case 'csv':
+                    mimeType = 'text/csv';
+                    break;
+                case 'txt':
+                    mimeType = 'text/plain';
+                    break;
+                case 'json':
+                    mimeType = 'application/json';
+                    break;
+                case 'html':
+                    mimeType = 'text/html';
+                    break;
+                case 'xml':
+                    mimeType = 'application/xml';
+                    break;
+                case 'css':
+                    mimeType = 'text/css';
+                    break;
+                case 'js':
+                    mimeType = 'text/javascript';
+                    break;
+                default:
+                    console.log(`Unsupported file type: ${fileExtension}`);
+                    break;
+            }
+
+            // Create file with proper name and type
+            const file = new File([blob], fileName, { type: mimeType });
+
+            // Use the existing generateDocument function to process the file
+            const docs = await generateDocument(file);
+            if (docs) {
+                documents.push(...docs);
+            }
         }
+
         await clearCache();
         const localStorageContext = await storageContextFromDefaults({ persistDir: "./cache" });
 
         const index = await VectorStoreIndex.fromDocuments(documents, {
             storageContext: localStorageContext
         });
-        
+
         console.log("Documents stored");
-        
+
         return index;
 
     } catch (error) {

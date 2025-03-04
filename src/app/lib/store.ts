@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { ChatHistory, ChatLog, IResearchLog, ISource } from "./interface";
+import { ChatHistory, ChatLog, IResearchLog, ISource, IFileWithUrl } from "./interface";
 
 const chatHistoryAtom = atom<ChatHistory[]>([]);
 const chatLogAtom = atom<ChatLog[]>([]);
@@ -13,6 +13,7 @@ const chatTypeAtom = atom<number>(0);
 const progressAtom = atom<number>(0);
 const isResearchAreaVisibleAtom = atom<boolean>(false);
 const activeChatIdAtom = atom<string>("");
+const fileAtom = atom<IFileWithUrl[]>([]);
 
 export {
     chatHistoryAtom,
@@ -26,5 +27,6 @@ export {
     chatTypeAtom,
     progressAtom,
     isResearchAreaVisibleAtom,
-    activeChatIdAtom
+    activeChatIdAtom,
+    fileAtom
 };

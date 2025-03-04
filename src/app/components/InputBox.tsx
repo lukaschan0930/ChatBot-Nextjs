@@ -2,7 +2,7 @@ import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner, FaFile } from "react-icons/fa6";
 import { useAtom } from "jotai";
-import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom } from "@/app/lib/store";
+import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom, fileAtom } from "@/app/lib/store";
 import {
   chatLogAtom,
   sessionIdAtom,
@@ -14,7 +14,7 @@ import {
 } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
-import { IResearchLog } from "@/app/lib/interface";
+import { IResearchLog, IFileWithUrl } from "@/app/lib/interface";
 import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
@@ -70,36 +70,6 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-const FileCard = ({ file, handleRemoveFile, index }: { file: File, handleRemoveFile: (index: number) => void, index: number }) => {
-
-  return (
-    <div
-      className="file-card flex items-center bg-gray-800 text-white rounded-sm px-2 py-1 shadow-md relative"
-    >
-      <span className="file-type bg-red-500 text-xs font-bold rounded-full px-1 py-[1px] mr-2">
-        {file.name.split('.').pop()?.toUpperCase() || 'FILE'}
-      </span>
-      <span className="file-name mr-2 text-sm">{file.name}</span>
-      {
-        <button
-          className={`remove-file-btn text-mainFont
-      font-bold absolute top-0 right-0 bg-secondaryBorder p-0 h-6 w-6
-      rounded-full text-xs transform -translate-y-1/2 translate-x-1/2`
-          }
-          onClick={() => handleRemoveFile(index)}
-        >
-          &times;
-        </button>
-      }
-    </div>
-  );
-};
-
-interface FileWithUrl {
-  file: File;
-  url: string;
-}
-
 const InputBox = () => {
   const [isStartChat, setIsStartChat] = useAtom(isStartChatAtom);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -123,7 +93,7 @@ const InputBox = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [files, setFiles] = useState<FileWithUrl[]>([]);
+  const [files, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
   const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
   const adjustTextareaHeight = () => {
@@ -157,7 +127,7 @@ const InputBox = () => {
   };
 
   const keyDownHandler = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && !isStreaming) {
+    if (e.key === "Enter" && !e.shiftKey && !isStreaming && !isFileUploading) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -306,7 +276,7 @@ const InputBox = () => {
             inputTime: 0,
             outputTime: 0,
             datasource: datasource,
-            fileUrls: []
+            fileUrls: files.map((file) => file.url)
           });
           console.log("Updated chatLog:", newLog);
           return newLog;
@@ -328,6 +298,14 @@ const InputBox = () => {
         body: formData,
       });
       setProgress(100);
+
+      if (res.status == 429) {
+        // toast({
+        //   variant: "destructive",
+        //   title: `Rate limit exceeded. Please try again later.`
+        // });
+        throw new Error('Rate limit exceeded');
+      }
 
       if (!res.body) {
         console.error("No response body");
@@ -364,7 +342,7 @@ const InputBox = () => {
                 outputTime: outputTime,
                 chatType: chatType,
                 datasource: datasource,
-                fileUrls: []
+                fileUrls: files.map((file) => file.url)
               };
             } else {
               newLog.push({
@@ -377,7 +355,7 @@ const InputBox = () => {
                 outputTime: outputTime,
                 chatType: chatType,
                 datasource: datasource,
-                fileUrls: []
+                fileUrls: files.map((file) => file.url)
               });
             }
             return newLog;
@@ -400,7 +378,7 @@ const InputBox = () => {
                 outputTime: outputTime,
                 chatType: chatType,
                 datasource: datasource,
-                fileUrls: []
+                fileUrls: files.map((file) => file.url)
               };
             } else {
               newLog.push({
@@ -413,7 +391,7 @@ const InputBox = () => {
                 outputTime: outputTime,
                 chatType: chatType,
                 datasource: datasource,
-                fileUrls: []
+                fileUrls: files.map((file) => file.url)
               });
             }
             return newLog;
@@ -461,7 +439,7 @@ const InputBox = () => {
       });
       toast({
         variant: "destructive",
-        title: 'Failed to get response from server.',
+        title: error instanceof Error ? error.message : 'Failed to get response from server.',
       });
     }
   };
@@ -728,15 +706,16 @@ const InputBox = () => {
             value={inputPrompt}
             onChange={(e) => handleChange(e)}
             translate="no"
-            disabled={isStreaming}
+            disabled={isStreaming || isFileUploading}
             style={{
               minHeight: TEXTAREA_MIN_HEIGHT,
               maxHeight: TEXTAREA_MAX_HEIGHT,
             }}
           />
           <button
-            className="flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont"
+            className={`${isStreaming || isFileUploading ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont`}
             onClick={(e) => handleClickSend(e)}
+            disabled={isStreaming || isFileUploading}
           >
             {isStreaming ? (
               <FaSpinner className="w-auto h-full animate-spin text-black" />

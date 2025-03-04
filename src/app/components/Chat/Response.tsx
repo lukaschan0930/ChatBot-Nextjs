@@ -389,6 +389,7 @@ const Response = (
       formData.append("reGenerate", "true");
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
+      formData.append("fileUrls", JSON.stringify(fileUrls));
 
       const res = await fetch("/api/chat/generateText", {
         method: "POST",

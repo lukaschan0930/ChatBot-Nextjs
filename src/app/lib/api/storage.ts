@@ -19,7 +19,7 @@ interface UploadFileError extends Error {
 export async function uploadFile(file: ArrayBuffer, fileName: string): Promise<string> {
   try {
     const command = new PutObjectCommand({
-      Bucket: "edith", // Your bucket name
+      Bucket: process.env.AWS_BUCKET_NAME as string, // Your bucket name
       Key: fileName,
       Body: Buffer.from(file),
       ACL: "public-read", // Makes the file publicly accessible
