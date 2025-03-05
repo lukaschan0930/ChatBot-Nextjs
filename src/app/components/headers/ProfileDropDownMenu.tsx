@@ -47,7 +47,7 @@ const ProfileDropDownMenu = () => {
             user?.avatar ? (
               <Image src={user?.avatar} alt="avatar" className="h-[60px] w-[60px] rounded-full" width={60} height={60} />
             ) : (
-              <div className="h-[60px] w-[60px] rounded-full bg-gradient-to-br from-[#7D2DFF] to-[#41DDFF] flex items-center justify-center"></div>
+              <Image src="/image/default-avatar.png" alt="avatar" className="!h-[60px] !w-auto max-w-[60px]" width={60} height={60} />
             )
           }
 
