@@ -48,29 +48,31 @@ export async function POST(request: NextRequest) {
     const chatHistory = await ChatRepo.findHistoryByEmail(session?.user?.email as string)
     const chatType = learnings.length > 0 ? 1 : 0; // Determine chatType based on learnings length
 
-    const recentChatType1Timestamps = await db.Chat.aggregate([
-        { $match: { email: session?.user?.email as string } },
-        { $unwind: "$session" },
-        { $unwind: "$session.chats" },
-        {
-            $match: {
-                "session.chats.chatType": 0
+    if (session.user?.email !== "yasiralsadoon@gmail.com") {
+        const recentChatType1Timestamps = await db.Chat.aggregate([
+            { $match: { email: session?.user?.email as string } },
+            { $unwind: "$session" },
+            { $unwind: "$session.chats" },
+            {
+                $match: {
+                    "session.chats.chatType": 0
+                }
+            },
+            { $sort: { "session.chats.timestamp": -1 } },
+            { $limit: 24 },
+            { $project: { "session.chats.timestamp": 1 } }
+        ]);
+
+        const oneHourAgo = Date.now() - 6 * 60 * 60 * 1000;
+
+        if (recentChatType1Timestamps.length === 24) {
+            const oldestTimestamp = recentChatType1Timestamps[23].session.chats.timestamp;
+            console.log("oldestTimestamp", oldestTimestamp, oneHourAgo, recentChatType1Timestamps[0].session.chats.timestamp);
+            if (oldestTimestamp > oneHourAgo) {
+                return NextResponse.json({
+                    error: "Rate Limit Reached.",
+                }, { status: 429 });
             }
-        },
-        { $sort: { "session.chats.timestamp": -1 } },
-        { $limit: 24 },
-        { $project: { "session.chats.timestamp": 1 } }
-    ]);
-
-    const oneHourAgo = Date.now() - 6 * 60 * 60 * 1000;
-
-    if (recentChatType1Timestamps.length === 24) {
-        const oldestTimestamp = recentChatType1Timestamps[23].session.chats.timestamp;
-        console.log("oldestTimestamp", oldestTimestamp, oneHourAgo, recentChatType1Timestamps[0].session.chats.timestamp);
-        if (oldestTimestamp > oneHourAgo) {
-            return NextResponse.json({
-                error: "Rate Limit Reached.",
-            }, { status: 429 });
         }
     }
 
@@ -174,7 +176,6 @@ export async function POST(request: NextRequest) {
                     controller.close();
 
                     try {
-                        console.log("chatHistory", chatHistory);
                         if (!chatHistory) {
                             // Create new chat history if none exists
                             const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
@@ -204,7 +205,7 @@ export async function POST(request: NextRequest) {
 
                         // Find existing session
                         const sessionIndex = chatHistory.session.findIndex((chat: ChatHistory) => chat.id === sessionId);
-                        
+
                         if (sessionIndex === -1) {
                             // Create new session if not found
                             const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));
@@ -358,7 +359,7 @@ export async function POST(request: NextRequest) {
 
                         // Find existing session
                         const sessionIndex = chatHistory.session.findIndex((chat: ChatHistory) => chat.id === sessionId);
-                        
+
                         if (sessionIndex === -1) {
                             // Create new session if not found
                             const title = fullResponse.substring(0, fullResponse.indexOf("\n\n"));

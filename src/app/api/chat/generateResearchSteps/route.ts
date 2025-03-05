@@ -12,31 +12,34 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+
     try {
-        const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        if (session.user?.email !== "yasiralsadoon@gmail.com") {
+            const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-        const recentChatType1Timestamps = await db.Chat.aggregate([
-            { $match: { email: session?.user?.email as string } },
-            { $unwind: "$session" },
-            { $unwind: "$session.chats" },
-            {
-                $match: {
-                    "session.chats.chatType": 1
+            const recentChatType1Timestamps = await db.Chat.aggregate([
+                { $match: { email: session?.user?.email as string } },
+                { $unwind: "$session" },
+                { $unwind: "$session.chats" },
+                {
+                    $match: {
+                        "session.chats.chatType": 1
+                    }
+                },
+                { $sort: { "session.chats.timestamp": -1 } },
+                { $limit: 5 },
+                { $project: { "session.chats.timestamp": 1 } }
+            ]);
+
+            if (recentChatType1Timestamps.length === 5) {
+                const oldestTimestamp = recentChatType1Timestamps[4].session.chats.timestamp;
+                if (oldestTimestamp > oneMonthAgo) {
+                    const daysUntilAvailable = Math.ceil((oldestTimestamp + 30 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000));
+                    return NextResponse.json({
+                        error: "Monthly limit for chat type 1 reached.",
+                        availableInDays: daysUntilAvailable
+                    }, { status: 429 });
                 }
-            },
-            { $sort: { "session.chats.timestamp": -1 } },
-            { $limit: 5 },
-            { $project: { "session.chats.timestamp": 1 } }
-        ]);
-
-        if (recentChatType1Timestamps.length === 5) {
-            const oldestTimestamp = recentChatType1Timestamps[4].session.chats.timestamp;
-            if (oldestTimestamp > oneMonthAgo) {
-                const daysUntilAvailable = Math.ceil((oldestTimestamp + 30 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000));
-                return NextResponse.json({
-                    error: "Monthly limit for chat type 1 reached.",
-                    availableInDays: daysUntilAvailable
-                }, { status: 429 });
             }
         }
 
