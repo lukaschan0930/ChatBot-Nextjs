@@ -108,7 +108,7 @@ const MobileDropDownMenu = () => {
         </div>
         <DropdownMenuSub>
           <DropdownMenuItem
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden flex items-center gap-2"
+            className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-0 text-base transition-all duration-300 text-mainFont max-sm:hidden flex items-center gap-2"
             onClick={() => router.push("/changeLog")}
           >
             Change Log
@@ -120,7 +120,7 @@ const MobileDropDownMenu = () => {
             AI Agents
           </DropdownMenuItem> */}
           <DropdownMenuItem
-            className="h-10 py-0 text-base transition-all duration-300 hover:bg-buttonBg text-mainFont max-sm:hidden flex items-center gap-2"
+            className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-0 text-base transition-all duration-300 text-mainFont max-sm:hidden flex items-center gap-2"
             onClick={() => window.open("https://docs.edithx.ai", "_blank")}
           >
             Docs
@@ -153,7 +153,7 @@ const MobileDropDownMenu = () => {
           </div>
         </div>
         <DropdownMenuItem
-          className="max-sm:hidden flex items-center justify-between h-10 py-3 text-base transition-all duration-300 text-mainFont hover:"
+          className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] max-sm:hidden flex items-center justify-between h-10 py-3 text-base transition-all duration-300 text-mainFont hover:"
           onClick={handleSetting}
         >
           Setting
@@ -174,7 +174,7 @@ const MobileDropDownMenu = () => {
           Docs
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="max-sm:hover:bg-[#ffffff80] max-sm:focus:bg-[#ffffff80] flex items-center justify-start text-red-500 h-10 py-3 text-base transition-all duration-300"
+          className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] flex items-center justify-start text-red-500 h-10 py-3 text-base transition-all duration-300"
           onClick={handleLogout}
         >
           <FiLogOut className="!w-5 !h-5" />

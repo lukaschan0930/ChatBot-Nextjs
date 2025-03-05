@@ -58,11 +58,11 @@ const ProfileDropDownMenu = () => {
 
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-[#FFFFFF]/10 my-4" />
-        <DropdownMenuItem className="text-base" onClick={handleSetting}>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSetting}>
           <FiSettings className="!w-5 !h-5" />
           Setting
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-base" onClick={handleLogout}>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleLogout}>
           <FiLogOut className="!w-5 !h-5" />
           Log Out
         </DropdownMenuItem>
