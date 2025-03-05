@@ -165,9 +165,9 @@ const ChatHistory = () => {
                     isSidebarVisible && (
                         <>
                             <div className={`flex items-center px-3 pt-[10px] max-sm:hidden`}>
-                                <div className={`pr-2 py-[1px] mr-2 border-r border-[#29292B]`}>
+                                <div className={`py-[1px] mr-2`}>
                                     <Image
-                                        src="/image/logo-edith.png"
+                                        src="/image/logo-chat.png"
                                         alt="logo"
                                         width={100}
                                         height={100}

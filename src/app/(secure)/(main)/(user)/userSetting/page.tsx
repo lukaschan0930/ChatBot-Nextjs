@@ -139,9 +139,9 @@ const UserSetting = () => {
             >
                 <div className="flex flex-col w-full items-center justify-center py-[52px] mx-auto bg-[url('/image/text-bg.png')]">
                     <Image
-                        src="/image/logo-edith-white.png"
+                        src="/image/logo-chat.png"
                         alt="Edith Logo"
-                        className="w-[240px] h-auto"
+                        className="w-auto h-16"
                         width={240}
                         height={240}
                     />

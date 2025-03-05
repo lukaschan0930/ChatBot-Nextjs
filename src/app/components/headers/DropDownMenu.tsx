@@ -115,9 +115,8 @@ const DropDownMenu = () => {
                   mainClassName={`text-white flex flex-col items-center justify-center py-7 relative ${subItem.id !== itemId && "bg-[#141415]"}`}
                   onClick={() => handleItemClick(subItem.id)}
                 >
-                  <div className="flex items-center gap-3">
-                    <Image src="/image/logo-edith-light.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} />
-                    <Divider orientation="vertical" flexItem className="w-[1px] bg-[#FFFFFF47]" />
+                  <div className="flex items-center gap-2">
+                    <Image src="/image/logo-chat.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} />
                     <span className="text-[16px] text-nowrap">{subItem.label}</span>
                   </div>
                   {
