@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { ChatHistory, ChatLog, IResearchLog, ISource, IFileWithUrl } from "./interface";
+import { ChatHistory, ChatLog, IResearchLog, IFileWithUrl } from "./interface";
 
 const chatHistoryAtom = atom<ChatHistory[]>([]);
 const chatLogAtom = atom<ChatLog[]>([]);

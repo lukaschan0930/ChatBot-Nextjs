@@ -3,6 +3,8 @@ export interface User {
     avatar: string;
     email?: string;
     inviteCode?: string;
+    twitterId?: string;
+    reward?: Reward[];
 }
 
 export interface LoginProps {
@@ -13,6 +15,12 @@ export interface ApiResponse<T> {
     success: boolean;
     data?: T;
     message?: string;
+}
+
+export interface Reward {
+    platform: string;
+    totalReward: number;
+    availableReward: number;
 }
 
 export class AuthError extends Error {
@@ -105,6 +113,12 @@ export interface IUser {
     lastLogin?: Date;
     logins: number;
     role: string;
+    reward: {
+        platform: string;
+        totalReward: number;
+        availableReward: number;
+        createdAt: Date;
+    }[];
 }
 
 export interface ChatHistory {
@@ -161,4 +175,33 @@ export interface ISource {
 export interface IFileWithUrl {
     file: File;
     url: string;
+}
+
+export interface ITwitterProfile {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+    description: string;
+    followersCount: number;
+    followingCount: number;
+    tweetsCount: number;
+    createdAt: Date;
+}
+
+export interface ITweetContent {
+    email: string;
+    content: ITweetContentItem[];
+}
+
+export interface ITweetContentItem {
+    title: string;
+    url: string;
+    status: number;
+    score: number;
+    base: number;
+    performance: number;
+    quality: number;
+    bonus: number;
+    createdAt: Date;
 }

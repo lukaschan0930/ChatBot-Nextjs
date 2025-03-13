@@ -9,6 +9,7 @@ import MobileAdminMenu from "./MobileAdminMenu";
 import ShadowBtn from "../ShadowBtn";
 import ChangeLog from "@/app/assets/changelog";
 import DocsIcon from "@/app/assets/docs";
+import ProfileIcon from "@/app/assets/profile";
 // import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
 import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom } from "@/app/lib/store";
@@ -21,7 +22,7 @@ import { useSession } from "next-auth/react";
 const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const endPoint = pathname.split("/")[1] || "";
+  const endPoint = pathname.split("/");
 
   const leftSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
@@ -75,67 +76,108 @@ const Header = () => {
               />
             </div>
             {
-              endPoint !== "admin" &&
+              endPoint[1] !== "admin" &&
               <>
                 <DropDownMenu />
-                <ShadowBtn
-                  className="ml-8"
-                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsSidebarVisible(!isSidebarVisible);
-                  }}
-                >
-                  <HistoryIcon />
-                  <span className="text-sm">History</span>
-                </ShadowBtn>
-                <ShadowBtn
-                  className="ml-3"
-                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsStartChat(false);
-                    setSessionId(generateSessionId(
-                      session?.user?.email as string,
-                      Date.now().toString()
-                    ));
-                    setFiles([]);
-                    setIsSidebarVisible(false);
-                    setChatLog([]);
-                    router.push("/chatText");
-                  }}
-                >
-                  <NewChatIcon />
-                  <span className="text-sm">New Chat</span>
-                </ShadowBtn>
+                {
+                  (
+                    endPoint[1] === "chatText" ||
+                    endPoint[1] === "changeLog" ||
+                    endPoint[1] === "userSetting"
+                  ) &&
+                  <>
+                    <ShadowBtn
+                      className="ml-8"
+                      mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
+                      onClick={() => {
+                        setIsSidebarVisible(!isSidebarVisible);
+                      }}
+                    >
+                      <HistoryIcon />
+                      <span className="text-sm">History</span>
+                    </ShadowBtn>
+                    <ShadowBtn
+                      className="ml-3"
+                      mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
+                      onClick={() => {
+                        setIsStartChat(false);
+                        setSessionId(generateSessionId(
+                          session?.user?.email as string,
+                          Date.now().toString()
+                        ));
+                        setFiles([]);
+                        setIsSidebarVisible(false);
+                        setChatLog([]);
+                        router.push("/chatText");
+                      }}
+                    >
+                      <NewChatIcon />
+                      <span className="text-sm">New Chat</span>
+                    </ShadowBtn>
+                  </>
+                }
+                {
+                  endPoint[1] === "workers" &&
+                  <>
+                    <ShadowBtn
+                      className="ml-8"
+                      mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-4 flex items-center justify-center gap-2"
+                      onClick={() => {
+                        setIsSidebarVisible(true);
+                      }}
+                    >
+                      <ProfileIcon />
+                      <span className="text-sm">Profile</span>
+                    </ShadowBtn>
+                  </>
+                }
               </>
             }
           </div>
           {
-            endPoint !== "admin" &&
+            endPoint[1] !== "admin" &&
             <div className="flex items-center gap-2 sm:hidden">
-              <ShadowBtn
-                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
-                onClick={() => {
-                  setIsSidebarVisible(!isSidebarVisible);
-                }}
-              >
-                <HistoryIcon />
-              </ShadowBtn>
-              <ShadowBtn
-                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
-                onClick={() => {
-                  setIsStartChat(false);
-                  setSessionId(generateSessionId(
-                    session?.user?.email as string,
-                    Date.now().toString()
-                  ));
-                  setFiles([]);
-                  setIsSidebarVisible(false);
-                  setChatLog([]);
-                  router.push("/chatText");
-                }}
-              >
-                <NewChatIcon />
-              </ShadowBtn>
+              {
+                (endPoint[1] === "chatText" ||
+                  endPoint[1] === "changeLog" ||
+                  endPoint[1] === "userSetting") &&
+                <>
+                  <ShadowBtn
+                    mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setIsSidebarVisible(!isSidebarVisible);
+                    }}
+                  >
+                    <HistoryIcon />
+                  </ShadowBtn>
+                  <ShadowBtn
+                    mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setIsStartChat(false);
+                      setSessionId(generateSessionId(
+                        session?.user?.email as string,
+                        Date.now().toString()
+                      ));
+                      setFiles([]);
+                      setIsSidebarVisible(false);
+                      setChatLog([]);
+                      router.push("/chatText");
+                    }}
+                  >
+                    <NewChatIcon />
+                  </ShadowBtn>
+                </>
+              }
+              {
+                endPoint[1] === "workers" &&
+                <>
+                  <ShadowBtn
+                    mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
+                  >
+                    <ProfileIcon />
+                  </ShadowBtn>
+                </>
+              }
             </div>
           }
           <div className="flex items-center gap-2 sm:hidden">
@@ -152,7 +194,7 @@ const Header = () => {
             <DropDownMenu />
           </div>
           {
-            endPoint !== "admin" ? (
+            endPoint[1] !== "admin" ? (
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-3">

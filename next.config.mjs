@@ -15,6 +15,11 @@ const nextConfig = {
             },
         ];
     },
+    images: {
+        remotePatterns: [
+            { hostname: "pbs.twimg.com" },
+        ],
+    },
 };
 
 export default nextConfig;

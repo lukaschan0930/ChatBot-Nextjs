@@ -36,7 +36,7 @@ export const MenuItems = [
       {
         id: "workers",
         label: "WORKERS",
-        disable: true,
+        disable: false,
         tooltip: ""
       },
       {
@@ -128,4 +128,50 @@ export const ChatTypeItems = [
         label: "Pro (Deep Search)",
         image: "/image/pro.png"
     },
+]
+
+export const WorkerTypes = [
+    {
+        id: "marketing",
+        label: "Marketing",
+        disable: false,
+    },
+    {
+        id: "sales",
+        label: "Sales",
+        disable: true,
+    },
+    {
+        id: "customer",
+        label: "Customer",
+        disable: true,
+    }
+]
+
+export const MaketingPlatforms = [
+  {
+    id: "twitter",
+    label: "Twitter",
+    disable: false,
+    icon: "/image/icon/X-icon.png"
+  }
+]
+
+export const TweetStatus = [
+  {
+    id: 1,
+    label: "Pending",
+  },
+  {
+    id: 2,
+    label: "Approved",
+  },
+  {
+    id: 3,
+    label: "Rejected",
+  },
+  {
+    id: 4,
+    label: "Archived",
+  }
 ]

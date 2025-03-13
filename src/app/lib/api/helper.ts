@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 import { Session, User as NextAuthUser, Account, Profile } from 'next-auth';
 import GoogleProvider from "next-auth/providers/google";
+import TwitterProvider from "next-auth/providers/twitter";
+import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyConfirmationToken, generateConfirmationToken } from '@/app/lib/api/token';
 import { UserRepo } from '@/app/lib/database/userrepo';
@@ -9,7 +11,6 @@ import { emailUserID } from '@/app/lib/config';
 import { JWT } from 'next-auth/jwt';
 import { getEncoding } from 'js-tiktoken';
 import { RecursiveCharacterTextSplitter } from '@/app/lib/api/text-splitter';
-
 const MinChunkSize = 140;
 const encoder = getEncoding('o200k_base');
 
@@ -25,6 +26,15 @@ export const authOptions = {
             httpOptions: {
                 timeout: 10000,
             }
+        }),
+        TwitterProvider({
+            clientId: process.env.TWITTER_CLIENT_ID!,
+            clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+            version: "2.0",
+        }),
+        DiscordProvider({
+            clientId: process.env.DISCORD_CLIENT_ID!,
+            clientSecret: process.env.DISCORD_CLIENT_SECRET!,
         }),
         CredentialsProvider({
             id: 'credentials',
@@ -91,7 +101,7 @@ export const authOptions = {
     debug: true,
     callbacks: {
         async signIn({ user, account, profile }: { user: NextAuthUser, account: Account, profile: Profile }) {
-            console.log("profile", profile);
+            console.log("profile", profile, user);
             if (account?.provider === 'google') {
                 let existingUser = await UserRepo.findByEmail(profile?.email as string);
                 if (existingUser && existingUser.verify == true) {
@@ -150,6 +160,8 @@ export const authOptions = {
                     );
                     return false;
                 }
+            } else if (account?.provider === 'twitter' || account?.provider === 'discord') {
+                return true;
             }
             return true;
         },

@@ -90,6 +90,16 @@ export default {
         'input-box': 'linear-gradient(180deg, #DFDFDF 0%, #BFBFBF 100%)',
         'btn-shadow': 'linear-gradient(180deg, #454449 0%, rgba(69, 68, 73, 0) 100%), linear-gradient(0deg, #2C2B30, #2C2B30)',
         'btn-new-chat': 'linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0) 100%), linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2))'
+      },
+      keyframes: {
+        "zoom-in": {
+          '0%': { transform: 'translate(-50%, -50%) scale(0.8)' },
+          '100%': { transform: 'translate(-50%, -50%) scale(1)' }
+        },
+        "zoom-out": {
+          '0%': { transform: 'translate(-50%, -50%) scale(1)' },
+          '100%': { transform: 'translate(-50%, -50%) scale(0.8)' }
+        }
       }
     }
   },

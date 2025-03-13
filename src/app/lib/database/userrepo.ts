@@ -10,6 +10,17 @@ export const UserRepo = {
     findById,
     generateInviteCode,
     createUniqueInviteCode,
+    getByTwitterId,
+    updateTwitterId,
+}
+
+async function updateTwitterId(email: string, twitterId: string) {
+    console.log("updateTwitterId", email, twitterId);
+    return db.User.findOneAndUpdate({ email }, { twitterId });
+}
+
+async function getByTwitterId(id: string) {
+    return db.User.findOne({ twitterId: id });
 }
 
 async function authenticate(email: string, password: string) {

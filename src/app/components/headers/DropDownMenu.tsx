@@ -53,12 +53,14 @@ const DropDownMenu = () => {
     if (item && !item.disable) {
       setItemTitle(item.label);
       setItemId(item.id);
+      setMenuId(menuId);
       router.push(`/${item.id}`);
+      setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    MenuItems.forEach((menu) => {
+    for (const menu of MenuItems) {
       const subItem = menu.subItems.find((subItem) => subItem.id === url);
       if (subItem) {
         setItemTitle(subItem.label);
@@ -70,12 +72,12 @@ const DropDownMenu = () => {
         setItemId("chatText");
         setMenuId("innovations");
       }
-    });
+    }
   }, [MenuItems, url]);
 
   return (
     <>
-      <DropdownMenu onOpenChange={setIsOpen}>
+      <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
         <DropdownMenuTrigger className="flex justify-between items-center gap-3 bg-transparent hover:border-transparent h-2 text-mainFont text-[16px] focus:outline-none w-fit p-0">
           <span className="flex-1 leading-none text-center">{itemTitle}</span>
           <Image src="/image/UpDown.png" alt="arrow-down" width={9} height={14} />
@@ -112,7 +114,7 @@ const DropDownMenu = () => {
                 <ShadowBtn
                   key={subItem.id}
                   className={`w-full rounded-md`}
-                  mainClassName={`text-white flex flex-col items-center justify-center py-7 relative ${subItem.id !== itemId && "bg-[#141415]"}`}
+                  mainClassName={`text-white flex flex-col items-center justify-center py-7 relative ${subItem.disable && "bg-[#141415]"}`}
                   onClick={() => handleItemClick(subItem.id)}
                 >
                   <div className="flex items-center gap-2">

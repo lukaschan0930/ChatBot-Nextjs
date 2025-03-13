@@ -25,6 +25,17 @@ export async function PUT(request: NextRequest) {
 
 export async function GET() {
     const session = await getServerSession(authOptions as AuthOptions);
-    const user = await UserRepo.findByEmail(session?.user?.email as string);
-    return Response.json({ success: true, user });
+    if (!session?.user?.email) {
+        return Response.json({ success: false, message: "User not found" });
+    }
+    try {
+        const user = await UserRepo.findByEmail(session?.user?.email as string);
+        if (!user) {
+            return Response.json({ success: false, message: "User not found" });
+        }
+        return Response.json({ success: true, user });
+    } catch (error) {
+        console.error(error);
+        return Response.json({ success: false, message: "User fetch failed" });
+    }
 }

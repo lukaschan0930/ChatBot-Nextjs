@@ -19,6 +19,12 @@ interface IUser extends Document {
     lastLogin: Date;
     logins: number;
     role: string;
+    reward: {
+        platform: string;
+        totalReward: number;
+        availableReward: number;
+        createdAt: Date;
+    }[];
 }
 
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp')
@@ -30,6 +36,7 @@ const db = {
     User: userModel(),
     Chat: chatModel(),
     ChangeLog: changeLogModel(),
+    TweetContent: tweetContentModel(),
 }
 
 function userModel() {
@@ -87,6 +94,24 @@ function userModel() {
             type: Number,
             default: 0
         },
+        reward: [{
+            platform: {
+                type: String,
+                required: true
+            },
+            totalReward: {
+                type: Number,
+                default: 0
+            },
+            availableReward: {
+                type: Number,
+                default: 0
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now()
+            }
+        }],
         role: {
             type: String,
             default: "user"
@@ -184,6 +209,72 @@ function chatModel() {
 
     return mongoose.models.Chat || mongoose.model('Chat', ChatSchema);
 }
+
+function tweetContentModel() {
+    const TweetContentSchema = new Schema({
+        email: {
+            type: String,
+            required: true
+        },
+        content: [{
+            title: {
+                type: String,
+                required: true,
+            },
+            url: {
+                type: String
+            },
+            status: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            score: {
+                type: Number,
+                required: true,
+                default: 1
+            },
+            base: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            performance: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            quality: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            bonus: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            reward: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now()
+            }
+        }],
+        updatedAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.TweetContent || mongoose.model('TweetContent', TweetContentSchema);
+}
+
 
 function changeLogModel() {
     const ChangeLogSchema = new Schema({
