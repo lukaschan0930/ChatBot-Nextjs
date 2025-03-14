@@ -209,6 +209,7 @@ export interface ITweetContentItem {
     quality: number;
     bonus: number;
     createdAt: Date;
+    postedAt: Date;
 }
 
 export interface ITopBoardUser {

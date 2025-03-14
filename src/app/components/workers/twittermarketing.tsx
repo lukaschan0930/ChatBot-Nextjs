@@ -4,7 +4,7 @@ import { signIn, signOut } from "next-auth/react";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "@/app/hooks/use-toast";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Skeleton } from "@mui/material";
+import { Divider, Skeleton } from "@mui/material";
 import Cookies from "js-cookie";
 import { FaSearch } from "react-icons/fa";
 import InfoModal from "@/app/components/ui/modal";
@@ -19,6 +19,7 @@ import LightBox from "../LightBox";
 import DotDivider from "../DotDivider";
 import TopWorker from "./TopWorker";
 import RemainTime from "./RemainTime";
+import Pagination from "../Pagination";
 
 const TwitterMarketingSkeleton = () => (
     <div className="mx-auto mt-[100px] flex flex-col">
@@ -98,6 +99,7 @@ const TwitterMarketing = () => {
     const [category, setCategory] = useState<number>(0);
     const [twitterUserCount, setTwitterUserCount] = useState<number>(0);
     const [topBoardUsers, setTopBoardUsers] = useState<ITopBoardUser[]>([]);
+    const [limit, setLimit] = useState<number>(0);
 
     const isValidTwitterUrl = (url: string): boolean => {
         try {
@@ -323,11 +325,18 @@ const TwitterMarketing = () => {
                                         </div>
                                         <div className="mt-5 flex flex-col gap-4">
                                             {
-                                                (searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category).map((content, index) =>
+                                                (searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category)
+                                                .slice(limit * 5, limit * 5 + 5)
+                                                .map((content, index) =>
                                                     <TweetContent key={index} content={content} />
                                                 )
                                             }
                                         </div>
+                                        <Pagination
+                                            currentPage={limit}
+                                            totalPages={Math.ceil((searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category).length / 5)}
+                                            onPageChange={(page: number) => setLimit(page)}
+                                        />
                                     </div>
                                     <div className="flex flex-col gap-5 w-[325px] mt-10">
                                         <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">

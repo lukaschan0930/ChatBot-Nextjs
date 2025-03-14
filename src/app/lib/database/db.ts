@@ -268,6 +268,10 @@ function tweetContentModel() {
             createdAt: {
                 type: Date,
                 default: Date.now()
+            },
+            postedAt: {
+                type: Date,
+                default: Date.now()
             }
         }],
         updatedAt: {
