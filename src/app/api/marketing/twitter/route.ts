@@ -37,6 +37,27 @@ export async function POST(request: NextRequest) {
         const tweetId = url.split("/").pop();
 
         const originalTweetContent = await TweetContentRepo.findByEmail(session?.user?.email as string);
+        
+        // Check weekly submission limit
+        if (originalTweetContent?.content) {
+            const now = new Date();
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Set to Sunday
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const tweetsThisWeek = originalTweetContent.content.filter((content: ITweetContentItem) => 
+                new Date(content.postedAt) >= startOfWeek
+            ).length;
+
+            if (tweetsThisWeek >= 3) {
+                return Response.json({ 
+                    success: false, 
+                    message: "Weekly limit reached. You can only submit 3 tweets per week." 
+                });
+            }
+        }
+
+        // Check for duplicate content
         if (originalTweetContent?.content?.find((content: ITweetContentItem) => {
             const checkId = content.url.split("/").pop();
             return checkId == tweetId;
@@ -75,6 +96,14 @@ export async function POST(request: NextRequest) {
             status: 1,
             score: 0,
             createdAt: new Date(tweetContentData.tweet_created_at),
+            postedAt: new Date(Date.UTC(
+                new Date().getUTCFullYear(),
+                new Date().getUTCMonth(),
+                new Date().getUTCDate(),
+                new Date().getUTCHours(),
+                new Date().getUTCMinutes(),
+                new Date().getUTCSeconds()
+            )),
             base: 0,
             performance: 0,
             quality: 0,
