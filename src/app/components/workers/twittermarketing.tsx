@@ -4,11 +4,12 @@ import { signIn, signOut } from "next-auth/react";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "@/app/hooks/use-toast";
 import CircularProgress from "@mui/material/CircularProgress";
+import { Skeleton } from "@mui/material";
 import Cookies from "js-cookie";
 import { FaSearch } from "react-icons/fa";
 import InfoModal from "@/app/components/ui/modal";
 import TwitterProfile from "./twitterProfile";
-import { ITweetContentItem, ITwitterProfile } from "@/app/lib/interface";
+import { ITweetContentItem, ITwitterProfile, ITopBoardUser } from "@/app/lib/interface";
 import Loading from "@/app/components/Loading";
 import TweetContent from "@/app/components/workers/tweetContent";
 import ShadowBtn from "@/app/components/ShadowBtn";
@@ -17,6 +18,72 @@ import { Sparklines, SparklinesLine } from 'react-sparklines';
 import LightBox from "../LightBox";
 import DotDivider from "../DotDivider";
 import TopWorker from "./TopWorker";
+import RemainTime from "./RemainTime";
+
+const TwitterMarketingSkeleton = () => (
+    <div className="mx-auto mt-[100px] flex flex-col">
+        <div className="text-white text-3xl font-semibold text-center">Tweet Contents</div>
+        <div className="flex justify-between gap-5">
+            <div className="flex flex-col mt-10">
+                <div className="flex items-center gap-16">
+                    <div className="max-sm:hidden flex items-center gap-1 rounded-2xl p-2 border-2 border-[#25252799]">
+                        {[0, 1, 2, 3, 4].map((index) => (
+                            <Skeleton key={index} variant="text" width={60} height={32} sx={{ bgcolor: 'grey.800' }} />
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Skeleton variant="text" width={160} height={40} sx={{ bgcolor: 'grey.800' }} />
+                    </div>
+                </div>
+                <div className="mt-5 flex flex-col gap-4">
+                    {[1, 2, 3].map((index) => (
+                        <div key={index} className="p-4 border border-[#25252799] rounded-xl">
+                            <Skeleton variant="text" width="80%" height={24} sx={{ bgcolor: 'grey.800' }} />
+                            <Skeleton variant="text" width="60%" height={20} sx={{ bgcolor: 'grey.800' }} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="flex flex-col gap-5 w-[325px] mt-10">
+                <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
+                    <div className="flex items-end gap-11 mx-auto">
+                        <div className="flex flex-col gap-3">
+                            <Skeleton variant="text" width={100} height={16} sx={{ bgcolor: 'grey.800' }} />
+                            <div className="flex gap-[6px] items-end">
+                                <Skeleton variant="text" width={80} height={40} sx={{ bgcolor: 'grey.800' }} />
+                                <Skeleton variant="text" width={60} height={20} sx={{ bgcolor: 'grey.800' }} />
+                            </div>
+                        </div>
+                        <Skeleton variant="rectangular" width={94} height={50} sx={{ bgcolor: 'grey.800' }} />
+                    </div>
+                    <div className="w-full h-[1px] bg-[#25252799] my-4" />
+                    <div className="flex gap-1 w-full">
+                        <Skeleton variant="text" width="48%" height={40} sx={{ bgcolor: 'grey.800' }} />
+                        <Skeleton variant="text" width="48%" height={40} sx={{ bgcolor: 'grey.800' }} />
+                    </div>
+                    <div className="flex gap-1 mt-[6px] w-full">
+                        <Skeleton variant="text" width="48%" height={40} sx={{ bgcolor: 'grey.800' }} />
+                        <Skeleton variant="text" width="48%" height={40} sx={{ bgcolor: 'grey.800' }} />
+                    </div>
+                    <div className="w-full h-[1px] bg-[#25252799] my-4" />
+                    <div className="mt-4 flex flex-col items-start gap-5 w-full">
+                        <Skeleton variant="text" width={120} height={16} sx={{ bgcolor: 'grey.800' }} />
+                        <Skeleton variant="text" width="100%" height={24} sx={{ bgcolor: 'grey.800' }} />
+                    </div>
+                </div>
+                <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
+                    <Skeleton variant="text" width={120} height={24} sx={{ bgcolor: 'grey.800' }} />
+                    <div className="w-full h-[1px] bg-[#25252799] my-4" />
+                    <div className="flex flex-col gap-1 w-full">
+                        {[1, 2, 3, 4, 5].map((index) => (
+                            <Skeleton key={index} variant="text" width="100%" height={40} sx={{ bgcolor: 'grey.800' }} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
 const TwitterMarketing = () => {
     const { user, setUser } = useAuth();
@@ -27,7 +94,10 @@ const TwitterMarketing = () => {
     const [tweetContent, setTweetContent] = useState<ITweetContentItem[] | null>(null);
     const [filteredContent, setFilteredContent] = useState<ITweetContentItem[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isTweetContentLoading, setIsTweetContentLoading] = useState<boolean>(false);
     const [category, setCategory] = useState<number>(0);
+    const [twitterUserCount, setTwitterUserCount] = useState<number>(0);
+    const [topBoardUsers, setTopBoardUsers] = useState<ITopBoardUser[]>([]);
 
     const isValidTwitterUrl = (url: string): boolean => {
         try {
@@ -57,7 +127,7 @@ const TwitterMarketing = () => {
 
     const connectTwitter = async () => {
         Cookies.set("currentEmail", user?.email as string);
-        const result = await signIn("discord",
+        const result = await signIn("twitter",
             {
                 redirect: false,
                 callbackUrl: "/workers/marketing/twitter",
@@ -125,11 +195,14 @@ const TwitterMarketing = () => {
     }
 
     const fetchTweetContent = async () => {
+        setIsTweetContentLoading(true);
         try {
             const response = await fetch(`/api/marketing/twitter`);
             const data = await response.json();
             if (data.success) {
                 setTweetContent(data.tweetContent ? data.tweetContent.content : []);
+                setTwitterUserCount(data.twitterUserCount);
+                setTopBoardUsers(data.topBoardUsers);
             } else {
                 toast({
                     title: "Error",
@@ -142,6 +215,8 @@ const TwitterMarketing = () => {
                 title: "Error",
                 description: "Failed to fetch tweet content",
             });
+        } finally {
+            setIsTweetContentLoading(false);
         }
     }
 
@@ -160,7 +235,7 @@ const TwitterMarketing = () => {
 
     useEffect(() => {
         const fetchTwitterProfile = async () => {
-            const response = await fetch(`/api/user/profile/twitter?id=${user?.twitterId}`);
+            const response = await fetch(`/api/user/profile/twitter`);
             const data = await response.json();
             setTwitterProfile({
                 id: user?.twitterId ?? "",
@@ -182,7 +257,7 @@ const TwitterMarketing = () => {
             } else {
                 console.log("setUser", user);
                 setUser(user);
-                // !twitterProfile && fetchTwitterProfile();
+                !twitterProfile && fetchTwitterProfile();
             }
         }
     }, [user]);
@@ -196,122 +271,144 @@ const TwitterMarketing = () => {
             {
                 user?.twitterId ?
                     <>
-                        <div className="mx-auto mt-[100px] flex flex-col">
-                            <div className="text-white text-3xl font-semibold text-center">Tweet Contents</div>
-                            <div className="flex justify-between gap-5">
-                                <div className="flex flex-col mt-10">
-                                    <div className="flex items-center gap-16">
-                                        <div className="max-sm:hidden flex items-center gap-1 rounded-2xl p-2 border-2 border-[#25252799]">
-                                            <ShadowBtn
-                                                className={category !== 0 ? "bg-transparent" : ""}
-                                                mainClassName={`py-1 px-2 text-mainFont max-md:text-[12px] ${category !== 0 && "bg-transparent"}`}
-                                                onClick={() => setCategory(0)}
-                                            >
-                                                All
-                                            </ShadowBtn>
-                                            {TweetStatus.map((item: { id: number, label: string }, index: number) => (
+                        {isTweetContentLoading || isLoading ? (
+                            <TwitterMarketingSkeleton />
+                        ) : (
+                            <div className="mx-auto mt-[100px] flex flex-col">
+                                <div className="text-white text-3xl font-semibold text-center">Tweet Contents</div>
+                                <div className="flex justify-between gap-5">
+                                    <div className="flex flex-col mt-10">
+                                        <div className="flex items-center gap-16">
+                                            <div className="max-sm:hidden flex items-center gap-1 rounded-2xl p-2 border-2 border-[#25252799]">
                                                 <ShadowBtn
-                                                    className={category !== item.id ? "bg-transparent" : ""}
-                                                    mainClassName={`py-1 px-2 text-mainFont max-md:text-[12px] ${category !== item.id && "bg-transparent"}`}
-                                                    onClick={() => setCategory(item.id)}
-                                                    key={index}
+                                                    className={category !== 0 ? "bg-transparent" : ""}
+                                                    mainClassName={`py-1 px-2 text-mainFont max-md:text-[12px] ${category !== 0 && "bg-transparent"}`}
+                                                    onClick={() => setCategory(0)}
                                                 >
-                                                    {item.label}
+                                                    All
                                                 </ShadowBtn>
-                                            ))}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="relative max-w-full">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Search"
-                                                    className="pr-2 pl-10 py-3 rounded-2xl max-md:text-[12px] max-md:w-full border border-[#25252799] bg-[#0E0E10] text-mainFont w-[160px]"
-                                                    value={searchQuery}
-                                                    onChange={(e) => handleSearch(e.target.value)}
-                                                />
-                                                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-mainFont" />
+                                                {TweetStatus.map((item: { id: number, label: string }, index: number) => (
+                                                    <ShadowBtn
+                                                        className={category !== item.id ? "bg-transparent" : ""}
+                                                        mainClassName={`py-1 px-2 text-mainFont max-md:text-[12px] ${category !== item.id && "bg-transparent"}`}
+                                                        onClick={() => setCategory(item.id)}
+                                                        key={index}
+                                                    >
+                                                        {item.label}
+                                                    </ShadowBtn>
+                                                ))}
                                             </div>
-                                            <button
-                                                className={`max-w-full focus:outline-none text-sm 
+                                            <div className="flex items-center gap-2">
+                                                <div className="relative max-w-full">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search"
+                                                        className="pr-2 pl-10 py-3 rounded-2xl max-md:text-[12px] max-md:w-full border border-[#25252799] bg-[#0E0E10] text-mainFont w-[160px]"
+                                                        value={searchQuery}
+                                                        onChange={(e) => handleSearch(e.target.value)}
+                                                    />
+                                                    <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-mainFont" />
+                                                </div>
+                                                <button
+                                                    className={`max-w-full focus:outline-none text-sm 
                             py-3 px-4 rounded-xl border border-transparent bg-gradient-to-b 
                             from-[#FFFFFF] to-[#999999] text-[#000000] hover:border-transparent 
                             backdrop-blur-[9.6px] shadow-[0px_19px_21.5px_0px_#0000006B]`
+                                                    }
+                                                    onClick={() => setIsModalOpen(true)}
+                                                >
+                                                    + Add
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="mt-5 flex flex-col gap-4">
+                                            {
+                                                (searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category).map((content, index) =>
+                                                    <TweetContent key={index} content={content} />
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-5 w-[325px] mt-10">
+                                        <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
+                                            <div className="flex items-end gap-11 mx-auto">
+                                                <div className="flex flex-col gap-3">
+                                                    <div className="text-[#FFFFFF99] text-[12px]">RANK / (Total)</div>
+                                                    <div className="flex gap-[6px] items-end">
+                                                        <div className="text-mainFont text-[40px] font-bold">
+                                                            {
+                                                                user?.board[user?.board?.length - 1]?.rank ?? 0
+                                                            }
+                                                        </div>
+                                                        {
+                                                            user?.board[user?.board?.length - 1]?.rank / twitterUserCount * 100 < 10 &&
+                                                                <div className="text-sm text-[#FFFFFF99] pb-3">(Top 10%)</div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div className="w-[94px] h-[50px]">
+                                                    <Sparklines 
+                                                        data={user?.board.length > 0 ? user?.board.map(user => user.rank) : [0, 0]} 
+                                                        width={94} 
+                                                        height={50}
+                                                    >
+                                                        <SparklinesLine color="#FFFFFF" />
+                                                    </Sparklines>
+                                                </div>
+                                            </div>
+                                            <DotDivider />
+                                            <div className="flex gap-1 w-full">
+                                                <LightBox title="Current Score" value={user?.board[user?.board?.length - 1]?.score ?? 0} />
+                                                <LightBox title="Weekly Pool" value={10000} />
+                                            </div>
+                                            <div className="flex gap-1 mt-[6px] w-full">
+                                                <LightBox 
+                                                    title="Estimated Cut" 
+                                                    value={(() => {
+                                                        const rank = user?.board[user?.board?.length - 1]?.rank;
+                                                        const totalUsers = twitterUserCount;
+                                                        const percentile = (rank / totalUsers) * 100;
+                                                        
+                                                        // Calculate number of users in each tier
+                                                        const top10Users = Math.floor(totalUsers * 0.1);
+                                                        const next20Users = Math.floor(totalUsers * 0.2);
+                                                        
+                                                        if (percentile <= 10) {
+                                                            return Math.floor(7000 / top10Users);
+                                                        }
+                                                        if (percentile <= 30) {
+                                                            return Math.floor(2000 / next20Users);
+                                                        }
+                                                        // Remaining users (70%)
+                                                        const bottomUsers = totalUsers - top10Users - next20Users;
+                                                        return Math.floor(1000 / bottomUsers);
+                                                    })()}
+                                                />
+                                                <LightBox title="Total Workers" value={twitterUserCount} />
+                                            </div>
+                                            <DotDivider />
+                                            <div className="mt-4 flex flex-col items-start gap-5">
+                                                <div className="text-white text-[14px]">Time to Payout</div>
+                                                <div className="flex items-end gap-5">
+                                                    <RemainTime />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
+                                            <div className="text-white text-lg py-[6px]">Top 5 Workers</div>
+                                            <DotDivider />
+                                            <div className="flex flex-col gap-1 w-full">
+                                                {
+                                                    topBoardUsers.map((user, index) => (
+                                                        <TopWorker key={index} username={user.name} rank={user.rank} score={user.score} />
+                                                    ))
                                                 }
-                                                onClick={() => setIsModalOpen(true)}
-                                            >
-                                                + Add
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="mt-5 flex flex-col gap-4">
-                                        {
-                                            (searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category).map((content, index) =>
-                                                <TweetContent key={index} content={content} />
-                                            )
-                                        }
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-5 w-[325px] mt-10">
-                                    <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
-                                        <div className="flex items-end gap-11 mx-auto">
-                                            <div className="flex flex-col gap-3">
-                                                <div className="text-[#FFFFFF99] text-[12px]">RANK / (Total)</div>
-                                                <div className="flex gap-[6px] items-end">
-                                                    <div className="text-mainFont text-[40px] font-bold">17</div>
-                                                    <div className="text-sm text-[#FFFFFF99] pb-3">(Top 10%)</div>
-                                                </div>
                                             </div>
-                                            <div className="w-[94px] h-[50px]">
-                                                <Sparklines data={[0, 5, 7, 6, 4, 3, 9, 8, 3, 2, 1, 4, 6, 7]} width={94} height={50}>
-                                                    <SparklinesLine color="#FFFFFF" />
-                                                </Sparklines>
-                                            </div>
-                                        </div>
-                                        <DotDivider />
-                                        <div className="flex gap-1 w-full">
-                                            <LightBox title="Current Score" value={100} />
-                                            <LightBox title="Weekly Pool" value={10000} />
-                                        </div>
-                                        <div className="flex gap-1 mt-[6px] w-full">
-                                            <LightBox title="Estimated Cut" value={100} />
-                                            <LightBox title="Total Workers" value={1000} />
-                                        </div>
-                                        <DotDivider />
-                                        <div className="mt-4 flex flex-col items-start gap-5">
-                                            <div className="text-white text-[14px]">Time to Payout</div>
-                                            <div className="flex items-end gap-5">
-                                                <div className="flex flex-col">
-                                                    <div className="text-[#FFFFFF99] text-[12px]">Days</div>
-                                                    <div className="text-mainFont text-[20px]">03</div>
-                                                </div>
-                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
-                                                <div className="flex flex-col">
-                                                    <div className="text-[#FFFFFF99] text-[12px]">Hours</div>
-                                                    <div className="text-mainFont text-[20px]">03</div>
-                                                </div>
-                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
-                                                <div className="flex flex-col">
-                                                    <div className="text-[#FFFFFF99] text-[12px]">Mins</div>
-                                                    <div className="text-mainFont text-[20px]">03</div>
-                                                </div>
-                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
-                                                <div className="flex flex-col">
-                                                    <div className="text-[#FFFFFF99] text-[12px]">Secs</div>
-                                                    <div className="text-mainFont text-[20px]">03</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
-                                        <div className="text-white text-lg py-[6px]">Top 5 Workers</div>
-                                        <DotDivider />
-                                        <div className="flex flex-col gap-1 w-full">
-                                            <TopWorker username="John Doe" rank={1} score={100} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                         <InfoModal
                             icon=""
                             title=""

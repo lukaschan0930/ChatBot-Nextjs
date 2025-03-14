@@ -5,6 +5,10 @@ export interface User {
     inviteCode?: string;
     twitterId?: string;
     reward?: Reward[];
+    board: {
+        score: number;
+        rank: number;
+    }[];
 }
 
 export interface LoginProps {
@@ -20,7 +24,6 @@ export interface ApiResponse<T> {
 export interface Reward {
     platform: string;
     totalReward: number;
-    availableReward: number;
 }
 
 export class AuthError extends Error {
@@ -116,8 +119,10 @@ export interface IUser {
     reward: {
         platform: string;
         totalReward: number;
-        availableReward: number;
-        createdAt: Date;
+    }[];
+    board: {
+        score: number;
+        rank: number;
     }[];
 }
 
@@ -204,4 +209,11 @@ export interface ITweetContentItem {
     quality: number;
     bonus: number;
     createdAt: Date;
+}
+
+export interface ITopBoardUser {
+    name: string;
+    email: string;
+    rank: number;
+    score: number;
 }

@@ -12,6 +12,8 @@ export const UserRepo = {
     createUniqueInviteCode,
     getByTwitterId,
     updateTwitterId,
+    getTwitterUserCount,
+    getTopBoardUsers
 }
 
 async function updateTwitterId(email: string, twitterId: string) {
@@ -67,3 +69,34 @@ async function createUniqueInviteCode() {
     }
     return code;
 }
+
+async function getTwitterUserCount() {
+    const count = await db.User.countDocuments({
+        twitterId: { $ne: "" }
+    });
+    return count;
+};
+
+async function getTopBoardUsers() {
+    const topUsers = await db.User.aggregate([
+        { $match: { "board.0": { $exists: true } } },
+        {
+            $addFields: {
+                lastBoard: { 
+                    $arrayElemAt: ["$board", -1] 
+                }
+            }
+        },
+        { $sort: { "lastBoard.rank": 1 } },
+        { $limit: 5 },
+        {
+            $project: {
+                name: 1,
+                email: 1,
+                rank: "$lastBoard.rank",
+                score: "$lastBoard.score"
+            }
+        }
+    ]);
+    return topUsers;
+};
