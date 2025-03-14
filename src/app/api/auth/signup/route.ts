@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
                 verify: false,
                 role: "user",
                 logins: 0,
-
+                reward: [],
+                board: []
             });
         }
         const token = await generateConfirmationToken(email, "email");
