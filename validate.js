@@ -130,6 +130,180 @@ const connectDB = async () => {
     }
 };
 
+function tweetContentModel() {
+    const TweetContentSchema = new mongoose.Schema({
+        email: {
+            type: String,
+            required: true
+        },
+        content: [{
+            title: {
+                type: String,
+                required: true,
+            },
+            url: {
+                type: String
+            },
+            status: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            score: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            base: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            performance: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            quality: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            bonus: {
+                type: Number,
+                required: true,
+                default: 0
+            },
+            reward: {
+                type: Boolean,
+                required: true,
+                default: false
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now()
+            }
+        }],
+        updatedAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.TweetContent || mongoose.model('TweetContent', TweetContentSchema);
+}
+
+function userModel() {
+    const UserSchema = new mongoose.Schema({
+        email: {
+            type: String,
+            required: true
+        },
+        password: {
+            type: String
+        },
+        inviteCode: {
+            type: String,
+            required: true
+        },
+        referralCode: {
+            type: String,
+        },
+        numsOfUsedInviteCode: {
+            type: Number,
+            default: 0
+        },
+        loginType: {
+            type: String,
+            default: "manual"
+        },
+        twitterId: {
+            type: String,
+            default: ""
+        },
+        thumbnail: {
+            type: String,
+            default: ""
+        },
+        name: {
+            type: String,
+            default: ""
+        },
+        avatar: {
+            type: String
+        },
+        api: {
+            type: String,
+            default: ""
+        },
+        verify: {
+            type: Boolean,
+            default: false
+        },
+        lastLogin: { // lastest login time
+            type: Date,
+            default: Date.now()
+        },
+        logins: { // login number
+            type: Number,
+            default: 0
+        },
+        reward: [{
+            platform: {
+                type: String,
+                required: true
+            },
+            totalReward: {
+                type: Number,
+                default: 0
+            }
+        }],
+        board: [
+            {
+                score: {
+                    type: Number,
+                    default: 0
+                },
+                rank: {
+                    type: Number,
+                    default: 0
+                }
+            }
+        ],
+        role: {
+            type: String,
+            default: "user"
+        },
+        salt: {
+            type: String
+        }
+    }, {
+        timestamps: true
+    });
+
+    // Define the hashPassword method
+    UserSchema.methods.hashPassword = function (password) {
+        return Crypto.pbkdf2Sync(password, this.salt, 10000, 64, 'sha512').toString('base64');
+    };
+
+    // Compared hased password from user with database's password so if exist, then res is true, not false
+    UserSchema.methods.authenticate = function (password) {
+        return this.password === this.hashPassword(password);
+    };
+
+    UserSchema.pre('save', function (next) {
+        if (this.isModified('password')) {
+            this.salt = Crypto.randomBytes(16).toString('base64');
+            this.password = this.hashPassword(this.password);
+        }
+        next();
+    });
+
+    return mongoose.models.User || mongoose.model('User', UserSchema);
+}
+
 const startCron = async () => {
     // Connect to MongoDB before starting cron jobs
     await connectDB();
@@ -305,176 +479,6 @@ const distributeReward = async (unrewardedContent) => {
     }
 };
 
-function tweetContentModel() {
-    const TweetContentSchema = new mongoose.Schema({
-        email: {
-            type: String,
-            required: true
-        },
-        content: [{
-            title: {
-                type: String,
-                required: true,
-            },
-            url: {
-                type: String
-            },
-            status: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            score: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            base: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            performance: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            quality: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            bonus: {
-                type: Number,
-                required: true,
-                default: 0
-            },
-            reward: {
-                type: Boolean,
-                required: true,
-                default: false
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now()
-            }
-        }],
-        updatedAt: {
-            type: Date,
-            default: Date.now()
-        }
-    }, {
-        timestamps: true
-    });
-
-    return mongoose.models.TweetContent || mongoose.model('TweetContent', TweetContentSchema);
-}
-
-function userModel() {
-    const UserSchema = new mongoose.Schema({
-        email: {
-            type: String,
-            required: true
-        },
-        password: {
-            type: String
-        },
-        inviteCode: {
-            type: String,
-            required: true
-        },
-        referralCode: {
-            type: String,
-        },
-        numsOfUsedInviteCode: {
-            type: Number,
-            default: 0
-        },
-        loginType: {
-            type: String,
-            default: "manual"
-        },
-        twitterId: {
-            type: String,
-            default: ""
-        },
-        thumbnail: {
-            type: String,
-            default: ""
-        },
-        name: {
-            type: String,
-            default: ""
-        },
-        avatar: {
-            type: String
-        },
-        api: {
-            type: String,
-            default: ""
-        },
-        verify: {
-            type: Boolean,
-            default: false
-        },
-        lastLogin: { // lastest login time
-            type: Date,
-            default: Date.now()
-        },
-        logins: { // login number
-            type: Number,
-            default: 0
-        },
-        reward: [{
-            platform: {
-                type: String,
-                required: true
-            },
-            totalReward: {
-                type: Number,
-                default: 0
-            },
-            availableReward: {
-                type: Number,
-                default: 0
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now()
-            }
-        }],
-        role: {
-            type: String,
-            default: "user"
-        },
-        salt: {
-            type: String
-        }
-    }, {
-        timestamps: true
-    });
-
-    // Define the hashPassword method
-    UserSchema.methods.hashPassword = function (password) {
-        return Crypto.pbkdf2Sync(password, this.salt, 10000, 64, 'sha512').toString('base64');
-    };
-
-    // Compared hased password from user with database's password so if exist, then res is true, not false
-    UserSchema.methods.authenticate = function (password) {
-        return this.password === this.hashPassword(password);
-    };
-
-    UserSchema.pre('save', function (next) {
-        if (this.isModified('password')) {
-            this.salt = Crypto.randomBytes(16).toString('base64');
-            this.password = this.hashPassword(this.password);
-        }
-        next();
-    });
-
-    return mongoose.models.User || mongoose.model('User', UserSchema);
-}
-
 const getUnrewardedOldContent = async () => {
     try {
         const sevenDaysAgo = new Date();
@@ -486,7 +490,7 @@ const getUnrewardedOldContent = async () => {
                 $elemMatch: {
                     'reward': false,
                     'createdAt': { $lt: sevenDaysAgo },
-                    'status': 0
+                    'status': { $ne: 3 }
                 }
             }
         });
@@ -504,7 +508,7 @@ const getUnrewardedContent = async () => {
         'content': {
             $elemMatch: {
                 'reward': false,
-                'status': 1
+                'status': 2
             }
         }
     });
@@ -516,6 +520,7 @@ const evaluateTweetContent = async (content) => {
     try {
         const TweetContent = tweetContentModel();
         const BATCH_SIZE = 10; // Process 10 tweets at a time
+        const userTotalScore = {};
 
         for (const doc of content) {
             // Process tweets in batches
@@ -528,7 +533,7 @@ const evaluateTweetContent = async (content) => {
                         if (!socialMetrics) return;
 
                         if (!isValidContent(socialMetrics)) {
-                            await updateTweetStatus(TweetContent, doc._id, tweet._id, 2, 0);
+                            await updateTweetStatus(TweetContent, doc._id, tweet._id, 3, {base: 0, performance: 0, quality: 0, bonus: 0, total: 0});
                             return;
                         }
 
@@ -833,10 +838,10 @@ const calculateFinalScore = (llmScore, socialMetrics, authenticityScore) => {
             Total Score: ${totalScore}
         `);
 
-        return Math.min(100, totalScore);
+        return {base: 5, performance: performancePoints, quality: qualityPoints, bonus: bonusPoints, total: totalScore};
     } catch (error) {
         console.error('Error calculating final score:', error);
-        return 0;
+        return {base: 0, performance: 0, quality: 0, bonus: 0, total: 0};
     }
 };
 
@@ -901,7 +906,11 @@ const updateTweetStatus = async (TweetContent, docId, tweetId, status, score) =>
         {
             $set: {
                 "content.$.status": status,
-                "content.$.score": score
+                "content.$.score": score.total,
+                "content.$.base": score.base,
+                "content.$.performance": score.performance,
+                "content.$.quality": score.quality,
+                "content.$.bonus": score.bonus
             }
         }
     );

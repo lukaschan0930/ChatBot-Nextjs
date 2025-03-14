@@ -14,8 +14,9 @@ import TweetContent from "@/app/components/workers/tweetContent";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import { TweetStatus } from "@/app/lib/stack";
 import { Sparklines, SparklinesLine } from 'react-sparklines';
-import Image from "next/image";
-import { Divider } from "@mui/material";
+import LightBox from "../LightBox";
+import DotDivider from "../DotDivider";
+import TopWorker from "./TopWorker";
 
 const TwitterMarketing = () => {
     const { user, setUser } = useAuth();
@@ -196,7 +197,7 @@ const TwitterMarketing = () => {
                 user?.twitterId ?
                     <>
                         <div className="mx-auto mt-[100px] flex flex-col">
-                            <div className="text-white text-3xl font-semibold text-center">Twitter Contents</div>
+                            <div className="text-white text-3xl font-semibold text-center">Tweet Contents</div>
                             <div className="flex justify-between gap-5">
                                 <div className="flex flex-col mt-10">
                                     <div className="flex items-center gap-16">
@@ -250,8 +251,8 @@ const TwitterMarketing = () => {
                                         }
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-5 w-[325px] mt-10 bg-[url('/image/login/texture.png')] bg-cover bg-center">
-                                    <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative">
+                                <div className="flex flex-col gap-5 w-[325px] mt-10">
+                                    <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
                                         <div className="flex items-end gap-11 mx-auto">
                                             <div className="flex flex-col gap-3">
                                                 <div className="text-[#FFFFFF99] text-[12px]">RANK / (Total)</div>
@@ -266,15 +267,46 @@ const TwitterMarketing = () => {
                                                 </Sparklines>
                                             </div>
                                         </div>
-                                        <div className="flex items-center w-full my-[10px] gap-2">
-                                            <div className="h-[2px] flex-grow flex items-center justify-center gap-2">
-                                                {Array(20).fill(0).map((_, index) => (
-                                                    <div 
-                                                        key={index} 
-                                                        className="w-[6px] h-[2px] rounded-full bg-[#FFFFFF33]"
-                                                    />
-                                                ))}
+                                        <DotDivider />
+                                        <div className="flex gap-1 w-full">
+                                            <LightBox title="Current Score" value={100} />
+                                            <LightBox title="Weekly Pool" value={10000} />
+                                        </div>
+                                        <div className="flex gap-1 mt-[6px] w-full">
+                                            <LightBox title="Estimated Cut" value={100} />
+                                            <LightBox title="Total Workers" value={1000} />
+                                        </div>
+                                        <DotDivider />
+                                        <div className="mt-4 flex flex-col items-start gap-5">
+                                            <div className="text-white text-[14px]">Time to Payout</div>
+                                            <div className="flex items-end gap-5">
+                                                <div className="flex flex-col">
+                                                    <div className="text-[#FFFFFF99] text-[12px]">Days</div>
+                                                    <div className="text-mainFont text-[20px]">03</div>
+                                                </div>
+                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
+                                                <div className="flex flex-col">
+                                                    <div className="text-[#FFFFFF99] text-[12px]">Hours</div>
+                                                    <div className="text-mainFont text-[20px]">03</div>
+                                                </div>
+                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
+                                                <div className="flex flex-col">
+                                                    <div className="text-[#FFFFFF99] text-[12px]">Mins</div>
+                                                    <div className="text-mainFont text-[20px]">03</div>
+                                                </div>
+                                                <div className="text-[#FFFFFF99] text-[20px]">|</div>
+                                                <div className="flex flex-col">
+                                                    <div className="text-[#FFFFFF99] text-[12px]">Secs</div>
+                                                    <div className="text-mainFont text-[20px]">03</div>
+                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-center px-3 py-3 border border-[#25252799] rounded-xl relative bg-[url('/image/login/texture.png')] bg-cover bg-center">
+                                        <div className="text-white text-lg py-[6px]">Top 5 Workers</div>
+                                        <DotDivider />
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <TopWorker username="John Doe" rank={1} score={100} />
                                         </div>
                                     </div>
                                 </div>
