@@ -22,8 +22,10 @@ interface IUser extends Document {
     reward: {
         platform: string;
         totalReward: number;
-        availableReward: number;
-        createdAt: Date;
+    }[];
+    board: {
+        score: number;
+        ranking: number;
     }[];
 }
 
@@ -102,16 +104,20 @@ function userModel() {
             totalReward: {
                 type: Number,
                 default: 0
-            },
-            availableReward: {
-                type: Number,
-                default: 0
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now()
             }
         }],
+        board: [
+            {
+                score: {
+                    type: Number,
+                    default: 0
+                },
+                rank: {
+                    type: Number,
+                    default: 0
+                }
+            }
+        ],
         role: {
             type: String,
             default: "user"
@@ -232,7 +238,7 @@ function tweetContentModel() {
             score: {
                 type: Number,
                 required: true,
-                default: 1
+                default: 0
             },
             base: {
                 type: Number,
