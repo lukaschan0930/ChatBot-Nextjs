@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"next dev\" \"node validate.js\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"node validate.js\"",
     "lint": "next lint"
   },
   "dependencies": {
