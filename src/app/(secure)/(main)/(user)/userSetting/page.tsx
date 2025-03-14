@@ -9,6 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
+import { User } from "@/app/lib/interface";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
@@ -108,7 +109,7 @@ const UserSetting = () => {
                         avatar,
                     })
                 })
-            setUser({ ...user, name, avatar });
+            setUser(user ? { ...user, name, avatar } : null);
             toast({
                 variant: "default",
                 title: "Update Success",

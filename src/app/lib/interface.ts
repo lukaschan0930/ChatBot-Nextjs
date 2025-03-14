@@ -4,7 +4,7 @@ export interface User {
     email?: string;
     inviteCode?: string;
     twitterId?: string;
-    reward?: Reward[];
+    reward: Reward[];
     board: {
         score: number;
         rank: number;

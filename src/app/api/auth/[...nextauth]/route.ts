@@ -122,6 +122,8 @@ const authOptions: NextAuthOptions = {
                         logins: 0,
                         role: 'user',
                         name: profile?.name as string,
+                        reward: [],
+                        board: []
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;
