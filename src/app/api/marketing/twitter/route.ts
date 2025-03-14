@@ -14,7 +14,9 @@ export async function GET() {
 
     try {
         const tweetContent = await TweetContentRepo.findByEmail(session?.user?.email as string);
-        return Response.json({ success: true, tweetContent });
+        const twitterUserCount = await UserRepo.getTwitterUserCount();
+        const topBoardUsers = await UserRepo.getTopBoardUsers();
+        return Response.json({ success: true, tweetContent, twitterUserCount, topBoardUsers });
     } catch (error) {
         console.error(error);
         return Response.json({ success: false, message: "Failed to fetch tweet content" });

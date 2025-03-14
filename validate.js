@@ -3,8 +3,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { resolve } from 'path';
 import { existsSync } from 'fs';
-import RateLimit from 'async-ratelimiter';
-import Redis from 'ioredis';
 import Crypto from 'crypto';
 
 // Load both .env files
@@ -308,7 +306,7 @@ const startCron = async () => {
     // Connect to MongoDB before starting cron jobs
     await connectDB();
 
-    cron.schedule("0 23 * * 6", async () => {
+    cron.schedule("0 */6 * * *", async () => {
         console.log("Starting tweet content validation");
         const oldUnrewardedContent = await getUnrewardedOldContent();
         await evaluateTweetContent(oldUnrewardedContent);
@@ -318,6 +316,7 @@ const startCron = async () => {
         console.log("This is cron job for distribute reward based on score");
         const unrewardedContent = await getUnrewardedContent();
         await distributeReward(unrewardedContent);
+        await setArchivedContent();
     });
 
     // cron.schedule("0 * * * *", async () => {
@@ -337,8 +336,8 @@ const distributeReward = async (unrewardedContent) => {
             const User = userModel();
 
             // Aggregate scores by user
-            const userScores = new Map(); // email -> total score
-            const userContent = new Map(); // email -> array of content
+            const userScores = new Map();
+            const userContent = new Map();
             
             for (const doc of unrewardedContent) {
                 for (const tweet of doc.content) {
@@ -439,12 +438,13 @@ const distributeReward = async (unrewardedContent) => {
                     {
                         $inc: {
                             'reward.$.totalReward': rewardAmount,
-                            'reward.$.availableReward': rewardAmount
+                        },
+                        $set: {
+                            'board': []                
                         }
                     },
                     {
-                        new: true,
-                        upsert: true
+                        new: true
                     }
                 );
             }
@@ -516,13 +516,46 @@ const getUnrewardedContent = async () => {
     return unrewardedContents;
 }
 
+const setArchivedContent = async () => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const TweetContent = tweetContentModel();
+        const archivedContents = await TweetContent.updateMany(
+            {
+                'content': {
+                    $elemMatch: {
+                        'createdAt': { $gte: sevenDaysAgo },
+                        'status': 1
+                    }
+                }
+            },
+            {
+                $set: {
+                    'content.$.status': 4  // Use positional $ operator to update matched array elements
+                }
+            },
+            {
+                new: true
+            }
+        );
+
+        return archivedContents;
+    } catch (error) {
+        console.error('Error fetching archived content:', error);
+        return [];
+    }
+}
+
 const evaluateTweetContent = async (content) => {
     try {
         const TweetContent = tweetContentModel();
-        const BATCH_SIZE = 10; // Process 10 tweets at a time
-        const userTotalScore = {};
+        const BATCH_SIZE = 10;
+        const userTotalScore = new Map();
 
         for (const doc of content) {
+            userTotalScore.set(doc.email, 0);
             // Process tweets in batches
             for (let i = 0; i < doc.content.length; i += BATCH_SIZE) {
                 const batch = doc.content.slice(i, i + BATCH_SIZE);
@@ -550,8 +583,9 @@ const evaluateTweetContent = async (content) => {
                             socialMetrics.hasAllHashtags &&
                             !isEngagementSuspicious(socialMetrics);
 
-                        const newStatus = isApproved ? 1 : 2;
-                        const finalScore = isApproved ? calculateFinalScore(llmScore, socialMetrics, authenticityScore) : 0;
+                        const newStatus = isApproved ? 2 : 3;
+                        const finalScore = isApproved ? calculateFinalScore(llmScore, socialMetrics, authenticityScore) : {base: 0, performance: 0, quality: 0, bonus: 0, total: 0};
+                        userTotalScore.set(doc.email, userTotalScore.get(doc.email) + finalScore.total);
 
                         await updateTweetStatus(TweetContent, doc._id, tweet._id, newStatus, finalScore);
                         console.log(`Evaluated tweet ${tweet.url}: Status=${newStatus}, Score=${finalScore}`);
@@ -562,6 +596,47 @@ const evaluateTweetContent = async (content) => {
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
+        
+        const allUsers = await User.find({});
+
+        const allUserScores = allUsers.map(user => ({
+            email: user.email,
+            score: userTotalScore.get(user.email) || 0
+        }));
+
+        allUserScores.sort((a, b) => b.score - a.score);
+
+        let currentRank = 0;
+        let previousScore = null;
+        let skipCount = 0;
+
+        const updatePromises = allUserScores.map(async (userScore, index) => {
+            // If score is different from previous, update rank
+            // If same score as previous, keep same rank
+            if (previousScore !== userScore.score) {
+                currentRank = currentRank + 1;
+                previousScore = userScore.score;
+                skipCount = 0;
+            } else {
+                skipCount++;
+            }
+
+            return User.findOneAndUpdate(
+                { email: userScore.email }, 
+                {
+                    $push: {
+                        board: {
+                            score: userScore.score,
+                            rank: currentRank
+                        }
+                    }
+                },
+                { new: true }
+            );
+        });
+
+        // Execute all updates
+        await Promise.all(updatePromises);
     } catch (error) {
         console.error('Error in tweet evaluation:', error);
     }
