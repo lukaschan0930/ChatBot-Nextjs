@@ -20,6 +20,9 @@ const nextConfig = {
             { hostname: "pbs.twimg.com" },
         ],
     },
+    env: {
+        DAILY_POOL: process.env.DAILY_POOL,
+    },
 };
 
 export default nextConfig;

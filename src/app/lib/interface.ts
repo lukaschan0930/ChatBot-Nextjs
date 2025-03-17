@@ -154,6 +154,15 @@ export interface IChangeLog {
     createdAt: Date;
 }
 
+export interface ITaskList {
+    _id: string;
+    title: string;
+    year: number;
+    month: number;
+    week: number;
+    weight: number;
+}
+
 export interface IChatCompletionChoice {
     message?: { content?: string | null };
 }

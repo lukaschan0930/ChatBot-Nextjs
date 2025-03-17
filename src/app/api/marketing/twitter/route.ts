@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 import { TweetContentRepo } from "@/app/lib/database/tweetContentRepo";
 import { UserRepo } from "@/app/lib/database/userrepo";
 import { ITweetContentItem } from "@/app/lib/interface";
+import { TaskListRepo } from "@/app/lib/database/taskListRepo";
 
 export async function GET() {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -16,7 +17,13 @@ export async function GET() {
         const tweetContent = await TweetContentRepo.findByEmail(session?.user?.email as string);
         const twitterUserCount = await UserRepo.getTwitterUserCount();
         const topBoardUsers = await UserRepo.getTopBoardUsers();
-        return Response.json({ success: true, tweetContent, twitterUserCount, topBoardUsers });
+        const taskLists = await TaskListRepo.findAll();
+        const sortedTaskLists = taskLists.sort((a, b) => {
+            if (b.year !== a.year) return b.year - a.year;
+            if (b.month !== a.month) return b.month - a.month;
+            return b.week - a.week;
+        });
+        return Response.json({ success: true, tweetContent, twitterUserCount, topBoardUsers, taskLists: sortedTaskLists });
     } catch (error) {
         console.error(error);
         return Response.json({ success: false, message: "Failed to fetch tweet content" });

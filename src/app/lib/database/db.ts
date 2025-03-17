@@ -39,6 +39,7 @@ const db = {
     Chat: chatModel(),
     ChangeLog: changeLogModel(),
     TweetContent: tweetContentModel(),
+    TaskList: taskListModel(),
 }
 
 function userModel() {
@@ -285,7 +286,6 @@ function tweetContentModel() {
     return mongoose.models.TweetContent || mongoose.model('TweetContent', TweetContentSchema);
 }
 
-
 function changeLogModel() {
     const ChangeLogSchema = new Schema({
         title: {
@@ -309,6 +309,40 @@ function changeLogModel() {
     });
 
     return mongoose.models.ChangeLog || mongoose.model('ChangeLog', ChangeLogSchema);
+}
+
+function taskListModel() {
+    const TaskListSchema = new Schema({
+        title: {
+            type: String,
+            required: true
+        },
+        year: {
+            type: Number,
+            required: true
+        },
+        month: {
+            type: Number,
+            required: true
+        },
+        week: {
+            type: Number,
+            required: true
+        },
+        weight: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.TaskList || mongoose.model('TaskList', TaskListSchema);
 }
 
 export default db;
