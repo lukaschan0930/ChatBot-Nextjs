@@ -7,8 +7,8 @@ const RemainTime = () => {
         const calculateTimeLeft = () => {
             const now = new Date();
             const endOfWeek = new Date();
-            const utcDay = now.getUTCDay();
-            endOfWeek.setUTCDate(now.getUTCDate() + (6 - utcDay));
+            // const utcDay = now.getUTCDay();
+            endOfWeek.setUTCDate(now.getUTCDate());
             endOfWeek.setUTCHours(23, 59, 59, 999);
             
             return endOfWeek.getTime() - now.getTime();

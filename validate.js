@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { resolve } from 'path';
 import { existsSync } from 'fs';
 import Crypto from 'crypto';
+import { getWeek } from "date-fns";
 
 // Load both .env files
 dotenv.config(); // First load .env
@@ -24,7 +25,8 @@ if (existsSync(envLocalPath)) {
 const requiredEnvVars = [
     'MONGODB_URL',
     'SOCIALDATA_API_KEY',
-    'OPENAI_API_KEY'
+    'OPENAI_API_KEY',
+    'DAILY_POOL'
 ];
 
 // Validate environment variables
@@ -46,8 +48,6 @@ const MINIMUM_USER_FOLLOWERS = 10;
 const MINIMUM_ACCOUNT_AGE_DAYS = 90;
 const MINIMUM_USER_TWEETS = 30;
 const MINIMUM_CONTENT_WORDS = 100;
-const WEEKLY_POOL = 10000;
-
 const MINIMUM_HASHTAGS = [
     "edith",
     // Add other required hashtags here
@@ -56,7 +56,7 @@ const MINIMUM_HASHTAGS = [
 // Add these constants
 const RATE_LIMIT = 120; // requests
 const RATE_WINDOW = 60000; // 1 minute in milliseconds
-
+const DAILY_POOL = parseInt(process.env.DAILY_POOL || '0');
 // Comment out or remove Redis initialization
 // const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
@@ -306,28 +306,63 @@ function userModel() {
     return mongoose.models.User || mongoose.model('User', UserSchema);
 }
 
+function taskListModel() {
+    const TaskListSchema = new Schema({
+        title: {
+            type: String,
+            required: true
+        },
+        year: {
+            type: Number,
+            required: true
+        },
+        month: {
+            type: Number,
+            required: true
+        },
+        week: {
+            type: Number,
+            required: true
+        },
+        weight: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.TaskList || mongoose.model('TaskList', TaskListSchema);
+}
+
 const startCron = async () => {
     // Connect to MongoDB before starting cron jobs
     await connectDB();
+    let evaluateCron = false;
 
     cron.schedule("0 */6 * * *", async () => {
+        evaluateCron = true;
         console.log("Starting tweet content validation");
         const oldUnrewardedContent = await getUnrewardedOldContent();
         await evaluateTweetContent(oldUnrewardedContent);
+        evaluateCron = false;
     });
 
-    cron.schedule("0 1 * * 0", async () => {
+    cron.schedule("0 0 * * *", async () => {
+        while (evaluateCron) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("Waiting for evaluateCron to be false");
+        }
         console.log("This is cron job for distribute reward based on score");
         const unrewardedContent = await getUnrewardedContent();
         await distributeReward(unrewardedContent);
         await setArchivedContent();
     });
-
-    // cron.schedule("0 * * * *", async () => {
-    //     const oldUnrewardedContent = await getUnrewardedOldContent();
-    //     console.log(oldUnrewardedContent);
-    //     await evaluateTweetContent(oldUnrewardedContent);
-    // });
 }
 
 const distributeReward = async (unrewardedContent) => {
@@ -375,9 +410,9 @@ const distributeReward = async (unrewardedContent) => {
             const remaining70Count = sortedUsers.length - top10Count - next20Count;
 
             // Calculate points per tier
-            const top10Pool = WEEKLY_POOL * 0.7;
-            const next20Pool = WEEKLY_POOL * 0.2;
-            const remaining70Pool = WEEKLY_POOL * 0.1;
+            const top10Pool = DAILY_POOL * 0.7;
+            const next20Pool = DAILY_POOL * 0.2;
+            const remaining70Pool = DAILY_POOL * 0.1;
 
             // Distribute rewards
             const rewards = new Map(); // email -> reward amount
@@ -555,6 +590,7 @@ const setArchivedContent = async () => {
 const evaluateTweetContent = async (content) => {
     try {
         const TweetContent = tweetContentModel();
+        const TaskList = taskListModel();
         const BATCH_SIZE = 10;
         const userTotalScore = new Map();
 
@@ -574,7 +610,7 @@ const evaluateTweetContent = async (content) => {
                             return;
                         }
 
-                        const llmScore = await calculateLLMScore(tweet.full_text);
+                        const llmScore = await calculateLLMScore(socialMetrics.fullText);
                         const authenticityScore = await calculateAuthenticityScore(socialMetrics);
 
                         const isApproved =
@@ -589,6 +625,19 @@ const evaluateTweetContent = async (content) => {
 
                         const newStatus = isApproved ? 2 : 3;
                         const finalScore = isApproved ? calculateFinalScore(llmScore, socialMetrics, authenticityScore) : {base: 0, performance: 0, quality: 0, bonus: 0, total: 0};
+                        const week = getWeek(new Date(tweet.created_at));
+                        const year = new Date(tweet.created_at).getFullYear();
+
+                        const taskList = await TaskList.findOne({ year, week });
+                        if (taskList) {
+                            const weight = taskList.weight;
+                            const taskTitle = taskList.title;
+                            const isRelatedContent = await checkRelatedContent(socialMetrics.fullText, taskTitle);
+                            if (isRelatedContent) {
+                                finalScore.total *= weight;
+                            }
+                        }
+
                         userTotalScore.set(doc.email, userTotalScore.get(doc.email) + finalScore.total);
 
                         await updateTweetStatus(TweetContent, doc._id, tweet._id, newStatus, finalScore);
@@ -646,6 +695,46 @@ const evaluateTweetContent = async (content) => {
     }
 };
 
+const checkRelatedContent = async (fullText, taskTitle) => {
+    try {
+        const response = await rateLimitedFetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini", // Use a valid OpenAI model
+                messages: [{
+                    role: "system",
+                    content: `You are a content analyzer. Determine if the following content is related to the task title: "${taskTitle}". Respond with only 'yes' or 'no'.`
+                }, {
+                    role: "user",
+                    content: Array.isArray(fullText) ? fullText.join("\n") : fullText
+                }],
+                temperature: 0.3,
+                max_tokens: 5
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`OpenAI API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.choices?.[0]?.message?.content) {
+            throw new Error('Invalid response format from OpenAI');
+        }
+
+        const answer = data.choices[0].message.content.trim().toLowerCase();
+        return answer === 'yes';
+    } catch (error) {
+        console.error('Error checking related content:', error);
+        return false; // Default to false in case of errors
+    }
+};
+
 const getSocialMetrics = async (tweetUrl) => {
     try {
         const tweetId = tweetUrl.split("/").pop();
@@ -658,14 +747,14 @@ const getSocialMetrics = async (tweetUrl) => {
         const data = await response.json();
         const user = data.tweets[0].user;
         const tweetHashTags = [];
+        const fullText = [];
 
-        // Analyze all tweets in the thread
         const threadMetrics = data.tweets.reduce(async (metrics, tweet) => {
-            // Accumulate metrics from each tweet
             metrics.impressions += tweet.views_count || 0;
             metrics.likes += tweet.favorite_count || 0;
             metrics.retweets += tweet.retweet_count || 0;
             metrics.totalWords += (tweet.full_text || tweet.text || "").split(/\s+/).length;
+            fullText.push(tweet.full_text || tweet.text || "");
 
             const comments = await getMeaningfulComments(tweet.id_str);
             metrics.meaningfulComments += comments;
@@ -729,7 +818,8 @@ const getSocialMetrics = async (tweetUrl) => {
                 hasBio: !!user.description,
                 hasProfilePic: !!user.profile_image_url_https
             },
-            engagementTimeline: await getEngagementTimeline(data.tweets)
+            engagementTimeline: await getEngagementTimeline(data.tweets),
+            fullText: fullText
         };
     } catch (error) {
         console.error('Error fetching social metrics:', error);
@@ -765,7 +855,7 @@ const calculateLLMScore = async (content) => {
                     content: "You are a content quality analyzer. Score the following content from 0-100 based on: originality (40%), relevance (30%), and complexity (30%). Respond with only the numeric score."
                 }, {
                     role: "user",
-                    content: content
+                    content: content.join("\n")
                 }],
                 temperature: 0.3,
                 max_tokens: 5

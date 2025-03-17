@@ -95,6 +95,10 @@ export const AdminMenuItems = [
     {
       id: "changeLog",
       label: "Change Log",
+    },
+    {
+      id: "taskManagement",
+      label: "Task Management",
     }
 ];
 
