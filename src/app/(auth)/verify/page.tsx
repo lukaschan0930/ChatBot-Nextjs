@@ -145,7 +145,7 @@ const Verify = () => {
         <Box className="flex flex-col items-center justify-center min-h-screen text-buttonFont">
           <div className="flex items-end border-none outline-none focus:outline-none py-0 !mb-5 px-[120px]">
             <Image
-              src="/image/EDITH_logo_png.png"
+              src="/image/logo-chat.png"
               alt="logo"
               className="h-16 w-auto"
               width={300}
