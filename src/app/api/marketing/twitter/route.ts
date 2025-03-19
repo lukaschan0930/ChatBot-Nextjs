@@ -46,23 +46,23 @@ export async function POST(request: NextRequest) {
         const originalTweetContent = await TweetContentRepo.findByEmail(session?.user?.email as string);
         
         // Check weekly submission limit
-        if (originalTweetContent?.content) {
-            const now = new Date();
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay()); // Set to Sunday
-            startOfWeek.setHours(0, 0, 0, 0);
+        // if (originalTweetContent?.content) {
+        //     const now = new Date();
+        //     const startOfWeek = new Date(now);
+        //     startOfWeek.setDate(now.getDate() - now.getDay()); // Set to Sunday
+        //     startOfWeek.setHours(0, 0, 0, 0);
 
-            const tweetsThisWeek = originalTweetContent.content.filter((content: ITweetContentItem) => 
-                new Date(content.postedAt) >= startOfWeek
-            ).length;
+        //     const tweetsThisWeek = originalTweetContent.content.filter((content: ITweetContentItem) => 
+        //         new Date(content.postedAt) >= startOfWeek
+        //     ).length;
 
-            if (tweetsThisWeek >= 3) {
-                return Response.json({ 
-                    success: false, 
-                    message: "Weekly limit reached. You can only submit 3 tweets per week." 
-                });
-            }
-        }
+        //     if (tweetsThisWeek >= 3) {
+        //         return Response.json({ 
+        //             success: false, 
+        //             message: "Weekly limit reached. You can only submit 3 tweets per week." 
+        //         });
+        //     }
+        // }
 
         // Check for duplicate content
         if (originalTweetContent?.content?.find((content: ITweetContentItem) => {
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
         });
 
         const tweetContentData = (await tweetContent.json())?.tweets[0];
+        console.log("tweetContentData", tweetContentData);
         if (originalTweetContent?.content?.find((content: ITweetContentItem) => {
             const checkId = content.url.split("/").pop();
             return checkId == tweetContentData.id;
@@ -87,10 +88,10 @@ export async function POST(request: NextRequest) {
             return Response.json({ success: false, message: "Content already exists" });
         }
 
-        url = `https://x.com/${tweetContentData.user.username}/status/${tweetContentData.id}`;
+        url = `https://x.com/${tweetContentData.user.screen_name}/status/${tweetContentData.id}`;
         const twitterProfile = await UserRepo.findByEmail(session?.user?.email as string);
 
-        if (tweetContentData.user.id !== twitterProfile?.twitterId) {
+        if (tweetContentData.user.id != twitterProfile?.twitterId) {
             return Response.json({
                 success: false,
                 message: "Please submit a tweet from your own Twitter account. We cannot process tweets from other accounts."

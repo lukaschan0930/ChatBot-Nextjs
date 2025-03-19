@@ -18,7 +18,7 @@ const TweetTask = ({ taskList }: { taskList: ITaskList }) => {
 
     return (
         <div className="w-full border border-[#25252799] rounded-xl flex flex-col">
-            <div className="px-6 py-4 bg-[#0E0E10] flex justify-between items-start">
+            <div className="px-6 py-4 bg-[#0E0E10] flex justify-between items-start rounded-xl">
                 <div className="flex flex-col gap-2">
                     <div className="text-white text-sm font-normal">{taskList.title}</div>
                 </div>

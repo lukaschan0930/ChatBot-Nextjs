@@ -117,7 +117,7 @@ const Header = () => {
                   </>
                 }
                 {
-                  endPoint[1] === "workers" &&
+                  endPoint[1] === "workers" && endPoint[2] == "marketing" && endPoint[3] === "twitter" &&
                   <>
                     <ShadowBtn
                       className="ml-8"

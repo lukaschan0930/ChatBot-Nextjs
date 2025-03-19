@@ -207,6 +207,7 @@ const TwitterMarketing = () => {
             const response = await fetch(`/api/marketing/twitter`);
             const data = await response.json();
             if (data.success) {
+                console.log("tweetContent", data.tweetContent?.content);
                 setTweetContent(data.tweetContent ? data.tweetContent.content : []);
                 setTwitterUserCount(data.twitterUserCount);
                 setTopBoardUsers(data.topBoardUsers);
@@ -252,7 +253,7 @@ const TwitterMarketing = () => {
                 avatar: data.data.profile_image_url_https,
                 description: data.data.description,
                 followersCount: data.data.followers_count,
-                followingCount: data.data.favourites_count,
+                followingCount: data.data.friends_count,
                 tweetsCount: data.data.statuses_count,
                 createdAt: data.data.created_at,
             });
@@ -350,7 +351,7 @@ const TwitterMarketing = () => {
                                                 </div>
                                                 <div className="mt-5 flex flex-col gap-4">
                                                     {
-                                                        (searchQuery ? filteredContent : tweetContent ?? []).filter(content => content.status === category)
+                                                        (searchQuery ? filteredContent : tweetContent ?? []).filter(content => category == 0 || content.status === category)
                                                             .slice(limit * 5, limit * 5 + 5)
                                                             .map((content, index) =>
                                                                 <TweetContent key={index} content={content} />

@@ -342,10 +342,11 @@ function taskListModel() {
 
 const startCron = async () => {
     // Connect to MongoDB before starting cron jobs
+    console.log("cron job started");
     await connectDB();
     let evaluateCron = false;
 
-    cron.schedule("0 */6 * * *", async () => {
+    cron.schedule("0 * * * *", async () => {
         evaluateCron = true;
         console.log("Starting tweet content validation");
         const oldUnrewardedContent = await getUnrewardedOldContent();
