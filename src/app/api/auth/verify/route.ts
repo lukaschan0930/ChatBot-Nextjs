@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "User not found" }, { status: 400 });
   }
 
-  inviteUser.numsOfUsedInviteCode = inviteUser.numsOfUsedInviteCode + 1;
+  inviteUser.numsOfUsedInviteCode = Number(inviteUser.numsOfUsedInviteCode) + 1;
   await inviteUser.save();
 
   user.referralCode = inviteUser.inviteCode;
