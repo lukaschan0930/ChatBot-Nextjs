@@ -50,7 +50,7 @@ export interface AuthContextType {
 }
 
 interface RequestFunction {
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (url: string, body?: any): Promise<any>;
 }
 
@@ -124,6 +124,12 @@ export interface IUser {
         score: number;
         rank: number;
     }[];
+    jumpReward?: {
+        jumpUserId?: string;
+        jumpOfferId?: string;
+        jumpTransactionId?: string;
+        isReward: boolean
+    }
 }
 
 export interface ChatHistory {

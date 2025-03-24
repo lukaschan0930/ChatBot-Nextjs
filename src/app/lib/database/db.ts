@@ -27,6 +27,12 @@ interface IUser extends Document {
         score: number;
         ranking: number;
     }[];
+    jumpReward: {
+        jumpUserId: string,
+        jumpOfferId: string,
+        jumpTransactionId: string,
+        isReward: boolean
+    }
 }
 
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp')
@@ -122,6 +128,21 @@ function userModel() {
         role: {
             type: String,
             default: "user"
+        },
+        jumpReward: {
+            jumpUserId: {
+                type: String,
+            },
+            jumpOfferId: {
+                type: String
+            },
+            jumpTransactionId: {
+                type: String
+            },
+            isReward: {
+                type: Boolean,
+                default: false
+            }
         },
         salt: {
             type: String

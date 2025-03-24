@@ -73,6 +73,14 @@ const authOptions: NextAuthOptions = {
                     }
                     const user = await UserRepo.findByEmail(decoded.email as string);
                     if (user && user.verify) {
+                        if (user.jumpReward && !user.jumpReward.isReward && user.jumpReward.jumpOfferId && user.jumpReward.jumpUserId && user.jumpReward.jumpTransactionId) {
+                            try {
+                                await fetch(`https://jumptask.go2cloud.org/aff_lsr?offer_id=${user.jumpReward.jumpOfferId}&transaction_id=${user.jumpReward.jumpTransactionId}&adv_sub=${user.jumpReward.jumpUserId}`)
+                                await UserRepo.updateJumpRewardState(user.email)
+                            } catch (error) {
+                                console.log(error);
+                            }
+                        }
                         return user;
                     } else {
                         return null;
@@ -110,6 +118,19 @@ const authOptions: NextAuthOptions = {
                 }
 
                 if (!existingUser) {
+                    let jumpUserId = cookies().get("jumpUserId")?.value;
+                    let jumpOfferId = cookies().get("jumpOfferId")?.value;
+                    let jumpTransactionId = cookies().get("jumpTransactionId")?.value;
+
+                    if (jumpUserId) {
+                        const jumpUser = await UserRepo.findByJumpUserId(jumpUserId);
+                        if (jumpUser) {
+                            jumpOfferId = "";
+                            jumpTransactionId = "";
+                            jumpUserId = "";
+                        }
+                    }
+
                     const token = await generateConfirmationToken(profile?.email as string, "google");
                     const inviteCode = await UserRepo.createUniqueInviteCode();
                     existingUser = await UserRepo.create({
@@ -123,7 +144,13 @@ const authOptions: NextAuthOptions = {
                         role: 'user',
                         name: profile?.name as string,
                         reward: [],
-                        board: []
+                        board: [],
+                        jumpReward: {
+                            jumpOfferId: jumpOfferId || "",
+                            jumpUserId: jumpUserId || "",
+                            jumpTransactionId: jumpTransactionId || "",
+                            isReward: false
+                        }
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;

@@ -307,7 +307,7 @@ function userModel() {
 }
 
 function taskListModel() {
-    const TaskListSchema = new Schema({
+    const TaskListSchema = new mongoose.Schema({
         title: {
             type: String,
             required: true

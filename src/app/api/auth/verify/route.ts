@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
   if (!inviteUser) {
     return Response.json({ error: "Invalid invite code" }, { status: 400 });
   }
+  
   const user = await UserRepo.findById(id);
   if (!user) {
     return Response.json({ error: "User not found" }, { status: 400 });

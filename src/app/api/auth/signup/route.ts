@@ -5,7 +5,9 @@ import { emailUserID } from "@/app/lib/config";
 import emailjs from "@emailjs/nodejs";
 
 export async function POST(request: NextRequest) {
-    const { email, password, confirmPassword, name } = await request.json();
+    const data = await request.json();
+    const { email, password, confirmPassword, name } = data;
+    let { offerId, transactionId, userId } = data;
 
     if (password !== confirmPassword) {
         return Response.json({ error: "Passwords do not match" });
@@ -19,6 +21,15 @@ export async function POST(request: NextRequest) {
         if (!user) {
             const inviteCode = await UserRepo.createUniqueInviteCode();
 
+            if (userId) {
+                const jumpUser = await UserRepo.findByJumpUserId(userId);
+                if (jumpUser) {
+                    offerId = "";
+                    transactionId = "";
+                    userId = "";
+                }
+            }
+
             await UserRepo.create({
                 email,
                 password,
@@ -30,7 +41,13 @@ export async function POST(request: NextRequest) {
                 role: "user",
                 logins: 0,
                 reward: [],
-                board: []
+                board: [],
+                jumpReward: {
+                    jumpUserId: userId || "",
+                    jumpOfferId: offerId || "",
+                    jumpTransactionId: transactionId || "",
+                    isReward: false
+                }
             });
         }
         const token = await generateConfirmationToken(email, "email");

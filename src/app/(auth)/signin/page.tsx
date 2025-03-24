@@ -26,12 +26,12 @@ const SignIn = () => {
     google: false,
     form: false,
   });
-  const router = useRouter();
   const [formState, setFormState] = useState({
     email: "",
     password: "",
     error: "",
   });
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });

@@ -13,12 +13,25 @@ export const UserRepo = {
     getByTwitterId,
     updateTwitterId,
     getTwitterUserCount,
-    getTopBoardUsers
+    getTopBoardUsers,
+    updateJumpRewardState,
+    findByJumpUserId
+}
+
+async function findByJumpUserId(userId: string) {
+    return db.User.findOne({ "jumpReward.jumpUserId": userId });
 }
 
 async function updateTwitterId(email: string, twitterId: string) {
-    console.log("updateTwitterId", email, twitterId);
     return db.User.findOneAndUpdate({ email }, { twitterId });
+}
+
+async function updateJumpRewardState(email: string) {
+    return db.User.findOneAndUpdate(
+        { email }, 
+        { $set: { "jumpReward.isReward": true } },
+        { upsert: true }
+    );
 }
 
 async function getByTwitterId(id: string) {

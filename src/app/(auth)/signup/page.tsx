@@ -23,6 +23,9 @@ import EmailIcon from "@/app/assets/email";
 import RockIcon from "@/app/assets/rock";
 import { validateEmail, validatePassword } from "@/app/lib/utils";
 import ShadowBtn from "@/app/components/ShadowBtn";
+import { useSearchParams } from "next/navigation";
+import Cookies from "js-cookie";
+import { Suspense } from "react";
 
 const SignUp = () => {
   const {
@@ -44,11 +47,18 @@ const SignUp = () => {
     confirmPassword: "",
     error: "",
   });
+  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const offerId = searchParams.get("offer_id");
+  const transactionId = searchParams.get("transaction_id");
+  const userId = searchParams.get("user_id");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
-
-  const router = useRouter();
+ 
 
   const signUp = async () => {
     if (!validateEmail(formState.email)) {
@@ -71,7 +81,17 @@ const SignUp = () => {
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
-        body: JSON.stringify(formState),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(
+          {
+            ...formState,
+            offerId,
+            transactionId,
+            userId
+          }
+        ),
       });
       const result = await response.json();
       if (result.success) {
@@ -95,6 +115,10 @@ const SignUp = () => {
   }
 
   const googleSignIn = async () => {
+    Cookies.set("jumpOfferId", offerId as string);
+    Cookies.set("jumpUserId", userId as string);
+    Cookies.set("jumpTransactionId", transactionId as string);
+
     try {
       setIsLoading(prev => ({ ...prev, google: true }));
       await signIn("google", {
@@ -237,4 +261,17 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default function Page() {
+  return (
+      <Suspense fallback={
+          <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                  <h1 className="text-2xl mb-4 text-gray-600">Loading...</h1>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
+              </div>
+          </div>
+      }>
+          <SignUp />
+      </Suspense>
+  );
+}
