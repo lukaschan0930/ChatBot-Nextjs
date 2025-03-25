@@ -592,6 +592,7 @@ const evaluateTweetContent = async (content) => {
     try {
         const TweetContent = tweetContentModel();
         const TaskList = taskListModel();
+        const User = userModel();
         const BATCH_SIZE = 10;
         const userTotalScore = new Map();
 
