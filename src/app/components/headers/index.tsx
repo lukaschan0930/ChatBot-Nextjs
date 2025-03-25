@@ -61,7 +61,12 @@ const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-10 text-mainFont">
-        <div className="flex h-[72px] items-center max-sm:px-3 max-sm:pt-4 pr-2 md:pr-6 justify-between relative">
+        <div className="w-full bg-[#FFFFFF0D] py-[6px] text-center text-sm text-[#FFFFFF99] sm:hidden">
+          <span>
+            TESTNET
+          </span>
+        </div>
+        <div className="flex h-[72px] items-center max-sm:px-3 max-sm:pt-[11px] pr-2 md:pr-6 justify-between relative">
           <div className={`items-center pl-4 h-full hidden sm:flex`}>
             <div className={`mr-2`}>
               <Image
@@ -114,6 +119,7 @@ const Header = () => {
                       <NewChatIcon />
                       <span className="text-sm">New Chat</span>
                     </ShadowBtn>
+                    <span className="text-sm text-[#FFFFFF99] ml-6">[ TESTNET ]</span>
                   </>
                 }
                 {

@@ -75,9 +75,11 @@ const authOptions: NextAuthOptions = {
                     if (user && user.verify) {
                         if (user.jumpReward && !user.jumpReward.isReward && user.jumpReward.jumpOfferId && user.jumpReward.jumpUserId && user.jumpReward.jumpTransactionId) {
                             try {
-                                await fetch(`https://jumptask.go2cloud.org/aff_lsr?offer_id=${user.jumpReward.jumpOfferId}&transaction_id=${user.jumpReward.jumpTransactionId}&adv_sub=${user.jumpReward.jumpUserId}`)
-                                console.log("send jump reward", user.jumpReward.jumpOfferId);
+                                const jumpResponse = await fetch(`https://jumptask.go2cloud.org/aff_lsr?offer_id=${user.jumpReward.jumpOfferId}&transaction_id=${user.jumpReward.jumpTransactionId}&adv_sub=${user.jumpReward.jumpUserId}`)
+                                console.log("send jump reward", user.jumpReward.jumpOfferId, jumpResponse.status);
                                 await UserRepo.updateJumpRewardState(user.email)
+                                // if (jumpResponse.status === 200) {
+                                // }
                             } catch (error) {
                                 console.log(error);
                             }
