@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
                 logins: 0,
                 reward: [],
                 board: [],
+                wallet: "",
+                chatPoints: 0,
                 jumpReward: {
                     jumpUserId: userId || "",
                     jumpOfferId: offerId || "",

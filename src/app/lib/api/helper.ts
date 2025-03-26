@@ -123,6 +123,8 @@ export const authOptions = {
                         logins: 0,
                         role: 'user',
                         name: profile?.name as string,
+                        wallet: "",
+                        chatPoints: 0,
                         reward: [],
                         board: []
                     });

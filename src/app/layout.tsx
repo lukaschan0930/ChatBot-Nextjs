@@ -5,6 +5,7 @@ import { ToastProvider } from "@/app/components/ui/toast";
 import { Provider } from "@/app/hooks/provider";
 import { AuthProvider } from "@/app/context/AuthContext";
 import { AdminProvider } from "@/app/context/AdminContext";
+import AppWalletProvider from "@/app/hooks/AppWalletProvider";
 import { Provider as JotaiProvider } from "jotai";
 import { Inter } from "next/font/google";
 
@@ -27,18 +28,20 @@ export default function RootLayout({
       <body
         className={`antialiased bg-[#0B0B0D] ${inter.className}`}
       >
-        <JotaiProvider>
-          <Provider>
-            <AuthProvider>
-              <AdminProvider>
-                <ToastProvider>
-                  {children}
-                </ToastProvider>
-                <Toaster />
-              </AdminProvider>
-            </AuthProvider>
-          </Provider>
-        </JotaiProvider>
+        <AppWalletProvider>
+          <JotaiProvider>
+            <Provider>
+              <AuthProvider>
+                <AdminProvider>
+                  <ToastProvider>
+                    {children}
+                  </ToastProvider>
+                  <Toaster />
+                </AdminProvider>
+              </AuthProvider>
+            </Provider>
+          </JotaiProvider>
+        </AppWalletProvider>
       </body>
     </html>
   );

@@ -9,7 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
-import { User } from "@/app/lib/interface";
+// import { useWallet } from "@solana/wallet-adapter-react";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
@@ -17,7 +17,9 @@ const UserSetting = () => {
     const [copyStatus, setCopyStatus] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
     const [name, setName] = useState<string>(user?.name || "");
+    const [mounted, setMounted] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // const { wallets, select, publicKey, disconnect } = useWallet();
 
     const router = useRouter();
 
@@ -107,9 +109,10 @@ const UserSetting = () => {
                     body: JSON.stringify({
                         name,
                         avatar,
+                        wallet: user?.wallet
                     })
                 })
-            setUser(user ? { ...user, name, avatar } : null);
+            setUser(user ? { ...user, name, avatar, wallet: user?.wallet } : null);
             toast({
                 variant: "default",
                 title: "Update Success",
@@ -131,6 +134,15 @@ const UserSetting = () => {
         setAvatar(user?.avatar || '');
         setName(user?.name || '')
     }, [user])
+
+    // useEffect(() => {
+    //     if (mounted) {
+    //         setUser(user ? { ...user, wallet: publicKey ? publicKey.toBase58() : "" } : null)
+    //     } else {
+    //         disconnect()
+    //     }
+    //     setMounted(true);
+    // }, [publicKey, mounted])
 
     return (
         <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen md:pt-[180px] pt-[100px]">
@@ -206,6 +218,38 @@ const UserSetting = () => {
                                 </div>
                             </div>
                         </div>
+                        {/* <div className="mt-4">
+                            {
+                                publicKey ?
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={disconnect}
+                                            className="px-4 py-2 bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md flex items-center gap-2"
+                                        >
+                                            <Image src={wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.icon} alt="wallet" className="w-5 h-5" width={20} height={20} />
+                                            <div className="text-[#808080]">Disconnect</div>
+                                        </button>
+                                        <div className="text-[14px] text-mainFont">
+                                            {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+                                        </div>
+                                    </div> :
+                                    wallets.filter((wallet) => wallet.readyState === "Installed").length > 0 ?
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                key={wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.name}
+                                                onClick={() => select(wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.name)}
+                                                className="px-4 py-2 bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md"
+                                            >
+                                                Connect Wallet
+                                            </button>
+                                            <div className="text-[14px] text-mainFont">
+                                                {user?.wallet && `${user?.wallet?.slice(0, 4)}...${user?.wallet?.slice(-4)}`}
+                                            </div>
+                                        </div>
+                                        :
+                                        <div className="text-[14px] text-mainFont">No wallet found. Please download a supported Solana wallet</div>
+                            }
+                        </div> */}
                     </div>
                 </div>
                 <div className="flex justify-end gap-3 border-t border-[#25252799] p-3 w-full max-sm:justify-between">

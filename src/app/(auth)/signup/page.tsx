@@ -51,9 +51,9 @@ const SignUp = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const offerId = searchParams.get("aff_unique1");
-  const transactionId = searchParams.get("aff_id");
-  const userId = searchParams.get("user_id");
+  const offerId = searchParams.get("offer_id");
+  const transactionId = searchParams.get("user.jumpTransactionId");
+  const userId = searchParams.get("user.jumpUserId");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });

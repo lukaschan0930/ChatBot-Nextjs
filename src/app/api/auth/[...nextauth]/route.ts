@@ -148,6 +148,8 @@ const authOptions: NextAuthOptions = {
                         name: profile?.name as string,
                         reward: [],
                         board: [],
+                        wallet: "",
+                        chatPoints: 0,
                         jumpReward: {
                             jumpOfferId: jumpOfferId || "",
                             jumpUserId: jumpUserId || "",

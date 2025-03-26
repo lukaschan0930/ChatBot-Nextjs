@@ -18,6 +18,8 @@ interface IUser extends Document {
     verify: boolean;
     lastLogin: Date;
     logins: number;
+    wallet: string;
+    chatPoints: number;
     role: string;
     reward: {
         platform: string;
@@ -100,6 +102,14 @@ function userModel() {
             default: Date.now()
         },
         logins: { // login number
+            type: Number,
+            default: 0
+        },
+        wallet: {
+            type: String,
+            default: ""
+        },
+        chatPoints: {
             type: Number,
             default: 0
         },

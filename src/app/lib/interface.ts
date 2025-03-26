@@ -4,6 +4,8 @@ export interface User {
     email?: string;
     inviteCode?: string;
     twitterId?: string;
+    wallet?: string;
+    chatPoints?: number;
     reward: Reward[];
     board: {
         score: number;
@@ -115,6 +117,8 @@ export interface IUser {
     verify: boolean;
     lastLogin?: Date;
     logins: number;
+    wallet: string;
+    chatPoints: number;
     role: string;
     reward: {
         platform: string;
