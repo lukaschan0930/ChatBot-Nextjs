@@ -206,7 +206,7 @@ const Header = () => {
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-3">
-                    <div className="text-white text-sm">{user?.wallet ? user?.chatPoints : ""}</div>
+                    <div className="text-white text-sm">{user?.wallet && user?.chatPoints && user.chatPoints > 0 ? user?.chatPoints : ""}</div>
                     <ShadowBtn
                       className="rounded-md"
                       mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
@@ -232,7 +232,8 @@ const Header = () => {
                     <ProfileDropDownMenu />
                   </div>
                 </div>
-                <div className="lg:hidden">
+                <div className="lg:hidden flex items-center gap-2">
+                  <div className="text-white text-sm">{user?.wallet && user?.chatPoints && user.chatPoints > 0 ? user?.chatPoints : ""}</div>
                   <MobileDropDownMenu />
                 </div>
               </>
