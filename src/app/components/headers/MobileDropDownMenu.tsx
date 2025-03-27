@@ -61,7 +61,7 @@ const MobileDropDownMenu = () => {
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger className="bg-transparent border-none focus:outline-none hover:bg-transparent hover:outline-none p-0">
         <ShadowBtn
-          className="rounded-md"
+          className="rounded-md md:hidden"
           mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
         >
           {
@@ -72,6 +72,20 @@ const MobileDropDownMenu = () => {
               </>
           }
         </ShadowBtn>
+        <div className="p-0 transition-all duration-200 flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5 max-md:hidden">
+          {
+            user?.avatar ? (
+              <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
+            ) : (
+              <Image src="/image/default-avatar.png" alt="avatar" className="!h-[35px] !w-auto max-w-[35px]" width={35} height={35} />
+            )
+          }
+
+          <div className="flex flex-col items-start">
+            <p className="font-normal text-[8px] text-[#FFFFFF99]">points: </p>
+            <p className="font-semibold text-sm text-[#FFFFFF]">{user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
+          </div>
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="bg-inputBg sm:mt-[14px] sm:w-[200px] w-screen max-sm:h-screen border-secondaryBorder -mt-[67px]"
@@ -128,7 +142,7 @@ const MobileDropDownMenu = () => {
         </DropdownMenuSub>
         <DropdownMenuSeparator className="bg-[#FFFFFF]/10 max-sm:mx-3" />
         <div className="w-full py-[50px] flex flex-col items-center justify-center sm:hidden">
-          <div className="flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-3">
             <div className="relative w-fit">
               {
                 user?.avatar ? (
@@ -147,8 +161,11 @@ const MobileDropDownMenu = () => {
                 </ShadowBtn>
               </div>
             </div>
-            <div className="text-mainFont text-base">
+            <div className="text-mainFont text-base mt-1">
               {user?.name}
+            </div>
+            <div className="text-mainFont text-base">
+              <span className="text-[#FFFFFF99]">Points: </span>{user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}
             </div>
           </div>
         </div>

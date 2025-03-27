@@ -488,9 +488,9 @@ const InputBox = () => {
           if (newChat) {
             fetchHistory();
           }
-          fetchUserData();
         }
       }
+      fetchUserData();
     } catch (error) {
       console.error("Error sending message:", error);
       setChatLog((prevChatLog) => {
