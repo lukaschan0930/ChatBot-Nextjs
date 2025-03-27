@@ -1,6 +1,6 @@
 import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
-import { FaArrowUp, FaSpinner, FaFile } from "react-icons/fa6";
+import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
 import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom, fileAtom } from "@/app/lib/store";
 import {
@@ -13,13 +13,15 @@ import {
   isResearchAreaVisibleAtom
 } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { IResearchLog, IFileWithUrl } from "@/app/lib/interface";
 import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
 import ChatFileMenu from "./Chat/ChatFileMenu";
+import { useAuth } from "@/app/context/AuthContext";
+
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
 
@@ -90,6 +92,7 @@ const InputBox = () => {
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
   const [, setChatHistory] = useAtom(chatHistoryAtom);
+  const { setUser } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -106,6 +109,21 @@ const InputBox = () => {
       )}px`;
     }
   };
+
+  const fetchUserData = async () => {
+    try {
+      const res = await fetch(`/api/user/profile`);
+      const data = await res.json();
+      if (data.success) {
+        setUser(data.user);
+      } else {
+        signOut();
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      signOut();
+    }
+  }
 
   useEffect(() => {
     setTextareaWidth(textareaRef.current?.clientWidth || 0);
@@ -187,7 +205,7 @@ const InputBox = () => {
       if (!result.success) {
         throw new Error('Failed to upload files');
       }
-      
+
       const uploadedResult = fileData.map((file, index) => ({ file, url: result.fileUrl[index] as string }));
       return uploadedResult;
     } catch (error) {
@@ -215,6 +233,7 @@ const InputBox = () => {
       });
       return;
     }
+
     setIsStreaming(true);
     setIsStartChat(true);
     let requestSessionId = sessionId;
@@ -225,6 +244,25 @@ const InputBox = () => {
       );
       setSessionId(newId);
       requestSessionId = newId;
+      setChatHistory((prevChatHistory) => {
+        const newChatHistory = [...prevChatHistory];
+        newChatHistory.push({
+          id: requestSessionId as string,
+          title: inputPrompt,
+          chats: [],
+          loading: true
+        });
+        return newChatHistory;
+      });
+    } else {
+      setChatHistory((prevChatHistory) => {
+        const newChatHistory = [...prevChatHistory];
+        const chat = newChatHistory.find((chat) => chat.id === requestSessionId);
+        if (chat) {
+          chat.loading = true;
+        }
+        return newChatHistory;
+      });
     }
     try {
       setInputPrompt("");
@@ -292,7 +330,7 @@ const InputBox = () => {
       formData.append("time", time.toString());
       formData.append("datasource", datasource ? "true" : "false");
       formData.append("fileUrls", JSON.stringify(files.map((file) => file.url)));
-      
+
       const res = await fetch("/api/chat/generateText", {
         method: "POST",
         body: formData,
@@ -300,10 +338,6 @@ const InputBox = () => {
       setProgress(100);
 
       if (res.status == 429) {
-        // toast({
-        //   variant: "destructive",
-        //   title: `Rate limit exceeded. Please try again later.`
-        // });
         throw new Error('Rate limit exceeded');
       }
 
@@ -403,6 +437,7 @@ const InputBox = () => {
         if (newChat) {
           fetchHistory();
         }
+        fetchUserData();
       }
     } catch (error) {
       console.error("Error sending message:", error);

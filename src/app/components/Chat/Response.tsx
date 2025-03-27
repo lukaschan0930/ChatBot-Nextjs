@@ -4,7 +4,7 @@ import { CodeBlock } from "react-code-block";
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom, activeChatIdAtom, isResearchAreaVisibleAtom, researchLogAtom, researchStepAtom, progressAtom } from "@/app/lib/store";
+import { chatLogAtom, sessionIdAtom, isStreamingAtom, activeChatIdAtom, isResearchAreaVisibleAtom, researchLogAtom, researchStepAtom, progressAtom, chatHistoryAtom } from "@/app/lib/store";
 import { processChunkedString } from "@/app/lib/utils";
 import { IResearchLog } from "@/app/lib/interface";
 
@@ -51,6 +51,7 @@ const Response = (
   const [, setProgress] = useAtom(progressAtom);
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
+  const [, setChatHistory] = useAtom(chatHistoryAtom);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -105,6 +106,14 @@ const Response = (
   };
 
   const refreshGenerate = () => {
+    setChatHistory((prevChatHistory) => {
+      const newChatHistory = [...prevChatHistory];
+      const chat = newChatHistory.find((chat) => chat.id === sessionId);
+      if (chat) {
+        chat.loading = true;
+      }
+      return newChatHistory;
+    });
     if (chatType == 0) {
       sendMessage([], 0);
     } else {

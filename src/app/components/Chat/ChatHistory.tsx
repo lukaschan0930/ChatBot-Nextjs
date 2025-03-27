@@ -378,6 +378,11 @@ const ChatHistory = () => {
                                                     flex items-center justify-start group transition-colors duration-200 px-2 py-2 relative rounded-lg`
                                                     }
                                                 >
+                                                    {
+                                                        session.loading && (
+                                                            <CircularProgress className="w-4 h-4" />
+                                                        )
+                                                    }
                                                     <div className="w-[200px] flex flex-col gap-1">
                                                         {editingSessionId === session.id ? (
                                                             <input
@@ -394,42 +399,46 @@ const ChatHistory = () => {
                                                             </>
                                                         )}
                                                     </div>
-                                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pl-2 hidden group-hover:flex items-center rounded-r-lg gap-1">
-                                                        {
-                                                            editingSessionId !== session.id ? (
-                                                                <>
-                                                                    <button className="bg-transparent p-1 border-none" onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setNewTitle(extractTitleFromMd(session.title));
-                                                                        setEditingSessionId(session.id);
-                                                                    }}>
-                                                                        <FiEdit size={20} />
-                                                                    </button>
-                                                                    <button className="bg-transparent p-1 border-none text-[#FF5050]" onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        deleteSession(session.id);
-                                                                    }}>
-                                                                        <FiTrash2 size={20} />
-                                                                    </button>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        updateSessionTitle(session.id, newTitle);
-                                                                    }}>
-                                                                        <FiCheck size={20} />
-                                                                    </button>
-                                                                    <button className="bg-inputBg p-1 border-none" onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setEditingSessionId(null);
-                                                                    }}>
-                                                                        <FiX size={20} />
-                                                                    </button>
-                                                                </>
-                                                            )
-                                                        }
-                                                    </div>
+                                                    {
+                                                        !session.loading && (
+                                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pl-2 hidden group-hover:flex items-center rounded-r-lg gap-1">
+                                                                {
+                                                                    editingSessionId !== session.id ? (
+                                                                        <>
+                                                                            <button className="bg-transparent p-1 border-none" onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setNewTitle(extractTitleFromMd(session.title));
+                                                                                setEditingSessionId(session.id);
+                                                                            }}>
+                                                                                <FiEdit size={20} />
+                                                                            </button>
+                                                                            <button className="bg-transparent p-1 border-none text-[#FF5050]" onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                deleteSession(session.id);
+                                                                            }}>
+                                                                                <FiTrash2 size={20} />
+                                                                            </button>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                updateSessionTitle(session.id, newTitle);
+                                                                            }}>
+                                                                                <FiCheck size={20} />
+                                                                            </button>
+                                                                            <button className="bg-inputBg p-1 border-none" onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setEditingSessionId(null);
+                                                                            }}>
+                                                                                <FiX size={20} />
+                                                                            </button>
+                                                                        </>
+                                                                    )
+                                                                }
+                                                            </div>
+                                                        )
+                                                    }
                                                 </div>
                                             </div>
                                         ))

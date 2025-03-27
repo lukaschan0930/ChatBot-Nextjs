@@ -140,6 +140,7 @@ export interface ChatHistory {
     id: string;
     title: string;
     chats: ChatLog[];
+    loading?: boolean;
 }
 
 export interface ChatLog {

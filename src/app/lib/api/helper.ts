@@ -225,9 +225,9 @@ export function trimPrompt(
 }
 
 export function getChatPoints(chatHistory: ChatHistory[]) {
-    if (chatHistory.length > 25) {
+    if (chatHistory.length >= 25) {
         return 25;
-    } else if (chatHistory.length > 10) {
+    } else if (chatHistory.length >= 10) {
         return 10;
     }
 
