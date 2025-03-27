@@ -128,8 +128,8 @@ export const ChatTypeItems = [
         image: "/image/Edith_Logo.png"
     },
     {
-        id: "deep",
-        label: "Pro (Deep Search)",
+        id: "faster",
+        label: "Faster x30",
         image: "/image/pro.png"
     },
 ]

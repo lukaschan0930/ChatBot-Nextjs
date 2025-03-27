@@ -10,6 +10,7 @@ const isSidebarVisibleAtom = atom<boolean>(true);
 const researchLogAtom = atom<IResearchLog[]>([]);
 const researchStepAtom = atom<number>(0);
 const chatTypeAtom = atom<number>(0);
+const chatModeAtom = atom<number>(0);
 const progressAtom = atom<number>(0);
 const isResearchAreaVisibleAtom = atom<boolean>(false);
 const activeChatIdAtom = atom<string>("");
@@ -25,6 +26,7 @@ export {
     researchLogAtom, 
     researchStepAtom, 
     chatTypeAtom,
+    chatModeAtom,
     progressAtom,
     isResearchAreaVisibleAtom,
     activeChatIdAtom,

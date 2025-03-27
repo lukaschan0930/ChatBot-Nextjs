@@ -2,7 +2,13 @@ import { toast } from "@/app/hooks/use-toast";
 import React, { useEffect, useRef, useState } from "react";
 import { FaArrowUp, FaSpinner } from "react-icons/fa6";
 import { useAtom } from "jotai";
-import { chatHistoryAtom, isStartChatAtom, researchStepAtom, activeChatIdAtom, fileAtom } from "@/app/lib/store";
+import {
+  chatHistoryAtom,
+  isStartChatAtom,
+  researchStepAtom,
+  activeChatIdAtom,
+  fileAtom
+} from "@/app/lib/store";
 import {
   chatLogAtom,
   sessionIdAtom,
@@ -10,7 +16,8 @@ import {
   researchLogAtom,
   chatTypeAtom,
   progressAtom,
-  isResearchAreaVisibleAtom
+  isResearchAreaVisibleAtom,
+  chatModeAtom
 } from "@/app/lib/store";
 import { generateSessionId, processChunkedString } from "@/app/lib/utils";
 import { signOut, useSession } from "next-auth/react";
@@ -20,6 +27,7 @@ import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
 import ChatFileMenu from "./Chat/ChatFileMenu";
+import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
@@ -87,6 +95,7 @@ const InputBox = () => {
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState<boolean>(false);
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
+  const [chatMode] = useAtom(chatModeAtom);
 
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
@@ -344,113 +353,143 @@ const InputBox = () => {
       formData.append("datasource", datasource ? "true" : "false");
       formData.append("fileUrls", JSON.stringify(files.map((file) => file.url)));
 
-      const res = await fetch("/api/chat/generateText", {
-        method: "POST",
-        body: formData,
-      });
-      setProgress(100);
-
-      if (res.status == 429) {
-        throw new Error('Rate limit exceeded');
-      }
-
-      if (!res.body) {
-        console.error("No response body");
-        throw new Error('No response body');
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullResponse = "";
-      const buffer = "";
-      const newChat = chatLog.length == 0 ? true : false;
-
-      try {
-        // Process each streamed chunk
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          // Decode the incoming chunk and add it to our buffer.
-          const chunk = decoder.decode(value, { stream: true });
-          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
-          fullResponse += content;
-
+      if (chatMode === 1) {
+        const res = await fetch("/api/chat/generateTextFaster", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.status == 429) {
+          throw new Error('Rate limit exceeded');
+        }
+        if (res.status == 500) {
+          throw new Error('Error generating text');
+        }
+        const data = await res.json();
+        if (data.success) {
           setChatLog((prevChatLog) => {
-            const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
-            if (newLog.length > 0) {
-              newLog[newLog.length - 1] = {
-                prompt,
-                response: fullResponse,
-                timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                chatType: chatType,
-                datasource: datasource,
-                fileUrls: files.map((file) => file.url)
-              };
-            } else {
-              newLog.push({
-                prompt,
-                response: fullResponse,
-                timestamp: Date.now().toString(),
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                chatType: chatType,
-                datasource: datasource,
-                fileUrls: files.map((file) => file.url)
-              });
-            }
+            const newLog = [...prevChatLog];
+            newLog[newLog.length - 1].response = data.content;
+            newLog[newLog.length - 1].inputToken = data.inputToken;
+            newLog[newLog.length - 1].outputToken = data.outputToken;
+            newLog[newLog.length - 1].inputTime = data.inputTime;
+            newLog[newLog.length - 1].outputTime = data.outputTime;
+            newLog[newLog.length - 1].chatType = chatType;
+            newLog[newLog.length - 1].datasource = datasource;
+            newLog[newLog.length - 1].fileUrls = files.map((file) => file.url);
             return newLog;
           });
+        } else {
+          throw new Error('Error generating text');
+        }
+      } else {
+        const res = await fetch("/api/chat/generateText", {
+          method: "POST",
+          body: formData,
+        });
+        setProgress(100);
+
+        if (res.status == 429) {
+          throw new Error('Rate limit exceeded');
         }
 
-        if (buffer.trim() !== "") {
-          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
-          fullResponse += content;
-          setChatLog((prevChatLog) => {
-            const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
-            if (newLog.length > 0) {
-              newLog[newLog.length - 1] = {
-                prompt,
-                response: fullResponse,
-                timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                chatType: chatType,
-                datasource: datasource,
-                fileUrls: files.map((file) => file.url)
-              };
-            } else {
-              newLog.push({
-                prompt,
-                response: fullResponse,
-                timestamp: Date.now().toString(),
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                chatType: chatType,
-                datasource: datasource,
-                fileUrls: files.map((file) => file.url)
-              });
-            }
-            return newLog;
-          });
+        if (!res.body) {
+          console.error("No response body");
+          throw new Error('No response body');
         }
-      } finally {
-        // Always release the reader's lock.
-        reader.releaseLock();
-        if (newChat) {
-          fetchHistory();
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let fullResponse = "";
+        const buffer = "";
+        const newChat = chatLog.length == 0 ? true : false;
+
+        try {
+          // Process each streamed chunk
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            // Decode the incoming chunk and add it to our buffer.
+            const chunk = decoder.decode(value, { stream: true });
+            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+            fullResponse += content;
+
+            setChatLog((prevChatLog) => {
+              const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+              if (newLog.length > 0) {
+                newLog[newLog.length - 1] = {
+                  prompt,
+                  response: fullResponse,
+                  timestamp: newLog[newLog.length - 1].timestamp,
+                  inputToken: inputToken,
+                  outputToken: outputToken,
+                  inputTime: inputTime,
+                  outputTime: outputTime,
+                  chatType: chatType,
+                  datasource: datasource,
+                  fileUrls: files.map((file) => file.url)
+                };
+              } else {
+                newLog.push({
+                  prompt,
+                  response: fullResponse,
+                  timestamp: Date.now().toString(),
+                  inputToken: inputToken,
+                  outputToken: outputToken,
+                  inputTime: inputTime,
+                  outputTime: outputTime,
+                  chatType: chatType,
+                  datasource: datasource,
+                  fileUrls: files.map((file) => file.url)
+                });
+              }
+              return newLog;
+            });
+          }
+
+          if (buffer.trim() !== "") {
+            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+            fullResponse += content;
+            setChatLog((prevChatLog) => {
+              const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+              if (newLog.length > 0) {
+                newLog[newLog.length - 1] = {
+                  prompt,
+                  response: fullResponse,
+                  timestamp: newLog[newLog.length - 1].timestamp,
+                  inputToken: inputToken,
+                  outputToken: outputToken,
+                  inputTime: inputTime,
+                  outputTime: outputTime,
+                  chatType: chatType,
+                  datasource: datasource,
+                  fileUrls: files.map((file) => file.url)
+                };
+              } else {
+                newLog.push({
+                  prompt,
+                  response: fullResponse,
+                  timestamp: Date.now().toString(),
+                  inputToken: inputToken,
+                  outputToken: outputToken,
+                  inputTime: inputTime,
+                  outputTime: outputTime,
+                  chatType: chatType,
+                  datasource: datasource,
+                  fileUrls: files.map((file) => file.url)
+                });
+              }
+              return newLog;
+            });
+          }
+        } finally {
+          // Always release the reader's lock.
+          reader.releaseLock();
+          if (newChat) {
+            fetchHistory();
+          }
+          fetchUserData();
         }
-        fetchUserData();
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -773,62 +812,65 @@ const InputBox = () => {
           </button>
         </div>
       </div>
-      <div className="border-t border-[#25252799] p-4 flex gap-3 w-full bg-[url('/image/text-bg.png')]">
-        {
-          isFileUploading ? (
-            <ShadowBtn
-              className="rounded-full"
-              mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
-              disabled={true}
-            >
-              <FaSpinner className="w-auto h-full animate-spin text-black" />
-            </ShadowBtn>
-          ) :
-            files.length > 0 ? (
-              <ChatFileMenu
-                files={files}
-                handleClickPlusIcon={handleClickPlusIcon}
-                handleRemoveFile={handleRemoveFile}
-                setFiles={setFiles}
-                isFileMenuOpen={isFileMenuOpen}
-                setIsFileMenuOpen={setIsFileMenuOpen}
-              />
-            ) : (
+      <div className="border-t border-[#25252799] p-4 flex gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
+        <div className="flex items-center gap-3">
+          {
+            isFileUploading ? (
               <ShadowBtn
                 className="rounded-full"
                 mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
-                onClick={handleClickPlusIcon}
+                disabled={true}
               >
-                <PlusIcon />
+                <FaSpinner className="w-auto h-full animate-spin text-black" />
               </ShadowBtn>
-            )
-        }
-        <input
-          type="file"
-          accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-          ref={fileInputRef}
-          multiple
-        />
-        <ShadowBtn
-          className="rounded-full"
-          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
-        >
-          Pro Search
-          <AntSwitch
-            inputProps={{ 'aria-label': 'Pro Search' }}
-            onChange={(e) => setChatType(e.target.checked ? 1 : 0)}
-            disabled={files.length > 0}
-            checked={chatType == 1}
+            ) :
+              files.length > 0 ? (
+                <ChatFileMenu
+                  files={files}
+                  handleClickPlusIcon={handleClickPlusIcon}
+                  handleRemoveFile={handleRemoveFile}
+                  setFiles={setFiles}
+                  isFileMenuOpen={isFileMenuOpen}
+                  setIsFileMenuOpen={setIsFileMenuOpen}
+                />
+              ) : (
+                <ShadowBtn
+                  className="rounded-full"
+                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+                  onClick={handleClickPlusIcon}
+                >
+                  <PlusIcon />
+                </ShadowBtn>
+              )
+          }
+          <input
+            type="file"
+            accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            multiple
           />
-        </ShadowBtn>
-        {/* <ShadowBtn
+          <ShadowBtn
+            className="rounded-full"
+            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+          >
+            Pro Search
+            <AntSwitch
+              inputProps={{ 'aria-label': 'Pro Search' }}
+              onChange={(e) => setChatType(e.target.checked ? 1 : 0)}
+              disabled={files.length > 0}
+              checked={chatType == 1}
+            />
+          </ShadowBtn>
+          {/* <ShadowBtn
           className="rounded-full"
           mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
         >
           <VoiceIcon />
         </ShadowBtn> */}
+        </div>
+        <ChatTypeMenu />
       </div>
     </div >
   )

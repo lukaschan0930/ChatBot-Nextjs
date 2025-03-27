@@ -4,7 +4,18 @@ import { CodeBlock } from "react-code-block";
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
 import { useAtom } from "jotai";
-import { chatLogAtom, sessionIdAtom, isStreamingAtom, activeChatIdAtom, isResearchAreaVisibleAtom, researchLogAtom, researchStepAtom, progressAtom, chatHistoryAtom } from "@/app/lib/store";
+import {
+  chatLogAtom,
+  sessionIdAtom,
+  isStreamingAtom,
+  activeChatIdAtom,
+  isResearchAreaVisibleAtom,
+  researchLogAtom,
+  researchStepAtom,
+  progressAtom,
+  chatHistoryAtom,
+  chatModeAtom
+} from "@/app/lib/store";
 import { processChunkedString } from "@/app/lib/utils";
 import { IResearchLog } from "@/app/lib/interface";
 
@@ -52,6 +63,7 @@ const Response = (
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
   const [, setChatHistory] = useAtom(chatHistoryAtom);
+  const [chatMode] = useAtom(chatModeAtom);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -367,7 +379,7 @@ const Response = (
   };
 
   const sendMessage = async (learnings: string[], time: number) => {
-    try { 
+    try {
       setIsStreaming(true);
       const prompt = chatLog[chatLog.length - 1].prompt;
       const chatHistory = chatLog.slice(-6, -1);
@@ -400,74 +412,109 @@ const Response = (
       formData.append("time", time.toString());
       formData.append("fileUrls", JSON.stringify(fileUrls));
 
-      const res = await fetch("/api/chat/generateText", {
-        method: "POST",
-        body: formData,
-      });
-      if (res.status != 200) {
-        throw new Error("Failed to get response from server.");
-      }
+      if (chatMode == 1) {
+        const res = await fetch("/api/chat/generateTextFaster", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!res.body) {
-        throw new Error("No response body");
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullResponse = "";
-      const buffer = "";
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
-          fullResponse += content;
-
-          setChatLog((prevChatLog) => {
-            const newLog = [...prevChatLog];
-            newLog[newLog.length - 1] = {
-              prompt,
-              response: fullResponse,
-              timestamp: newLog[newLog.length - 1].timestamp,
-              inputToken: inputToken,
-              outputToken: outputToken,
-              inputTime: inputTime,
-              outputTime: outputTime,
-              totalTime: totalTime,
-              chatType: chatLog[chatLog.length - 1].chatType,
-              datasource: chatLog[chatLog.length - 1].datasource,
-              fileUrls: chatLog[chatLog.length - 1].fileUrls
-            };
-            return newLog;
-          });
+        if (res.status == 429) {
+          throw new Error("Rate limit exceeded");
         }
 
-        if (buffer.trim() !== "") {
-          const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
-          fullResponse += content;
-          setChatLog((prevChatLog) => {
-            const newLog = [...prevChatLog];
-            newLog[newLog.length - 1] = {
-              prompt,
-              response: fullResponse,
-              timestamp: newLog[newLog.length - 1].timestamp,
-              inputToken: inputToken,
-              outputToken: outputToken,
-              inputTime: inputTime,
-              outputTime: outputTime,
-              totalTime: totalTime,
-              chatType: newLog[newLog.length - 1].chatType,
-              datasource: chatLog[chatLog.length - 1].datasource,
-              fileUrls: chatLog[chatLog.length - 1].fileUrls
-            };
-            return newLog;
-          });
+        if (res.status == 500) {
+          throw new Error("Error generating text");
         }
-      } finally {
-        reader.releaseLock();
+
+        const data = await res.json();
+        setChatLog((prevChatLog) => {
+          const newLog = [...prevChatLog];
+          newLog[newLog.length - 1] = {
+            prompt,
+            response: data.content,
+            timestamp: newLog[newLog.length - 1].timestamp,
+            inputToken: data.inputToken,
+            outputToken: data.outputToken,
+            inputTime: data.inputTime,
+            outputTime: data.outputTime,
+            totalTime: data.totalTime,
+            chatType: chatLog[chatLog.length - 1].chatType,
+            datasource: chatLog[chatLog.length - 1].datasource,
+            fileUrls: chatLog[chatLog.length - 1].fileUrls
+          };
+          return newLog;
+        });
+
+      } else {
+        const res = await fetch("/api/chat/generateText", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.status != 200) {
+          throw new Error("Failed to get response from server.");
+        }
+
+        if (!res.body) {
+          throw new Error("No response body");
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let fullResponse = "";
+        const buffer = "";
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+            fullResponse += content;
+
+            setChatLog((prevChatLog) => {
+              const newLog = [...prevChatLog];
+              newLog[newLog.length - 1] = {
+                prompt,
+                response: fullResponse,
+                timestamp: newLog[newLog.length - 1].timestamp,
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime,
+                totalTime: totalTime,
+                chatType: chatLog[chatLog.length - 1].chatType,
+                datasource: chatLog[chatLog.length - 1].datasource,
+                fileUrls: chatLog[chatLog.length - 1].fileUrls
+              };
+              return newLog;
+            });
+          }
+
+          if (buffer.trim() !== "") {
+            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+            fullResponse += content;
+            setChatLog((prevChatLog) => {
+              const newLog = [...prevChatLog];
+              newLog[newLog.length - 1] = {
+                prompt,
+                response: fullResponse,
+                timestamp: newLog[newLog.length - 1].timestamp,
+                inputToken: inputToken,
+                outputToken: outputToken,
+                inputTime: inputTime,
+                outputTime: outputTime,
+                totalTime: totalTime,
+                chatType: newLog[newLog.length - 1].chatType,
+                datasource: chatLog[chatLog.length - 1].datasource,
+                fileUrls: chatLog[chatLog.length - 1].fileUrls
+              };
+              return newLog;
+            });
+          }
+        } finally {
+          reader.releaseLock();
+        }
       }
     } catch (error) {
       setChatLog((prevChatLog) => {

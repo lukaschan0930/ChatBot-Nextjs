@@ -10,10 +10,10 @@ import {
 import { ChatTypeItems } from "@/app/lib/stack";
 import Image from "next/image";
 import { useAtom } from "jotai";
-import { chatTypeAtom } from "@/app/lib/store";
+import { chatModeAtom } from "@/app/lib/store";
 
 const ChatTypeMenu = () => {
-  const [menuId, setMenuId] = useAtom(chatTypeAtom);
+  const [menuId, setMenuId] = useAtom(chatModeAtom);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // const handleItemClick = (itemId: string, subItemId?: string) => {
@@ -37,10 +37,11 @@ const ChatTypeMenu = () => {
 
   return (
     <DropdownMenu onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger className={`flex justify-between items-center bg-inputBg pl-0 pr-3 border-secondaryBorder hover:border-tertiaryBorder rounded-lg h-10 text-mainFont text-xl focus:outline-none gap-3 ${ChatTypeItems[menuId].id === "normal" ? "w-[100px]" : "w-[140px]"}`}>
-        <Image src={ChatTypeItems[menuId].image} alt="chat type" className="w-auto h-[38px] rounded-lg" width={100} height={32} />
+      <DropdownMenuTrigger className={`flex justify-between items-center bg-inputBg pl-2 pr-3 border-secondaryBorder hover:border-tertiaryBorder rounded-lg h-10 text-mainFont text-xl focus:outline-none gap-3 w-[100px]`}>
+        {/* <Image src={ChatTypeItems[menuId].image} alt="chat type" className="w-auto h-[38px] rounded-lg" width={100} height={32} /> */}
+        <p className="text-mainFont text-sm capitalize">{ChatTypeItems[menuId].id}</p>
         <FaChevronDown
-          className={`!w-5 !h-5 ${
+          className={`!w-4 !h-4 ${
             isOpen ? "rotate-180" : ""
           } transition-all duration-150`}
         />
