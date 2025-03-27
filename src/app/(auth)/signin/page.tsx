@@ -21,6 +21,7 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import Loading from "@/app/assets/loading";
 import { validateEmail, validatePassword } from "@/app/lib/utils";
 import { useRecaptcha } from "@/app/hooks/useRecaptcha";
+import Cookies from "js-cookie";
 
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState({
@@ -45,10 +46,10 @@ const SignIn = () => {
       // Execute reCAPTCHA before Google sign in
       const recaptchaToken = await executeRecaptcha('google_signin');
       
+      Cookies.set("recaptchaToken", recaptchaToken);
       const result = await signIn("google", {
         redirect: false,
         callbackUrl: "/",
-        recaptchaToken, // Pass the token to the signIn function
       });
       setIsLoading(prev => ({ ...prev, google: false }));
       if (result?.error) {

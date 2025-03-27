@@ -125,10 +125,11 @@ const authOptions: NextAuthOptions = {
         }) {
             if (account?.provider === 'google') {
                 // Verify reCAPTCHA for Google sign-in
-                const recaptchaToken = account.recaptchaToken;
+                const recaptchaToken = cookies().get("recaptchaToken")?.value;
                 if (!recaptchaToken) {
                     throw new Error("reCAPTCHA token is required");
                 }
+                cookies().delete("recaptchaToken");
                 
                 const isValidRecaptcha = await verifyRecaptcha(recaptchaToken as string);
                 if (!isValidRecaptcha) {
@@ -153,6 +154,8 @@ const authOptions: NextAuthOptions = {
                             jumpUserId = "";
                         }
                     }
+                    cookies().delete("jumpUserId");
+                    cookies().delete("jumpTransactionId");
 
                     const token = await generateConfirmationToken(profile?.email as string, "google");
                     const inviteCode = await UserRepo.createUniqueInviteCode();

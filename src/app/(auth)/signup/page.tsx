@@ -83,7 +83,6 @@ const SignUp = () => {
     try {
       // Execute reCAPTCHA
       const recaptchaToken = await executeRecaptcha('signup');
-
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
@@ -127,10 +126,9 @@ const SignUp = () => {
       setIsLoading(prev => ({ ...prev, google: true }));
       // Execute reCAPTCHA before Google sign in
       const recaptchaToken = await executeRecaptcha('google_signup');
-      
+      Cookies.set("recaptchaToken", recaptchaToken);
       await signIn("google", {
         callbackUrl: "/chatText",
-        recaptchaToken, // Pass the token to the signIn function
       });
       setIsLoading(prev => ({ ...prev, google: false }));
     } catch (error) {
