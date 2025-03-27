@@ -125,6 +125,17 @@ const authOptions: NextAuthOptions = {
             profile?: Profile;
         }) {
             if (account?.provider === 'google') {
+                // Verify reCAPTCHA for Google sign-in
+                const recaptchaToken = account.recaptchaToken;
+                if (!recaptchaToken) {
+                    throw new Error("reCAPTCHA token is required");
+                }
+                
+                const isValidRecaptcha = await verifyRecaptcha(recaptchaToken as string);
+                if (!isValidRecaptcha) {
+                    throw new Error("reCAPTCHA verification failed");
+                }
+
                 let existingUser = await UserRepo.findByEmail(profile?.email as string);
                 if (existingUser && existingUser.verify == true) {
                     user.name = existingUser.name;

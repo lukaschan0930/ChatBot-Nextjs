@@ -3,10 +3,22 @@ import { authOptions, getChatPoints } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { UserRepo } from "@/app/lib/database/userrepo";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
+import { verifyRecaptcha, getRecaptchaTokenFromRequest } from "@/app/lib/recaptcha";
 
 export async function PUT(request: NextRequest) {
     const { name, avatar, wallet } = await request.json();
     const session = await getServerSession(authOptions as AuthOptions);
+
+    // Verify reCAPTCHA
+    const recaptchaToken = getRecaptchaTokenFromRequest(request);
+    if (!recaptchaToken) {
+        return Response.json({ success: false, message: "reCAPTCHA token is required" });
+    }
+
+    const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
+    if (!isValidRecaptcha) {
+        return Response.json({ success: false, message: "reCAPTCHA verification failed" });
+    }
 
     const user = await UserRepo.findByEmail(session?.user?.email as string);
     if (!user) {

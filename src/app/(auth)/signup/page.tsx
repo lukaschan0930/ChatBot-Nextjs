@@ -128,8 +128,12 @@ const SignUp = () => {
 
     try {
       setIsLoading(prev => ({ ...prev, google: true }));
+      // Execute reCAPTCHA before Google sign in
+      const recaptchaToken = await executeRecaptcha('google_signup');
+      
       await signIn("google", {
         callbackUrl: "/chatText",
+        recaptchaToken, // Pass the token to the signIn function
       });
       setIsLoading(prev => ({ ...prev, google: false }));
     } catch (error) {

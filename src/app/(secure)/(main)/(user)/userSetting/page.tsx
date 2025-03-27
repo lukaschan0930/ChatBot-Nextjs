@@ -10,9 +10,11 @@ import Image from "next/image";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useRecaptcha } from "@/app/hooks/useRecaptcha";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
+    const { executeRecaptcha } = useRecaptcha();
 
     const [copyStatus, setCopyStatus] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
@@ -102,9 +104,16 @@ const UserSetting = () => {
 
     const handleClickUpdate = async () => {
         try {
+            // Execute reCAPTCHA before updating profile
+            const recaptchaToken = await executeRecaptcha('update_profile');
+
             const res = await fetch(`/api/user/profile`,
                 {
                     method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-recaptcha-token": recaptchaToken
+                    },
                     body: JSON.stringify({
                         name,
                         avatar,

@@ -42,9 +42,13 @@ const SignIn = () => {
   const googleSignIn = async () => {
     try {
       setIsLoading(prev => ({ ...prev, google: true }));
+      // Execute reCAPTCHA before Google sign in
+      const recaptchaToken = await executeRecaptcha('google_signin');
+      
       const result = await signIn("google", {
         redirect: false,
         callbackUrl: "/",
+        recaptchaToken, // Pass the token to the signIn function
       });
       setIsLoading(prev => ({ ...prev, google: false }));
       if (result?.error) {
