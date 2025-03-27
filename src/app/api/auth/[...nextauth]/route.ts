@@ -13,6 +13,7 @@ import { AdapterUser } from 'next-auth/adapters';
 import { cookies } from 'next/headers'
 import { IUser } from '@/app/lib/interface';
 import { NextAuthOptions } from "next-auth";
+import { verifyRecaptcha } from '@/app/lib/recaptcha';
 
 const authOptions: NextAuthOptions = {
     providers: [
@@ -38,13 +39,25 @@ const authOptions: NextAuthOptions = {
             credentials: {
                 email: {},
                 password: {},
+                recaptchaToken: {},
             },
             async authorize(credentials) {
                 console.log("credentials", credentials);
                 if (!credentials) {
                     return null;
                 }
-                const { email, password } = credentials;
+                const { email, password, recaptchaToken } = credentials;
+                
+                // Verify reCAPTCHA
+                if (!recaptchaToken) {
+                    throw new Error("reCAPTCHA token is required");
+                }
+                
+                const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
+                if (!isValidRecaptcha) {
+                    throw new Error("reCAPTCHA verification failed");
+                }
+
                 try {
                     const user = await UserRepo.authenticate(email, password);
                     return user;
@@ -52,7 +65,6 @@ const authOptions: NextAuthOptions = {
                     console.log("error", error);
                     return null;
                 }
-
             }
         }),
         CredentialsProvider({

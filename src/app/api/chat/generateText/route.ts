@@ -123,36 +123,12 @@ export async function POST(request: NextRequest) {
                     try {
                         // Iterate over each streamed chunk
                         for await (const chunk of stream) {
-                            // const data = chunk as {
-                            //     message: {
-                            //         content: string
-                            //     },
-                            //     raw: {
-                            //         choices: {
-                            //             delta: {
-                            //                 content: string
-                            //             }
-                            //         }
-                            //     }
-                            // }
-                            // const data = chunk as { choices?: { delta?: { content?: string } }[] };
-                            // Cerebras returns the text in data.choices[0]?.delta?.content
                             const content = chunk.message.content || "";
                             if (content) {
                                 fullResponse += content;
                                 controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
                                 await new Promise(resolve => setTimeout(resolve, 2));
                             }
-                            // if (chunk.usage) {
-                            //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
-                            //     inputToken = usage.prompt_tokens;
-                            //     outputToken = usage.completion_tokens;
-                            // }
-                            // if (chunk.time_info) {
-                            //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
-                            //     inputTime = timeInfo.prompt_time;
-                            //     queueTime = timeInfo.queue_time;
-                            // }
                         }
                     } catch (error) {
                         console.error("Streaming error: ", error);
@@ -297,16 +273,6 @@ export async function POST(request: NextRequest) {
                                 controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
                                 await new Promise(resolve => setTimeout(resolve, 2));
                             }
-                            // if (chunk.usage) {
-                            //     const usage = chunk.usage as { prompt_tokens: number, completion_tokens: number };
-                            //     inputToken = usage.prompt_tokens;
-                            //     outputToken = usage.completion_tokens;
-                            // }
-                            // if (chunk.time_info) {
-                            //     const timeInfo = chunk.time_info as { prompt_time: number, queue_time: number };
-                            //     inputTime = timeInfo.prompt_time;
-                            //     queueTime = timeInfo.queue_time;
-                            // }
                         }
                     } catch (error) {
                         console.error("Streaming error: ", error);

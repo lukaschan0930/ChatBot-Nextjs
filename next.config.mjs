@@ -22,6 +22,7 @@ const nextConfig = {
     },
     env: {
         DAILY_POOL: process.env.DAILY_POOL,
+        RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
     },
 };
 

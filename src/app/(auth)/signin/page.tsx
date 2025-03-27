@@ -20,6 +20,7 @@ import FormBtn from "@/app/components/FormBtn";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Loading from "@/app/assets/loading";
 import { validateEmail, validatePassword } from "@/app/lib/utils";
+import { useRecaptcha } from "@/app/hooks/useRecaptcha";
 
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState({
@@ -32,6 +33,7 @@ const SignIn = () => {
     error: "",
   });
   const router = useRouter();
+  const { executeRecaptcha } = useRecaptcha();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -73,9 +75,13 @@ const SignIn = () => {
     setIsLoading((prev) => ({ ...prev, form: true }));
     try {
       try {
+        // Execute reCAPTCHA
+        const recaptchaToken = await executeRecaptcha('signin');
+        
         const result = await signIn("credentials", {
           email: data.email,
           password: data.password,
+          recaptchaToken,
           redirect: false,
         });
         if (result?.error) {

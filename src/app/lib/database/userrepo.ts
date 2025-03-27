@@ -15,7 +15,17 @@ export const UserRepo = {
     getTwitterUserCount,
     getTopBoardUsers,
     updateJumpRewardState,
-    findByJumpUserId
+    findByJumpUserId,
+    findByWallet,
+    findByWalletWithoutUser
+}
+
+async function findByWalletWithoutUser(wallet: string, email: string) {
+    return db.User.findOne({ wallet, email: { $ne: email } });
+}
+
+async function findByWallet(wallet: string) {
+    return db.User.findOne({ wallet });
 }
 
 async function findByJumpUserId(userId: string) {

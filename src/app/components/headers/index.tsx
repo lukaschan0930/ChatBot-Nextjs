@@ -18,11 +18,13 @@ import NewChatIcon from "@/app/assets/newChat";
 import { IFileWithUrl } from "@/app/lib/interface";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const endPoint = pathname.split("/");
+  const { user } = useAuth();
 
   const leftSidebarRef = useRef<HTMLDivElement | null>(null);
   const rightSidebarRef = useRef<HTMLDivElement | null>(null);
@@ -204,6 +206,7 @@ const Header = () => {
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-3">
+                    <div className="text-white text-sm">{user?.wallet ? user?.chatPoints : ""}</div>
                     <ShadowBtn
                       className="rounded-md"
                       mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"

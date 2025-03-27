@@ -11,6 +11,7 @@ import { emailUserID } from '@/app/lib/config';
 import { JWT } from 'next-auth/jwt';
 import { getEncoding } from 'js-tiktoken';
 import { RecursiveCharacterTextSplitter } from '@/app/lib/api/text-splitter';
+import { ChatHistory } from '../interface';
 const MinChunkSize = 140;
 const encoder = getEncoding('o200k_base');
 
@@ -221,4 +222,21 @@ export function trimPrompt(
 
     // recursively trim until the prompt is within the context size
     return trimPrompt(trimmedPrompt, contextSize);
+}
+
+export function getChatPoints(chatHistory: ChatHistory[]) {
+    if (chatHistory.length > 25) {
+        return 25;
+    } else if (chatHistory.length > 10) {
+        return 10;
+    }
+
+    const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
+    if (chatLogCount > 100) {
+        return 25;
+    } else if (chatLogCount > 50) {
+        return 10;
+    }
+    
+    return 0;
 }

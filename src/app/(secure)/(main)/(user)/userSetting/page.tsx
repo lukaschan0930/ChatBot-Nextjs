@@ -9,7 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
-// import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
@@ -17,9 +17,8 @@ const UserSetting = () => {
     const [copyStatus, setCopyStatus] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
     const [name, setName] = useState<string>(user?.name || "");
-    const [mounted, setMounted] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    // const { wallets, select, publicKey, disconnect } = useWallet();
+    const { wallets, select, publicKey, disconnect } = useWallet();
 
     const router = useRouter();
 
@@ -103,20 +102,28 @@ const UserSetting = () => {
 
     const handleClickUpdate = async () => {
         try {
-            await fetch(`/api/user/profile`,
+            const res = await fetch(`/api/user/profile`,
                 {
                     method: "PUT",
                     body: JSON.stringify({
                         name,
                         avatar,
-                        wallet: user?.wallet
+                        wallet: publicKey ? publicKey.toBase58() : user?.wallet
                     })
                 })
-            setUser(user ? { ...user, name, avatar, wallet: user?.wallet } : null);
-            toast({
-                variant: "default",
-                title: "Update Success",
-            })
+            const data = await res.json();
+            if (data.success) {
+                setUser(user ? { ...user, name, avatar, wallet: user?.wallet } : null);
+                toast({
+                    variant: "default",
+                    title: "Update Success",
+                })
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: data.message || "Update Failed",
+                })
+            }
         } catch (err) {
             console.error(err);
             toast({
@@ -134,15 +141,6 @@ const UserSetting = () => {
         setAvatar(user?.avatar || '');
         setName(user?.name || '')
     }, [user])
-
-    // useEffect(() => {
-    //     if (mounted) {
-    //         setUser(user ? { ...user, wallet: publicKey ? publicKey.toBase58() : "" } : null)
-    //     } else {
-    //         disconnect()
-    //     }
-    //     setMounted(true);
-    // }, [publicKey, mounted])
 
     return (
         <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen md:pt-[180px] pt-[100px]">
@@ -218,7 +216,7 @@ const UserSetting = () => {
                                 </div>
                             </div>
                         </div>
-                        {/* <div className="mt-4">
+                        <div className="mt-4">
                             {
                                 publicKey ?
                                     <div className="flex items-center gap-2">
@@ -249,7 +247,7 @@ const UserSetting = () => {
                                         :
                                         <div className="text-[14px] text-mainFont">No wallet found. Please download a supported Solana wallet</div>
                             }
-                        </div> */}
+                        </div>
                     </div>
                 </div>
                 <div className="flex justify-end gap-3 border-t border-[#25252799] p-3 w-full max-sm:justify-between">

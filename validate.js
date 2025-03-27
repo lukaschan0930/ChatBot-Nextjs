@@ -71,13 +71,13 @@ class SimpleRateLimiter {
     async get({ id }) {
         const now = Date.now();
         const windowStart = now - this.windowMs;
-        
+
         // Clean old requests
         this.requests.set(id, (this.requests.get(id) || []).filter(time => time > windowStart));
-        
+
         const requests = this.requests.get(id) || [];
         const remaining = Math.max(0, this.max - requests.length);
-        
+
         return {
             remaining,
             reset: Math.ceil((windowStart + this.windowMs) / 1000),
@@ -98,7 +98,7 @@ const limiter = new SimpleRateLimiter(RATE_LIMIT, RATE_WINDOW);
 const rateLimitedFetch = async (url, options) => {
     try {
         const limit = await limiter.get({ id: 'social-api' });
-        
+
         if (limit.remaining === 0) {
             const waitTime = Math.ceil((limit.reset * 1000) - Date.now());
             console.log(`Rate limit reached, waiting ${waitTime}ms`);
@@ -252,6 +252,14 @@ function userModel() {
             type: Number,
             default: 0
         },
+        wallet: {
+            type: String,
+            default: ""
+        },
+        chatPoints: {
+            type: Number,
+            default: 0
+        },
         reward: [{
             platform: {
                 type: String,
@@ -378,13 +386,13 @@ const distributeReward = async (unrewardedContent) => {
             // Aggregate scores by user
             const userScores = new Map();
             const userContent = new Map();
-            
+
             for (const doc of unrewardedContent) {
                 for (const tweet of doc.content) {
                     if (!tweet.reward && tweet.status === 1) {
                         const email = doc.email;
                         userScores.set(email, (userScores.get(email) || 0) + tweet.score);
-                        
+
                         if (!userContent.has(email)) {
                             userContent.set(email, []);
                         }
@@ -442,12 +450,12 @@ const distributeReward = async (unrewardedContent) => {
             // Process referral bonuses for first-time rewards
             const REFERRAL_BONUS = 10;
             for (const user of sortedUsers) {
-                const userDoc = await User.findOne({ 
+                const userDoc = await User.findOne({
                     email: user.email,
-                    'reward': { 
-                        $elemMatch: { 
+                    'reward': {
+                        $elemMatch: {
                             platform: 'twitter',
-                            totalReward: { $gt: 0 } 
+                            totalReward: { $gt: 0 }
                         }
                     }
                 });
@@ -459,7 +467,7 @@ const distributeReward = async (unrewardedContent) => {
                     const referrer = await User.findOne({ inviteCode: userDoc.referralCode });
                     if (referrer) {
                         rewards.set(referrer.email, (rewards.get(referrer.email) || 0) + REFERRAL_BONUS);
-                        
+
                         // Update referrer's invite usage count
                         await User.findByIdAndUpdate(referrer._id, {
                             $inc: { numsOfUsedInviteCode: 1 }
@@ -471,7 +479,7 @@ const distributeReward = async (unrewardedContent) => {
             // Update rewards in database
             for (const [email, rewardAmount] of rewards) {
                 await User.findOneAndUpdate(
-                    { 
+                    {
                         email,
                         'reward.platform': 'twitter'
                     },
@@ -480,7 +488,7 @@ const distributeReward = async (unrewardedContent) => {
                             'reward.$.totalReward': rewardAmount,
                         },
                         $set: {
-                            'board': []                
+                            'board': []
                         }
                     },
                     {
@@ -604,11 +612,11 @@ const evaluateTweetContent = async (content) => {
                 await Promise.all(batch.map(async (tweet) => {
                     if (!tweet.reward && tweet.status === 0) {
                         const socialMetrics = await getSocialMetrics(tweet.url);
-                        
+
                         if (!socialMetrics) return;
 
                         if (!isValidContent(socialMetrics)) {
-                            await updateTweetStatus(TweetContent, doc._id, tweet._id, 3, {base: 0, performance: 0, quality: 0, bonus: 0, total: 0});
+                            await updateTweetStatus(TweetContent, doc._id, tweet._id, 3, { base: 0, performance: 0, quality: 0, bonus: 0, total: 0 });
                             return;
                         }
 
@@ -626,7 +634,7 @@ const evaluateTweetContent = async (content) => {
                             !isEngagementSuspicious(socialMetrics);
 
                         const newStatus = isApproved ? 2 : 3;
-                        const finalScore = isApproved ? calculateFinalScore(llmScore, socialMetrics, authenticityScore) : {base: 0, performance: 0, quality: 0, bonus: 0, total: 0};
+                        const finalScore = isApproved ? calculateFinalScore(llmScore, socialMetrics, authenticityScore) : { base: 0, performance: 0, quality: 0, bonus: 0, total: 0 };
                         const week = getWeek(new Date(tweet.created_at));
                         const year = new Date(tweet.created_at).getFullYear();
 
@@ -651,7 +659,7 @@ const evaluateTweetContent = async (content) => {
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
-        
+
         const allUsers = await User.find({});
 
         const allUserScores = allUsers.map(user => ({
@@ -677,7 +685,7 @@ const evaluateTweetContent = async (content) => {
             }
 
             return User.findOneAndUpdate(
-                { email: userScore.email }, 
+                { email: userScore.email },
                 {
                     $push: {
                         board: {
@@ -936,7 +944,7 @@ const isValidContent = (metrics) => {
         console.log('Account validation failed:', {
             email: metrics.email,
             reasons: {
-                accountAge: metrics.user.accountAgeDays < MINIMUM_ACCOUNT_AGE_DAYS ? 
+                accountAge: metrics.user.accountAgeDays < MINIMUM_ACCOUNT_AGE_DAYS ?
                     `Account age ${metrics.user.accountAgeDays} days < required ${MINIMUM_ACCOUNT_AGE_DAYS} days` : null,
                 followers: metrics.user.followers < MINIMUM_USER_FOLLOWERS ?
                     `Followers ${metrics.user.followers} < required ${MINIMUM_USER_FOLLOWERS}` : null,
@@ -1009,10 +1017,10 @@ const calculateFinalScore = (llmScore, socialMetrics, authenticityScore) => {
             Total Score: ${totalScore}
         `);
 
-        return {base: 5, performance: performancePoints, quality: qualityPoints, bonus: bonusPoints, total: totalScore};
+        return { base: 5, performance: performancePoints, quality: qualityPoints, bonus: bonusPoints, total: totalScore };
     } catch (error) {
         console.error('Error calculating final score:', error);
-        return {base: 0, performance: 0, quality: 0, bonus: 0, total: 0};
+        return { base: 0, performance: 0, quality: 0, bonus: 0, total: 0 };
     }
 };
 
