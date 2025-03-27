@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
             if (userId) {
                 const jumpUser = await UserRepo.findByJumpUserId(userId);
                 if (jumpUser) {
-                    offerId = "";
                     transactionId = "";
                     userId = "";
                 }
@@ -58,7 +57,6 @@ export async function POST(request: NextRequest) {
                 chatPoints: 0,
                 jumpReward: {
                     jumpUserId: userId || "",
-                    jumpOfferId: offerId || "",
                     jumpTransactionId: transactionId || "",
                     isReward: false
                 }

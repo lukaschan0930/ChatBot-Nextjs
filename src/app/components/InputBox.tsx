@@ -244,26 +244,29 @@ const InputBox = () => {
       );
       setSessionId(newId);
       requestSessionId = newId;
+    }
+    if (chatLog.length == 0) {
       setChatHistory((prevChatHistory) => {
         const newChatHistory = [...prevChatHistory];
         newChatHistory.push({
           id: requestSessionId as string,
           title: inputPrompt,
           chats: [],
-          loading: true
+          // loading: true
         });
         return newChatHistory;
       });
-    } else {
-      setChatHistory((prevChatHistory) => {
-        const newChatHistory = [...prevChatHistory];
-        const chat = newChatHistory.find((chat) => chat.id === requestSessionId);
-        if (chat) {
-          chat.loading = true;
-        }
-        return newChatHistory;
-      });
     }
+    // else {
+    //   setChatHistory((prevChatHistory) => {
+    //     const newChatHistory = [...prevChatHistory];
+    //     const chat = newChatHistory.find((chat) => chat.id === requestSessionId);
+    //     // if (chat) {
+    //     //   chat.loading = true;
+    //     // }
+    //     return newChatHistory;
+    //   });
+    // }
     try {
       setInputPrompt("");
 

@@ -85,10 +85,9 @@ const authOptions: NextAuthOptions = {
                     }
                     const user = await UserRepo.findByEmail(decoded.email as string);
                     if (user && user.verify) {
-                        if (user.jumpReward && !user.jumpReward.isReward && user.jumpReward.jumpOfferId && user.jumpReward.jumpUserId && user.jumpReward.jumpTransactionId) {
+                        if (user.jumpReward && !user.jumpReward.isReward && user.jumpReward.jumpUserId && user.jumpReward.jumpTransactionId) {
                             try {
-                                const jumpResponse = await fetch(`https://jumptask.go2cloud.org/aff_lsr?offer_id=${user.jumpReward.jumpOfferId}&transaction_id=${user.jumpReward.jumpTransactionId}&adv_sub=${user.jumpReward.jumpUserId}`)
-                                console.log("send jump reward", user.jumpReward.jumpOfferId, jumpResponse.status);
+                                await fetch(`https://jumptask.go2cloud.org/aff_lsr?transaction_id=${user.jumpReward.jumpTransactionId}&adv_sub=${user.jumpReward.jumpUserId}`)
                                 await UserRepo.updateJumpRewardState(user.email)
                                 // if (jumpResponse.status === 200) {
                                 // }
@@ -145,13 +144,11 @@ const authOptions: NextAuthOptions = {
 
                 if (!existingUser) {
                     let jumpUserId = cookies().get("jumpUserId")?.value;
-                    let jumpOfferId = cookies().get("jumpOfferId")?.value;
                     let jumpTransactionId = cookies().get("jumpTransactionId")?.value;
 
                     if (jumpUserId) {
                         const jumpUser = await UserRepo.findByJumpUserId(jumpUserId);
                         if (jumpUser) {
-                            jumpOfferId = "";
                             jumpTransactionId = "";
                             jumpUserId = "";
                         }
@@ -174,7 +171,6 @@ const authOptions: NextAuthOptions = {
                         wallet: "",
                         chatPoints: 0,
                         jumpReward: {
-                            jumpOfferId: jumpOfferId || "",
                             jumpUserId: jumpUserId || "",
                             jumpTransactionId: jumpTransactionId || "",
                             isReward: false

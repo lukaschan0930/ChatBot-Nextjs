@@ -33,8 +33,14 @@ export async function PUT(request: NextRequest) {
         if (isExist) {
             return Response.json({ success: false, message: "Wallet already exists" });
         }
+        if (user.wallet) {
+            const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
+            if (chatHistory) {
+                user.chatPoints = getChatPoints(chatHistory.session);
+            }
+        }
         await user.save();
-        return Response.json({ success: true, message: "User updated" });
+        return Response.json({ success: true, message: "User updated", user: user });
     } catch (error) {
         console.error(error);
         return Response.json({ success: false, message: "User update failed" });

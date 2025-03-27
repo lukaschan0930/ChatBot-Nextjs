@@ -130,7 +130,6 @@ export interface IUser {
     }[];
     jumpReward?: {
         jumpUserId?: string;
-        jumpOfferId?: string;
         jumpTransactionId?: string;
         isReward: boolean
     }

@@ -11,6 +11,7 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRecaptcha } from "@/app/hooks/useRecaptcha";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
@@ -19,6 +20,7 @@ const UserSetting = () => {
     const [copyStatus, setCopyStatus] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
     const [name, setName] = useState<string>(user?.name || "");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { wallets, select, publicKey, disconnect } = useWallet();
 
@@ -103,6 +105,7 @@ const UserSetting = () => {
     };
 
     const handleClickUpdate = async () => {
+        setIsLoading(true);
         try {
             // Execute reCAPTCHA before updating profile
             const recaptchaToken = await executeRecaptcha('update_profile');
@@ -139,6 +142,8 @@ const UserSetting = () => {
                 variant: "destructive",
                 title: "Update Failed",
             })
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -270,7 +275,7 @@ const UserSetting = () => {
                         onClick={handleClickUpdate}
                         className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
                     >
-                        Update
+                        {isLoading ? <CircularProgress className="w-4 h-4" /> : "Update"}
                     </button>
                 </div>
             </div>

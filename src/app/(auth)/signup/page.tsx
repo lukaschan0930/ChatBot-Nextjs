@@ -52,7 +52,6 @@ const SignUp = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const offerId = searchParams.get("offer_id");
   const transactionId = searchParams.get("user.jumpTransactionId");
   const userId = searchParams.get("user.jumpUserId");
 
@@ -94,7 +93,6 @@ const SignUp = () => {
         body: JSON.stringify(
           {
             ...formState,
-            offerId,
             transactionId,
             userId
           }
@@ -122,7 +120,6 @@ const SignUp = () => {
   }
 
   const googleSignIn = async () => {
-    Cookies.set("jumpOfferId", offerId as string);
     Cookies.set("jumpUserId", userId as string);
     Cookies.set("jumpTransactionId", transactionId as string);
 

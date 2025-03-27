@@ -31,7 +31,6 @@ interface IUser extends Document {
     }[];
     jumpReward: {
         jumpUserId: string,
-        jumpOfferId: string,
         jumpTransactionId: string,
         isReward: boolean
     }
@@ -142,9 +141,6 @@ function userModel() {
         jumpReward: {
             jumpUserId: {
                 type: String,
-            },
-            jumpOfferId: {
-                type: String
             },
             jumpTransactionId: {
                 type: String

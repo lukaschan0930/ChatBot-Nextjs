@@ -375,12 +375,12 @@ const ChatHistory = () => {
                                                         `${session.id === sessionId ?
                                                             "bg-[#29292980] text-mainFont" :
                                                             "text-subButtonFont"} 
-                                                    flex items-center justify-start group transition-colors duration-200 px-2 py-2 relative rounded-lg`
+                                                    flex items-center justify-start group transition-colors duration-200 px-2 py-2 relative rounded-lg gap-2`
                                                     }
                                                 >
                                                     {
                                                         session.loading && (
-                                                            <CircularProgress className="w-4 h-4" />
+                                                            <CircularProgress className="w-2 h-2" />
                                                         )
                                                     }
                                                     <div className="w-[200px] flex flex-col gap-1">
