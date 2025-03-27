@@ -251,8 +251,18 @@ const InputBox = () => {
         newChatHistory.push({
           id: requestSessionId as string,
           title: inputPrompt,
-          chats: [],
-          // loading: true
+          chats: [
+            {
+              prompt: inputPrompt,
+              response: "",
+              timestamp: Date.now().toString(),
+              chatType: chatType,
+              inputToken: 0,
+              outputToken: 0,
+              datasource: false,
+              fileUrls: []
+            }
+          ],
         });
         return newChatHistory;
       });
