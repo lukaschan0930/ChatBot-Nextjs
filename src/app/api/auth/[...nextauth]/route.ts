@@ -125,16 +125,16 @@ const authOptions: NextAuthOptions = {
         }) {
             if (account?.provider === 'google') {
                 // Verify reCAPTCHA for Google sign-in
-                const recaptchaToken = cookies().get("recaptchaToken")?.value;
-                if (!recaptchaToken) {
-                    throw new Error("reCAPTCHA token is required");
-                }
-                cookies().delete("recaptchaToken");
+                // const recaptchaToken = cookies().get("recaptchaToken")?.value;
+                // if (!recaptchaToken) {
+                //     throw new Error("reCAPTCHA token is required");
+                // }
+                // cookies().delete("recaptchaToken");
                 
-                const isValidRecaptcha = await verifyRecaptcha(recaptchaToken as string);
-                if (!isValidRecaptcha) {
-                    throw new Error("reCAPTCHA verification failed");
-                }
+                // const isValidRecaptcha = await verifyRecaptcha(recaptchaToken as string);
+                // if (!isValidRecaptcha) {
+                //     throw new Error("reCAPTCHA verification failed");
+                // }
 
                 let existingUser = await UserRepo.findByEmail(profile?.email as string);
                 if (existingUser && existingUser.verify == true) {
