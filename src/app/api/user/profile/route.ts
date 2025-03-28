@@ -39,9 +39,9 @@ export async function PUT(request: NextRequest) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
         // }
-        await user.save();
+        await UserRepo.updateUserWithEmail(user.email, user);
         return Response.json({ success: true, message: "User updated", user: user });
-    } catch (error) {
+    } catch (error) {   
         console.error(error);
         return Response.json({ success: false, message: "User update failed" });
     }
@@ -61,8 +61,8 @@ export async function GET() {
         if (chatHistory) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
-        await user.save();
-        return Response.json({ success: true, user });
+        await UserRepo.updateUserWithEmail(user.email, user);
+        return Response.json({ success: true, user: user });
     } catch (error) {
         console.error(error);
         return Response.json({ success: false, message: "User fetch failed" });

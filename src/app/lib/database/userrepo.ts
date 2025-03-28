@@ -17,7 +17,8 @@ export const UserRepo = {
     updateJumpRewardState,
     findByJumpUserId,
     findByWallet,
-    findByWalletWithoutUser
+    findByWalletWithoutUser,
+    updateUserWithEmail
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -123,3 +124,7 @@ async function getTopBoardUsers() {
     ]);
     return topUsers;
 };
+
+async function updateUserWithEmail(email: string, user: IUser) {
+    return db.User.findOneAndUpdate({ email }, user, { upsert: true });
+}
