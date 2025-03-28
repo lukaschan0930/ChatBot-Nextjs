@@ -95,7 +95,7 @@ const InputBox = () => {
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState<boolean>(false);
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
-  const [chatMode] = useAtom(chatModeAtom);
+  const [chatMode, setChatMode] = useAtom(chatModeAtom);
 
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
@@ -859,7 +859,7 @@ const InputBox = () => {
             <AntSwitch
               inputProps={{ 'aria-label': 'Pro Search' }}
               onChange={(e) => setChatType(e.target.checked ? 1 : 0)}
-              disabled={files.length > 0}
+              disabled={files.length > 0 || chatMode == 1}
               checked={chatType == 1}
             />
           </ShadowBtn>
@@ -870,7 +870,20 @@ const InputBox = () => {
           <VoiceIcon />
         </ShadowBtn> */}
         </div>
-        <ChatTypeMenu />
+        <ShadowBtn
+          className="rounded-full"
+          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+        >
+          ⚡ Faster x30
+          <AntSwitch
+            inputProps={{ 'aria-label': 'Faster' }}
+            onChange={(e) => {
+              setChatType(prevType => e.target.checked ? 0 : prevType);
+              setChatMode(e.target.checked ? 1 : 0)
+            }}
+            checked={chatMode == 1}
+          />
+        </ShadowBtn>
       </div>
     </div >
   )
