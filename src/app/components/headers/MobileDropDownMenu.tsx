@@ -72,7 +72,7 @@ const MobileDropDownMenu = () => {
               </>
           }
         </ShadowBtn>
-        <div className="p-0 transition-all duration-200 flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5 max-md:hidden">
+        <div className="p-0 transition-all duration-200 items-center flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5 max-md:hidden">
           {
             user?.avatar ? (
               <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
@@ -81,10 +81,7 @@ const MobileDropDownMenu = () => {
             )
           }
 
-          <div className="flex flex-col items-start">
-            <p className="font-normal text-[8px] text-[#FFFFFF99]">points: </p>
-            <p className="font-semibold text-sm text-[#FFFFFF]">{user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
-          </div>
+          <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent

@@ -28,7 +28,7 @@ const ProfileDropDownMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="p-0 transition-all duration-200 flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5">
+      <DropdownMenuTrigger className="p-0 transition-all items-center duration-200 flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5">
         {
           user?.avatar ? (
             <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
@@ -37,10 +37,7 @@ const ProfileDropDownMenu = () => {
           )
         }
 
-        <div className="flex flex-col items-start">
-          <p className="font-normal text-[8px] text-[#FFFFFF99]">points: </p>
-          <p className="font-semibold text-sm text-[#FFFFFF]">{user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
-        </div>
+        <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="bg-[#000000] mt-[14px] min-w-[300px] w-fit border-[#FFFFFF]/10 border p-5 rounded-lg text-[#E2E2E2] text-base font-semibold"

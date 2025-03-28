@@ -3,23 +3,23 @@ import { NextRequest } from "next/server";
 import { generateConfirmationToken } from "@/app/lib/api/token";
 import { emailUserID } from "@/app/lib/config";
 import emailjs from "@emailjs/nodejs";
-import { verifyRecaptcha, getRecaptchaTokenFromRequest } from "@/app/lib/recaptcha";
+// import { verifyRecaptcha, getRecaptchaTokenFromRequest } from "@/app/lib/recaptcha";
 
 export async function POST(request: NextRequest) {
     const data = await request.json();
     const { email, password, confirmPassword, name } = data;
-    let { offerId, transactionId, userId } = data;
+    let { transactionId, userId } = data;
 
     // Verify reCAPTCHA
-    const recaptchaToken = getRecaptchaTokenFromRequest(request);
-    if (!recaptchaToken) {
-        return Response.json({ error: "reCAPTCHA token is required" }, { status: 400 });
-    }
+    // const recaptchaToken = getRecaptchaTokenFromRequest(request);
+    // if (!recaptchaToken) {
+    //     return Response.json({ error: "reCAPTCHA token is required" }, { status: 400 });
+    // }
 
-    const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
-    if (!isValidRecaptcha) {
-        return Response.json({ error: "reCAPTCHA verification failed" }, { status: 400 });
-    }
+    // const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
+    // if (!isValidRecaptcha) {
+    //     return Response.json({ error: "reCAPTCHA verification failed" }, { status: 400 });
+    // }
 
     if (password !== confirmPassword) {
         return Response.json({ error: "Passwords do not match" });
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
             templateParams,
             emailUserID
         );
-        console.log(result);
+        // console.log(result);
         return Response.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error(error);

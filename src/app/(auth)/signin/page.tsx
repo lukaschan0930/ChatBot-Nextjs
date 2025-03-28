@@ -20,8 +20,8 @@ import FormBtn from "@/app/components/FormBtn";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Loading from "@/app/assets/loading";
 import { validateEmail, validatePassword } from "@/app/lib/utils";
-import { useRecaptcha } from "@/app/hooks/useRecaptcha";
-import Cookies from "js-cookie";
+// import { useRecaptcha } from "@/app/hooks/useRecaptcha";
+// import Cookies from "js-cookie";
 
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState({
@@ -34,7 +34,7 @@ const SignIn = () => {
     error: "",
   });
   const router = useRouter();
-  const { executeRecaptcha } = useRecaptcha();
+  // const { executeRecaptcha } = useRecaptcha();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -44,9 +44,9 @@ const SignIn = () => {
     try {
       setIsLoading(prev => ({ ...prev, google: true }));
       // Execute reCAPTCHA before Google sign in
-      const recaptchaToken = await executeRecaptcha('google_signin');
+      // const recaptchaToken = await executeRecaptcha('google_signin');
       
-      Cookies.set("recaptchaToken", recaptchaToken);
+      // Cookies.set("recaptchaToken", recaptchaToken);
       const result = await signIn("google", {
         redirect: false,
         callbackUrl: "/",
@@ -81,12 +81,12 @@ const SignIn = () => {
     try {
       try {
         // Execute reCAPTCHA
-        const recaptchaToken = await executeRecaptcha('signin');
+        // const recaptchaToken = await executeRecaptcha('signin');
         
         const result = await signIn("credentials", {
           email: data.email,
           password: data.password,
-          recaptchaToken,
+          // recaptchaToken,
           redirect: false,
         });
         if (result?.error) {

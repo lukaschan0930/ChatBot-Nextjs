@@ -39,24 +39,24 @@ const authOptions: NextAuthOptions = {
             credentials: {
                 email: {},
                 password: {},
-                recaptchaToken: {},
+                // recaptchaToken: {},
             },
             async authorize(credentials) {
-                console.log("credentials", credentials);
+                // console.log("credentials", credentials);
                 if (!credentials) {
                     return null;
                 }
-                const { email, password, recaptchaToken } = credentials;
+                const { email, password } = credentials;
                 
                 // Verify reCAPTCHA
-                if (!recaptchaToken) {
-                    throw new Error("reCAPTCHA token is required");
-                }
+                // if (!recaptchaToken) {
+                //     throw new Error("reCAPTCHA token is required");
+                // }
                 
-                const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
-                if (!isValidRecaptcha) {
-                    throw new Error("reCAPTCHA verification failed");
-                }
+                // const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
+                // if (!isValidRecaptcha) {
+                //     throw new Error("reCAPTCHA verification failed");
+                // }
 
                 try {
                     const user = await UserRepo.authenticate(email, password);

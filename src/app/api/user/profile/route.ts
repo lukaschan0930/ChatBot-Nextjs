@@ -10,15 +10,15 @@ export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
 
     // Verify reCAPTCHA
-    const recaptchaToken = getRecaptchaTokenFromRequest(request);
-    if (!recaptchaToken) {
-        return Response.json({ success: false, message: "reCAPTCHA token is required" });
-    }
+    // const recaptchaToken = getRecaptchaTokenFromRequest(request);
+    // if (!recaptchaToken) {
+    //     return Response.json({ success: false, message: "reCAPTCHA token is required" });
+    // }
 
-    const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
-    if (!isValidRecaptcha) {
-        return Response.json({ success: false, message: "reCAPTCHA verification failed" });
-    }
+    // const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
+    // if (!isValidRecaptcha) {
+    //     return Response.json({ success: false, message: "reCAPTCHA verification failed" });
+    // }
 
     const user = await UserRepo.findByEmail(session?.user?.email as string);
     if (!user) {

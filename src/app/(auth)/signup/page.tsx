@@ -26,7 +26,7 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import { useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 import { Suspense } from "react";
-import { useRecaptcha } from "@/app/hooks/useRecaptcha";
+// import { useRecaptcha } from "@/app/hooks/useRecaptcha";
 
 const SignUp = () => {
   const {
@@ -55,7 +55,7 @@ const SignUp = () => {
   const transactionId = searchParams.get("user.jumpTransactionId");
   const userId = searchParams.get("user.jumpUserId");
 
-  const { executeRecaptcha } = useRecaptcha();
+  // const { executeRecaptcha } = useRecaptcha();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -82,12 +82,12 @@ const SignUp = () => {
     setIsLoading(prev => ({ ...prev, form: true }));
     try {
       // Execute reCAPTCHA
-      const recaptchaToken = await executeRecaptcha('signup');
+      // const recaptchaToken = await executeRecaptcha('signup');
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-recaptcha-token": recaptchaToken
+          // "x-recaptcha-token": recaptchaToken
         },
         body: JSON.stringify(
           {
@@ -125,8 +125,8 @@ const SignUp = () => {
     try {
       setIsLoading(prev => ({ ...prev, google: true }));
       // Execute reCAPTCHA before Google sign in
-      const recaptchaToken = await executeRecaptcha('google_signup');
-      Cookies.set("recaptchaToken", recaptchaToken);
+      // const recaptchaToken = await executeRecaptcha('google_signup');
+      // Cookies.set("recaptchaToken", recaptchaToken);
       await signIn("google", {
         callbackUrl: "/chatText",
       });

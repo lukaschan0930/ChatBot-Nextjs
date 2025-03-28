@@ -10,6 +10,16 @@ export function generateSessionId(email: string, timestamp: string) {
   return sha256(`${email}-${timestamp}`);
 }
 
+export const LABELS = {
+  'change-wallet': 'Change wallet',
+  connecting: 'Connecting ...',
+  'copy-address': 'Copy address',
+  copied: 'Copied',
+  disconnect: 'Disconnect',
+  'has-wallet': 'Connect',
+  'no-wallet': 'Select Wallet',
+} as const;
+
 export const processChunkedString = (chunkedString: string): Promise<{ content: string, inputToken: number, outputToken: number, inputTime: number, outputTime: number }> => {
   return new Promise((resolve, reject) => {
     const jsonArrayString = `[${chunkedString.replace(/}\s*{/g, '},{')}]`;

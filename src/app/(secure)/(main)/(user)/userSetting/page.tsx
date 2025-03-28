@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, use } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { MdCheck, MdOutlineContentCopy } from "react-icons/md";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useRouter } from "next/navigation";
@@ -9,20 +9,33 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
 import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useRecaptcha } from "@/app/hooks/useRecaptcha";
-import CircularProgress from "@mui/material/CircularProgress";
+// import { useRecaptcha } from "@/app/hooks/useRecaptcha";
+import { LABELS } from "@/app/lib/utils";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
+import Loading from "@/app/components/Loading";
 
 const UserSetting = () => {
     const { user, setUser } = useAuth();
-    const { executeRecaptcha } = useRecaptcha();
+    // const { executeRecaptcha } = useRecaptcha();
+    const { publicKey, buttonState } = useWalletMultiButton({ onSelectWallet() { }, });
 
     const [copyStatus, setCopyStatus] = useState<boolean>(false);
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
     const [name, setName] = useState<string>(user?.name || "");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { wallets, select, publicKey, disconnect } = useWallet();
+
+    const content = useMemo(() => {
+        if (publicKey) {
+            const base58 = publicKey.toBase58();
+            return base58.slice(0, 3) + '..' + base58.slice(-3);
+        } else if (buttonState === 'connecting' || buttonState === 'has-wallet') {
+            return LABELS[buttonState];
+        } else {
+            return LABELS['no-wallet'];
+        }
+    }, [buttonState, publicKey]);
 
     const router = useRouter();
 
@@ -108,14 +121,14 @@ const UserSetting = () => {
         setIsLoading(true);
         try {
             // Execute reCAPTCHA before updating profile
-            const recaptchaToken = await executeRecaptcha('update_profile');
+            // const recaptchaToken = await executeRecaptcha('update_profile');
 
             const res = await fetch(`/api/user/profile`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "x-recaptcha-token": recaptchaToken
+                        // "x-recaptcha-token": recaptchaToken
                     },
                     body: JSON.stringify({
                         name,
@@ -231,36 +244,11 @@ const UserSetting = () => {
                             </div>
                         </div>
                         <div className="mt-4">
-                            {
-                                publicKey ?
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={disconnect}
-                                            className="px-4 py-2 bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md flex items-center gap-2"
-                                        >
-                                            <Image src={wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.icon} alt="wallet" className="w-5 h-5" width={20} height={20} />
-                                            <div className="text-[#808080]">Disconnect</div>
-                                        </button>
-                                        <div className="text-[14px] text-mainFont">
-                                            {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
-                                        </div>
-                                    </div> :
-                                    wallets.filter((wallet) => wallet.readyState === "Installed").length > 0 ?
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                key={wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.name}
-                                                onClick={() => select(wallets.filter((wallet) => wallet.readyState === "Installed")[0]?.adapter.name)}
-                                                className="px-4 py-2 bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md"
-                                            >
-                                                Connect Wallet
-                                            </button>
-                                            <div className="text-[14px] text-mainFont">
-                                                {user?.wallet && `${user?.wallet?.slice(0, 4)}...${user?.wallet?.slice(-4)}`}
-                                            </div>
-                                        </div>
-                                        :
-                                        <div className="text-[14px] text-mainFont">No wallet found. Please download a supported Solana wallet</div>
-                            }
+                            <WalletMultiButton style={{ backgroundImage: "linear-gradient(rgb(38, 210, 160), rgb(2, 126, 90))" }} endIcon={
+                                publicKey ? <img className="rounded-full" src={`https://i.pravatar.cc/150?u=${publicKey}`} alt="Logo" /> : undefined
+                            }>
+                                {content}
+                            </WalletMultiButton>
                         </div>
                     </div>
                 </div>
@@ -275,7 +263,7 @@ const UserSetting = () => {
                         onClick={handleClickUpdate}
                         className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
                     >
-                        {isLoading ? <CircularProgress className="w-4 h-4" /> : "Update"}
+                        {isLoading ? <Loading /> : "Update"}
                     </button>
                 </div>
             </div>
