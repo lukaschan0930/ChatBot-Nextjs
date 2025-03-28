@@ -225,16 +225,11 @@ export function trimPrompt(
 }
 
 export function getChatPoints(chatHistory: ChatHistory[]) {
-    if (chatHistory.length >= 25) {
-        return 25;
-    } else if (chatHistory.length >= 10) {
-        return 10;
-    }
-
     const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
-    if (chatLogCount > 100) {
+
+    if (chatHistory.length >= 25 || chatLogCount >= 100) {
         return 25;
-    } else if (chatLogCount > 50) {
+    } else if (chatHistory.length >= 10 || chatLogCount >= 50) {
         return 10;
     }
     

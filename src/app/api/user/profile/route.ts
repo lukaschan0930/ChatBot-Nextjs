@@ -33,12 +33,12 @@ export async function PUT(request: NextRequest) {
         if (isExist) {
             return Response.json({ success: false, message: "Wallet already exists" });
         }
-        if (user.wallet) {
-            const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
-            if (chatHistory) {
-                user.chatPoints = getChatPoints(chatHistory.session);
-            }
+        // if (user.wallet) {
+        const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
+        if (chatHistory) {
+            user.chatPoints = getChatPoints(chatHistory.session);
         }
+        // }
         await user.save();
         return Response.json({ success: true, message: "User updated", user: user });
     } catch (error) {
@@ -57,13 +57,11 @@ export async function GET() {
         if (!user) {
             return Response.json({ success: false, message: "User not found" });
         }
-        if (user.wallet) {
-            const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
-            if (chatHistory) {
-                user.chatPoints = getChatPoints(chatHistory.session);
-            }
-            await user.save();
+        const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
+        if (chatHistory) {
+            user.chatPoints = getChatPoints(chatHistory.session);
         }
+        await user.save();
         return Response.json({ success: true, user });
     } catch (error) {
         console.error(error);
