@@ -319,7 +319,7 @@ export async function readDataSourceFromIndex(index: VectorStoreIndex, query: st
     return context;
 }
 
-export async function createChatEngine(index: VectorStoreIndex, llm: LLM) {
+export async function createChatEngine(index: VectorStoreIndex, llm: LLM, systemPrompt: string) {
     const retriever = index.asRetriever({
         similarityTopK: 5,
     });
@@ -327,7 +327,7 @@ export async function createChatEngine(index: VectorStoreIndex, llm: LLM) {
     return new ContextChatEngine({
         chatModel: llm,
         retriever,
-        systemPrompt: process.env.SYSTEM_PROMPT!,
+        systemPrompt: systemPrompt,
     });
 }
 

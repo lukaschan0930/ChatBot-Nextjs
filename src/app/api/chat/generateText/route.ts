@@ -1,6 +1,7 @@
 import { authOptions, trimPrompt } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
+import { AdminRepo } from "@/app/lib/database/adminRepo";
 import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
@@ -32,6 +33,8 @@ const llm = new OpenAI({
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
+    const admin = await AdminRepo.findAdmin();
+    const systemPrompt = admin?.systemPrompt ?? process.env.SYSTEM_PROMPT!;
     const formData = await request.formData();
     const prompt = formData.get('prompt') as string;
     const sessionId = formData.get('sessionId') as string;
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
             const encoder = new TextEncoder();
             let fullResponse = "";
 
-            const chatEngine = await createChatEngine(index, llm);
+            const chatEngine = await createChatEngine(index, llm, systemPrompt);
             const stream = await chatEngine.chat({
                 message: prompt,
                 stream: true,
@@ -239,7 +242,7 @@ export async function POST(request: NextRequest) {
         } else {
             const stream = await cerebras.chat.completions.create({
                 messages: [
-                    { role: "system", content: process.env.SYSTEM_PROMPT! },
+                    { role: "system", content: systemPrompt },
                     ...history,
                     {
                         role: "user",

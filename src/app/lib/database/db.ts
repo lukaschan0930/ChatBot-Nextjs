@@ -47,6 +47,7 @@ const db = {
     ChangeLog: changeLogModel(),
     TweetContent: tweetContentModel(),
     TaskList: taskListModel(),
+    Admin: adminModel()
 }
 
 function userModel() {
@@ -370,6 +371,17 @@ function taskListModel() {
     });
 
     return mongoose.models.TaskList || mongoose.model('TaskList', TaskListSchema);
+}
+
+function adminModel() {
+    const AdminSchema = new Schema({
+        systemPrompt: {
+            type: String,
+            required: true
+        } 
+    });
+
+    return mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
 }
 
 export default db;

@@ -88,10 +88,10 @@ export const AdminMenuItems = [
       id: "profile",
       label: "Profile",
     },
-    // {
-    //   id: "eChat",
-    //   label: "E.Chat",
-    // },
+    {
+      id: "eChat",
+      label: "E.Chat",
+    },
     {
       id: "changeLog",
       label: "Change Log",
