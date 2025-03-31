@@ -38,13 +38,13 @@ const LightBox = ({ title, value }: LightBoxProps) => {
 
 const ExplorerPage = () => {
     return (
-        <div className="flex flex-col w-full max-w-[1028px] min-h-screen">
+        <div className="flex flex-col w-full max-w-[1028px] min-h-screen px-4">
             <Header />
-            <div className="mt-[72px] max-w-[1028px] mx-auto w-full flex flex-col">
+            <div className="mt-[125px] mx-auto w-full flex flex-col">
                 <ExplorerHeader />
                 <Divider sx={{ my: '10px', height: '1px', backgroundColor: '#FFFFFF33' }} />
             </div>
-            <div className="mt-8 flex justify-between gap-5 mx-auto w-full">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mx-auto w-full">
                 <LightBox title="Users Count" value={100} />
                 <LightBox title="Prompt Count" value={100} />
                 <LightBox title="Conversation Count" value={100} />
