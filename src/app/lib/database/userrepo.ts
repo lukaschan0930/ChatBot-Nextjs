@@ -19,6 +19,7 @@ export const UserRepo = {
     findByWallet,
     findByWalletWithoutUser,
     updateUserProfileWithEmail,
+    count,
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -127,4 +128,8 @@ async function getTopBoardUsers() {
 
 async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number) {
     return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints }, { upsert: true });
+}
+
+async function count() {
+    return db.User.countDocuments();
 }

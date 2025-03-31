@@ -1,6 +1,10 @@
+"use client";
+
 import Header from "@/app/components/headers";
 import { Divider } from "@mui/material";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface LightBoxProps {
     title: string;
@@ -37,6 +41,38 @@ const LightBox = ({ title, value }: LightBoxProps) => {
 }
 
 const ExplorerPage = () => {
+    const [usersCount, setUsersCount] = useState(0);
+    const [promptCount, setPromptCount] = useState(0);
+    const [conversationCount, setConversationCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await fetch('/api/intelligence/explorer');
+                const data = await res.json();
+                setUsersCount(data.usersCount);
+                setPromptCount(data.promptCount);
+                setConversationCount(data.conversationCount);
+            } catch (error) {
+                console.error("Error fetching explorer data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Skeleton loader component
+    const SkeletonBox = () => (
+        <div className="flex flex-col gap-2 w-full px-4 py-3 bg-[#000000] rounded-[12px] border border-secondaryBorder relative animate-pulse">
+            <div className="h-3 bg-gray-700 rounded w-1/2 mb-2"></div>
+            <div className="h-6 bg-gray-700 rounded w-1/3"></div>
+        </div>
+    );
+
     return (
         <div className="flex flex-col w-full max-w-[1028px] min-h-screen px-4">
             <Header />
@@ -45,10 +81,21 @@ const ExplorerPage = () => {
                 <Divider sx={{ my: '10px', height: '1px', backgroundColor: '#FFFFFF33' }} />
             </div>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mx-auto w-full">
-                <LightBox title="Users Count" value={100} />
-                <LightBox title="Prompt Count" value={100} />
-                <LightBox title="Conversation Count" value={100} />
-                <LightBox title="Point Count" value={100} />
+                {loading ? (
+                    <>
+                        <SkeletonBox />
+                        <SkeletonBox />
+                        <SkeletonBox />
+                        <SkeletonBox />
+                    </>
+                ) : (
+                    <>
+                        <LightBox title="Users Count" value={usersCount} />
+                        <LightBox title="Prompt Count" value={promptCount} />
+                        <LightBox title="Conversation Count" value={conversationCount} />
+                        <LightBox title="Point Count" value={user?.chatPoints || 0} />
+                    </>
+                )}
             </div>
         </div>
     )
