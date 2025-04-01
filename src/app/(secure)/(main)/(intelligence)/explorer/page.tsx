@@ -20,7 +20,7 @@ interface LightBoxProps {
 
 const ExplorerHeader = () => {
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-sm">
             <div className="bg-[#292929] text-white px-5 py-2 rounded-sm cursor-pointer">eChat</div>
             <div className="text-white px-5 py-2 rounded-sm cursor-pointer">Workers</div>
             <div className="text-white px-5 py-2 rounded-sm cursor-pointer">Studio</div>
@@ -63,9 +63,9 @@ const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
     }
     
     return (
-        <div className="flex flex-col gap-2 w-full px-4 py-3 bg-[#000000] rounded-[12px] border border-secondaryBorder relative">
+        <div className="flex flex-col gap-2 w-full px-4 pt-3 pb-7 bg-[#000000] rounded-[12px] border border-secondaryBorder relative">
             <div className="text-subButtonFont text-[12px] text-nowrap">{title}</div>
-            <div className="text-mainFont text-[20px] text-nowrap">
+            <div className="text-mainFont text-[32px] text-nowrap">
                 {typeof value === 'number'
                     ? value.toLocaleString('en-US', {
                         minimumFractionDigits: 0,
@@ -75,11 +75,11 @@ const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
                 }
             </div>
             <Image src="/image/light.svg" alt="light" width={85} height={65} className="absolute top-0 left-0" />
-            <div className="mt-2">
+            <div className="absolute bottom-[18px] right-[18px] w-[93px] h-[23px]">
                 <Sparklines
                     data={sparklineData}
-                    width={94}
-                    height={50}
+                    width={93}
+                    height={23}
                 >
                     <SparklinesLine style={{ stroke: '#FFFFFF', strokeWidth: 1 }} />
                 </Sparklines>
