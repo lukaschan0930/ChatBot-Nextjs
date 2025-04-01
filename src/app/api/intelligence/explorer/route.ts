@@ -84,7 +84,7 @@ export async function GET() {
     if (allDates.length > 0) {
         // If we have dates, distribute the points evenly with small random variations
         const numDates = allDates.length;
-        const pointsPerDay = Math.floor(Number(pointsCount) / numDates);
+        const pointsPerDay = Math.floor(Number(pointsCount)* 1000 / numDates) / 1000;
         console.log("day points", pointsPerDay, ":", pointsCount, ":", numDates);
         
         for (let i = 0; i < numDates; i++) {
