@@ -20,6 +20,7 @@ export const UserRepo = {
     findByWalletWithoutUser,
     updateUserProfileWithEmail,
     count,
+    getFullUser,
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -132,4 +133,8 @@ async function updateUserProfileWithEmail(email: string, name: string, avatar: s
 
 async function count() {
     return db.User.countDocuments();
+}
+
+async function getFullUser() {
+    return db.User.find();
 }

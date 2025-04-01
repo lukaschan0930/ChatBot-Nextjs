@@ -5,10 +5,17 @@ import { Divider } from "@mui/material";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { Sparklines, SparklinesLine } from 'react-sparklines';
+
+interface DailyData {
+    date: string;
+    count: number;
+}
 
 interface LightBoxProps {
     title: string;
     value: number;
+    dailyData?: DailyData[];
 }
 
 const ExplorerHeader = () => {
@@ -22,7 +29,29 @@ const ExplorerHeader = () => {
     )
 }
 
-const LightBox = ({ title, value }: LightBoxProps) => {
+const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
+    // Extract count values from the dailyData array for the sparkline
+    const sparklineData = dailyData?.map(d => d.count) || 
+        // Fallback data if none is provided
+        [5, 10, 15, 25, 35, 55, 80, 120];
+    
+    // Get first and last date for display
+    // const dateRange = dailyData && dailyData.length > 0 
+    //     ? `${dailyData[0].date} to ${dailyData[dailyData.length-1].date}`
+    //     : "";
+    
+    // Determine the graph description based on the title
+    let graphDescription = "Cumulative growth";
+    if (title === "Users Count") {
+        graphDescription = "Cumulative users growth";
+    } else if (title === "Prompt Count") {
+        graphDescription = "Cumulative prompts";
+    } else if (title === "Conversation Count") {
+        graphDescription = "Cumulative conversations";
+    } else if (title === "Point Count") {
+        graphDescription = "Cumulative points";
+    }
+    
     return (
         <div className="flex flex-col gap-2 w-full px-4 py-3 bg-[#000000] rounded-[12px] border border-secondaryBorder relative">
             <div className="text-subButtonFont text-[12px] text-nowrap">{title}</div>
@@ -36,6 +65,19 @@ const LightBox = ({ title, value }: LightBoxProps) => {
                 }
             </div>
             <Image src="/image/light.svg" alt="light" width={85} height={65} className="absolute top-0 left-0" />
+            <div className="mt-2">
+                <Sparklines
+                    data={sparklineData}
+                    width={94}
+                    height={50}
+                >
+                    <SparklinesLine color="#FFFFFF" />
+                </Sparklines>
+                {/* <div className="text-[10px] text-gray-400 mt-1">
+                    {graphDescription}
+                    {dateRange && <span className="block">{dateRange}</span>}
+                </div> */}
+            </div>
         </div>
     )
 }
@@ -44,6 +86,18 @@ const ExplorerPage = () => {
     const [usersCount, setUsersCount] = useState(0);
     const [promptCount, setPromptCount] = useState(0);
     const [conversationCount, setConversationCount] = useState(0);
+    const [pointsCount, setPointsCount] = useState(0);
+    const [dailyData, setDailyData] = useState<{
+        users: DailyData[];
+        prompts: DailyData[];
+        conversations: DailyData[];
+        points: DailyData[];
+    }>({
+        users: [],
+        prompts: [],
+        conversations: [],
+        points: []
+    });
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
@@ -55,6 +109,12 @@ const ExplorerPage = () => {
                 setUsersCount(data.usersCount);
                 setPromptCount(data.promptCount);
                 setConversationCount(data.conversationCount);
+                setPointsCount(data.pointsCount);
+
+                // Set daily data if available
+                if (data.dailyData) {
+                    setDailyData(data.dailyData);
+                }
             } catch (error) {
                 console.error("Error fetching explorer data:", error);
             } finally {
@@ -90,10 +150,10 @@ const ExplorerPage = () => {
                     </>
                 ) : (
                     <>
-                        <LightBox title="Users Count" value={usersCount} />
-                        <LightBox title="Prompt Count" value={promptCount} />
-                        <LightBox title="Conversation Count" value={conversationCount} />
-                        <LightBox title="Point Count" value={user?.chatPoints || 0} />
+                        <LightBox title="Users Count" value={usersCount} dailyData={dailyData.users} />
+                        <LightBox title="Prompt Count" value={promptCount} dailyData={dailyData.prompts} />
+                        <LightBox title="Conversation Count" value={conversationCount} dailyData={dailyData.conversations} />
+                        <LightBox title="Point Count" value={pointsCount} dailyData={dailyData.points} />
                     </>
                 )}
             </div>
