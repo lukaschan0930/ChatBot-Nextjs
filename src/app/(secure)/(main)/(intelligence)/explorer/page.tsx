@@ -71,7 +71,7 @@ const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
                     width={94}
                     height={50}
                 >
-                    <SparklinesLine color="#FFFFFF" />
+                    <SparklinesLine style={{ stroke: '#FFFFFF', strokeWidth: 1 }} />
                 </Sparklines>
                 {/* <div className="text-[10px] text-gray-400 mt-1">
                     {graphDescription}

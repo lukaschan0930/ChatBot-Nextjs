@@ -85,6 +85,7 @@ export async function GET() {
         // If we have dates, distribute the points evenly with small random variations
         const numDates = allDates.length;
         const pointsPerDay = Math.floor(pointsCount / numDates);
+        console.log("day points", pointsPerDay);
         const lastPointAdjustment = pointsCount - (pointsPerDay * numDates);
         
         for (let i = 0; i < numDates; i++) {
