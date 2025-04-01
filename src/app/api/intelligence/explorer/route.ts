@@ -82,21 +82,36 @@ export async function GET() {
     
     // Generate fake points data
     if (allDates.length > 0) {
-        // If we have dates, distribute the points evenly with small random variations
+        // Generate a more random graph for points data
         const numDates = allDates.length;
-        const pointsPerDay = Math.floor(Number(pointsCount)* 1000 / numDates) / 1000;
-        console.log("day points", pointsPerDay, ":", pointsCount, ":", numDates);
         
+        // Create random percentages that sum to 100%
+        const randomPercentages: number[] = [];
+        let remainingPercentage = 100;
+        
+        // Generate random percentages for all dates except the last one
+        for (let i = 0; i < numDates - 1; i++) {
+            // Use a more random distribution
+            // For earlier dates, keep percentages smaller to create upward trend
+            const maxPercent = remainingPercentage * (i / numDates + 0.3); 
+            const percentage = Math.random() * maxPercent;
+            randomPercentages.push(percentage);
+            remainingPercentage -= percentage;
+        }
+        
+        // Last date gets whatever percentage is left
+        randomPercentages.push(remainingPercentage);
+        
+        // Now convert percentages to actual point values
         for (let i = 0; i < numDates; i++) {
             const date = allDates[i];
-            // Add a small random variance except for the last date
-            if (i < numDates - 1) {
-                // Add points with a random variance
-                const variance = Math.floor(Math.random() * (pointsPerDay * 0.3)) - (pointsPerDay * 0.15);
-                pointsCumulative += pointsPerDay + variance;
-            } else {
-                // For the last date, ensure the total matches exactly with pointsCount
+            const pointsForDate = Math.floor((randomPercentages[i] / 100) * pointsCount);
+            
+            // For the last date, ensure we hit exactly the total points
+            if (i === numDates - 1) {
                 pointsCumulative = pointsCount;
+            } else {
+                pointsCumulative += pointsForDate;
             }
             
             pointsCumulativeData.push({ date, count: pointsCumulative });
