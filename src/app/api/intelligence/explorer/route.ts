@@ -73,55 +73,12 @@ export async function GET() {
     const usersCumulativeData: IData[] = [];
     const promptsCumulativeData: IData[] = [];
     const conversationsCumulativeData: IData[] = [];
-    const pointsCumulativeData: IData[] = []; // Fake data for points
     
     let usersCumulative = 0;
     let promptsCumulative = 0;
     let conversationsCumulative = 0;
-    let pointsCumulative = 0;
     
-    // Generate fake points data
-    if (allDates.length > 0) {
-        // Generate a more random graph for points data
-        const numDates = allDates.length;
-        
-        // Create random percentages that sum to 100%
-        const randomPercentages: number[] = [];
-        let remainingPercentage = 100;
-        
-        // Generate random percentages for all dates except the last one
-        for (let i = 0; i < numDates - 1; i++) {
-            // Use a more random distribution
-            // For earlier dates, keep percentages smaller to create upward trend
-            const maxPercent = remainingPercentage * (i / numDates + 0.3); 
-            const percentage = Math.random() * maxPercent;
-            randomPercentages.push(percentage);
-            remainingPercentage -= percentage;
-        }
-        
-        // Last date gets whatever percentage is left
-        randomPercentages.push(remainingPercentage);
-        
-        // Now convert percentages to actual point values
-        for (let i = 0; i < numDates; i++) {
-            const date = allDates[i];
-            const pointsForDate = Math.floor((randomPercentages[i] / 100) * pointsCount);
-            
-            // For the last date, ensure we hit exactly the total points
-            if (i === numDates - 1) {
-                pointsCumulative = pointsCount;
-            } else {
-                pointsCumulative += pointsForDate;
-            }
-            
-            pointsCumulativeData.push({ date, count: pointsCumulative });
-        }
-    } else {
-        // If no dates, create a single data point with the total points
-        pointsCumulativeData.push({ date: new Date().toISOString().split('T')[0], count: pointsCount });
-    }
-    
-    // Build cumulative data arrays for other metrics
+    // Build cumulative data arrays for metrics
     for (const date of allDates) {
         // Add daily counts to cumulative totals
         usersCumulative += usersDailyMap.get(date) || 0;
@@ -142,8 +99,7 @@ export async function GET() {
         dailyData: {
             users: usersCumulativeData,
             prompts: promptsCumulativeData,
-            conversations: conversationsCumulativeData,
-            points: pointsCumulativeData
+            conversations: conversationsCumulativeData
         }
     });
 }

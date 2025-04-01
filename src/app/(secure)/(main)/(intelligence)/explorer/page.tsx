@@ -30,15 +30,25 @@ const ExplorerHeader = () => {
 }
 
 const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
-    // Extract count values from the dailyData array for the sparkline
-    const sparklineData = dailyData?.map(d => d.count) || 
-        // Fallback data if none is provided
-        [5, 10, 15, 25, 35, 55, 80, 120];
+    // Create simple increasing data for points
+    let sparklineData: number[] = [];
     
-    // Get first and last date for display
-    // const dateRange = dailyData && dailyData.length > 0 
-    //     ? `${dailyData[0].date} to ${dailyData[dailyData.length-1].date}`
-    //     : "";
+    if (title === "Point Count") {
+        // Fixed pattern for points that only increases
+        sparklineData = [
+            value * 0.1,          // 10% of total
+            value * 0.2,          // 20% of total
+            value * 0.3,          // 30% of total
+            value * 0.4,          // 40% of total
+            value * 0.6,          // 60% of total
+            value * 0.75,         // 75% of total
+            value * 0.9,          // 90% of total
+            value                 // 100% of total (full value)
+        ];
+    } else {
+        // For other metrics, use the actual data
+        sparklineData = dailyData?.map(d => d.count) || [5, 10, 15, 25, 35, 55, 80, 120];
+    }
     
     // Determine the graph description based on the title
     let graphDescription = "Cumulative growth";
@@ -91,12 +101,10 @@ const ExplorerPage = () => {
         users: DailyData[];
         prompts: DailyData[];
         conversations: DailyData[];
-        points: DailyData[];
     }>({
         users: [],
         prompts: [],
-        conversations: [],
-        points: []
+        conversations: []
     });
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
@@ -153,7 +161,7 @@ const ExplorerPage = () => {
                         <LightBox title="Users Count" value={usersCount} dailyData={dailyData.users} />
                         <LightBox title="Prompt Count" value={promptCount} dailyData={dailyData.prompts} />
                         <LightBox title="Conversation Count" value={conversationCount} dailyData={dailyData.conversations} />
-                        <LightBox title="Point Count" value={pointsCount} dailyData={dailyData.points} />
+                        <LightBox title="Point Count" value={pointsCount} />
                     </>
                 )}
             </div>
