@@ -36,7 +36,7 @@ export const MenuItems = [
       {
         id: "workers",
         label: "WORKERS",
-        disable: false,
+        disable: true,
         tooltip: ""
       },
       {
@@ -72,7 +72,7 @@ export const MenuItems = [
       {
         id: "explorer",
         label: "EXPLORER",
-        disable: false,
+        disable: true,
         tooltip: ""
       }
     ],
