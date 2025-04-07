@@ -228,5 +228,5 @@ export function trimPrompt(
 export function getChatPoints(chatHistory: ChatHistory[]) {
     const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
     
-    return 0.5 * chatLogCount;
+    return 0.2 * chatLogCount;
 }
