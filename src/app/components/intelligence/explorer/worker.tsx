@@ -7,6 +7,7 @@ import Edith from '@/app/assets/providers/edith';
 import Akash from '@/app/assets/providers/akash';
 import GoogleCloud from '@/app/assets/providers/googleCloud';
 import Ionet from '@/app/assets/providers/ionet';
+import { useAuth } from '@/app/context/AuthContext';
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
     width: 58,
@@ -63,7 +64,7 @@ interface StatCardProps {
 }
 
 const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo }) => (
-    <div className="flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder">
+    <div className="flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder blur-sm">
         <div className="flex items-center gap-3">
             {logo && (
                 <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
@@ -100,10 +101,10 @@ const StatCard: FC<StatCardProps> = ({ label, value }) => (
 );
 
 const ExplorerWorker: FC = () => {
+    const { user, setUser } = useAuth();
     const TOTAL_NODES = 13739;
     const [stats, setStats] = useState({
         pps: 0,
-        points: 0,
         liveNodes: '0',
         totalNodes: TOTAL_NODES.toLocaleString()
     });
@@ -146,6 +147,9 @@ const ExplorerWorker: FC = () => {
         };
 
         const updateStats = () => {
+            if (!user) {
+                return;
+            }
             // Random PPS between 0.5 to 370
             const newPPS = Math.round(getRandomNumber(0.5, 370));
 
@@ -159,9 +163,23 @@ const ExplorerWorker: FC = () => {
             setStats(prevStats => ({
                 ...prevStats,
                 pps: newPPS,
-                points: Number((prevStats.points + pointGain).toFixed(4)),
                 liveNodes: liveNodesCount.toLocaleString()
             }));
+
+            fetch('/api/user/profile', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: user?.name,
+                    avatar: user?.avatar,
+                    wallet: user?.wallet,
+                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                })
+            });
+
+            setUser({
+                ...user,
+                workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+            });
 
             setLastPointGain(pointGain);
 
@@ -169,8 +187,9 @@ const ExplorerWorker: FC = () => {
             const nextUpdate = Math.round(getRandomNumber(5 * 60000, 30 * 60000));
             timeoutId = setTimeout(updateStats, nextUpdate);
         };
-        
+
         updateStats();
+
         return () => {
             if (timeoutId) {
                 clearTimeout(timeoutId);
@@ -200,7 +219,7 @@ const ExplorerWorker: FC = () => {
 
                         {/* Points Display */}
                         <div className="flex flex-col items-center w-1/3 md:w-28">
-                            <span className="text-3xl font-bold">{stats.points}</span>
+                            <span className="text-3xl font-bold">{user?.workerPoints ?? 0}</span>
                             <div className="text-gray-400 text-sm flex items-center gap-1">
                                 Points <InfoIcon />
                             </div>

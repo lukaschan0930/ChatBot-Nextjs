@@ -15,7 +15,7 @@ const ExplorerHeaderList = [
     {
         id: "workers",
         label: "Workers",
-        disable: false,
+        disable: true,
     },
     {
         id: "studio",
@@ -36,7 +36,12 @@ const ExplorerHeader = ({ id, setId }: { id: string, setId: Dispatch<SetStateAct
                 <div
                     key={item.id}
                     className={`${item.id === id ? 'bg-[#292929]' : 'bg-transparent'} text-white px-5 py-2 rounded-sm cursor-pointer ${item.disable ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => setId(item.id)}
+                    onClick={() => {
+                        if (item.disable) {
+                            return;
+                        }
+                        setId(item.id);
+                    }}
                 >
                     {item.label}
                 </div>
@@ -60,9 +65,9 @@ const ExplorerPage = () => {
                 {
                     id === "eChat" && <ExplorerEchat />
                 }
-                {
+                {/* {
                     id === "workers" && <ExplorerWorker />
-                }
+                } */}
             </div>
         </div>
     )

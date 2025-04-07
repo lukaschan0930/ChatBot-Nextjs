@@ -36,7 +36,7 @@ export const MenuItems = [
       {
         id: "workers",
         label: "WORKERS",
-        disable: true,
+        disable: false,
         tooltip: ""
       },
       {
@@ -80,76 +80,86 @@ export const MenuItems = [
 ];
 
 export const AdminMenuItems = [
-    // {
-    //   id: "",
-    //   label: "Dashboard",
-    // },
-    {
-      id: "profile",
-      label: "Profile",
-    },
-    {
-      id: "eChat",
-      label: "E.Chat",
-    },
-    {
-      id: "changeLog",
-      label: "Change Log",
-    },
-    {
-      id: "taskManagement",
-      label: "Task Management",
-    }
+  // {
+  //   id: "",
+  //   label: "Dashboard",
+  // },
+  {
+    id: "profile",
+    label: "Profile",
+  },
+  {
+    id: "eChat",
+    label: "E.Chat",
+  },
+  {
+    id: "changeLog",
+    label: "Change Log",
+  },
+  {
+    id: "taskManagement",
+    label: "Task Management",
+  }
 ];
 
 export const logCategory = [
-    {
-        id: "new",
-        label: "New",
-    },
-    {
-        id: "fix",
-        label: "Fix",
-    },
-    {
-        id: "delete",
-        label: "Delete",
-    },
-    {
-        id: "improvements",
-        label: "Improvements",
-    }
+  {
+    id: "new",
+    label: "New",
+  },
+  {
+    id: "fix",
+    label: "Fix",
+  },
+  {
+    id: "delete",
+    label: "Delete",
+  },
+  {
+    id: "improvements",
+    label: "Improvements",
+  }
 ]
 
 export const ChatTypeItems = [
-    {
-        id: "normal",
-        label: "Normal Chat",
-        image: "/image/Edith_Logo.png"
-    },
-    {
-        id: "faster",
-        label: "Faster x30",
-        image: "/image/pro.png"
-    },
+  {
+    id: "normal",
+    label: "Normal Chat",
+    image: "/image/Edith_Logo.png"
+  },
+  {
+    id: "faster",
+    label: "Faster x30",
+    image: "/image/pro.png"
+  },
 ]
 
 export const WorkerTypes = [
-    {
-        id: "marketing",
-        label: "Marketing",
-        disable: false,
-    },
-    {
-        id: "sales",
-        label: "Sales",
-        disable: true,
-    },
-    {
-        id: "customer",
-        label: "Customer",
-        disable: true,
-    }
+  {
+    id: "compute",
+    label: "Compute",
+    disable: false,
+  },
+  {
+    id: "data",
+    label: "Data",
+    disable: true,
+  }
+  // {
+  //   id: "marketing",
+  //   label: "Marketing",
+  //   disable: true,
+  // },
+  // {
+  //   id: "sales",
+  //   label: "Sales",
+  //   disable: true,
+  // },
+  // {
+  //   id: "customer",
+  //   label: "Customer",
+  //   disable: true,
+  // }
 ]
 
 export const MaketingPlatforms = [

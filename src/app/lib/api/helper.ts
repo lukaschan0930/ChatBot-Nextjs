@@ -126,6 +126,7 @@ export const authOptions = {
                         name: profile?.name as string,
                         wallet: "",
                         chatPoints: 0,
+                        workerPoints: 0,
                         reward: [],
                         board: []
                     });
@@ -226,12 +227,6 @@ export function trimPrompt(
 
 export function getChatPoints(chatHistory: ChatHistory[]) {
     const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
-
-    if (chatHistory.length >= 25 || chatLogCount >= 100) {
-        return 25;
-    } else if (chatHistory.length >= 10 || chatLogCount >= 50) {
-        return 10;
-    }
     
-    return 0;
+    return 0.5 * chatLogCount;
 }

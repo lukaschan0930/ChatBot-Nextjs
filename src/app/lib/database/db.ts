@@ -20,6 +20,7 @@ interface IUser extends Document {
     logins: number;
     wallet: string;
     chatPoints: number;
+    workerPoints: number;
     role: string;
     reward: {
         platform: string;
@@ -110,6 +111,10 @@ function userModel() {
             default: ""
         },
         chatPoints: {
+            type: Number,
+            default: 0
+        },
+        workerPoints: {
             type: Number,
             default: 0
         },

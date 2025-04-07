@@ -4,7 +4,7 @@ import Header from "@/app/components/headers";
 
 const WorkerLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex min-h-screen h-fit">
+    <div className="flex min-h-screen h-fit w-full">
       <Header />
       {children}
     </div>

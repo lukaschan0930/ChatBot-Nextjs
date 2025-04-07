@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
                 board: [],
                 wallet: "",
                 chatPoints: 0,
+                workerPoints: 0,
                 jumpReward: {
                     jumpUserId: userId || "",
                     jumpTransactionId: transactionId || "",

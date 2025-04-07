@@ -127,8 +127,8 @@ async function getTopBoardUsers() {
     return topUsers;
 };
 
-async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number) {
-    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints }, { upsert: true });
+async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number, workerPoints: number) {
+    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints, workerPoints }, { upsert: true });
 }
 
 async function count() {
