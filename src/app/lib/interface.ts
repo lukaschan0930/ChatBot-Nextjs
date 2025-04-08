@@ -239,3 +239,11 @@ export interface ITopBoardUser {
     rank: number;
     score: number;
 }
+
+export interface IExplorer {
+    date: number;
+    userCount: number;
+    promptCount: number;
+    dailyPromptCount: number;
+    activeUsers: string[];
+}

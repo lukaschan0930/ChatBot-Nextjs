@@ -21,7 +21,7 @@ const Workers = () => {
     }
 
     return (
-        <div className="mt-8 mx-auto w-full max-w-[1028px]">
+        <div className="mt-8 mx-auto w-full max-w-[1028px] px-4">
         {/* <div className="h-screen w-screen flex flex-col items-center justify-center"> */}
             {/* <div className="flex flex-col">
                 <div className="px-4 text-[20px] text-white font-semibold">Workers</div>
@@ -48,7 +48,7 @@ const Workers = () => {
                     </div>
                 </div>
             </div> */}
-            <div className="mt-[125px] mx-auto w-full flex flex-col">
+            <div className="mt-[72px] mx-auto w-full flex flex-col">
                 <div className="flex items-center gap-1 text-sm">
                     {WorkerTypes.map((item) => (
                         <div
