@@ -4,7 +4,7 @@ import Header from "@/app/components/headers";
 import { Divider } from "@mui/material";
 import { useState, Dispatch, SetStateAction } from "react";
 import ExplorerEchat from "@/app/components/intelligence/explorer/echat";
-import ExplorerWorker from "@/app/components/intelligence/explorer/worker";
+// import ExplorerWorker from "@/app/components/intelligence/explorer/worker";
 
 const ExplorerHeaderList = [
     {
@@ -50,7 +50,7 @@ const ExplorerHeader = ({ id, setId }: { id: string, setId: Dispatch<SetStateAct
     )
 }
 
-const ExplorerPage = () => {
+const Explorer = () => {
 
     const [id, setId] = useState("eChat");
 
@@ -73,4 +73,4 @@ const ExplorerPage = () => {
     )
 }
 
-export default ExplorerPage;
+export default Explorer;

@@ -2,6 +2,7 @@ import { authOptions, trimPrompt } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
 import { AdminRepo } from "@/app/lib/database/adminRepo";
+import { ExplorerRepo } from "@/app/lib/database/explorerRepo";
 import { ChatHistory, ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
@@ -382,6 +383,27 @@ export async function POST(request: NextRequest) {
                 },
             });
 
+            const explorerDate = Number(new Date().setHours(0, 0, 0, 0).toString());
+            console.log("explorerDate", explorerDate);
+            const explorer = await ExplorerRepo.findByDate(explorerDate);
+            if (!explorer) {
+                const latestExplorer = await ExplorerRepo.findByLatest();
+                await ExplorerRepo.create({ 
+                    date: explorerDate, 
+                    userCount: latestExplorer.userCount, 
+                    promptCount: latestExplorer.promptCount + 1, 
+                    dailyPromptCount: 1, 
+                    activeUsers: [session?.user?.email as string] 
+                });
+            } else {
+                await ExplorerRepo.update({ 
+                    date: explorerDate, 
+                    userCount: explorer.userCount, 
+                    promptCount: explorer.promptCount + 1, 
+                    dailyPromptCount: explorer.dailyPromptCount + 1, 
+                    activeUsers: [...explorer.activeUsers, session?.user?.email as string] 
+                });
+            }
             return new NextResponse(streamResponse);
         }
     } catch (error) {

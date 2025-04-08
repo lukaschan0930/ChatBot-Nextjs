@@ -8,46 +8,54 @@ import Akash from '@/app/assets/providers/akash';
 import GoogleCloud from '@/app/assets/providers/googleCloud';
 import Ionet from '@/app/assets/providers/ionet';
 import { useAuth } from '@/app/context/AuthContext';
+import ShadowBtn from '../../ShadowBtn';
+import { Divider } from '@mui/material';
+import { Sparklines, SparklinesLine } from 'react-sparklines';
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
-    width: 58,
-    height: 34,
+    width: 28,
+    height: 16,
     padding: 0,
     display: 'flex',
     '&:active': {
         '& .MuiSwitch-thumb': {
-            width: 30,
+            width: 15,
+        },
+        '& .MuiSwitch-switchBase.Mui-checked': {
+            transform: 'translateX(9px)',
         },
     },
     '& .MuiSwitch-switchBase': {
         padding: 2,
         '&.Mui-checked': {
-            transform: 'translateX(24px)',
+            transform: 'translateX(12px)',
             color: '#fff',
             '& + .MuiSwitch-track': {
                 opacity: 1,
-                backgroundColor: '#0066FF',
+                backgroundColor: '#1890ff',
+                ...theme.applyStyles('dark', {
+                    backgroundColor: '#177ddc',
+                }),
             },
         },
     },
     '& .MuiSwitch-thumb': {
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        width: 30,
-        height: 30,
-        borderRadius: '50%',
-        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
+        width: 12,
+        height: 12,
+        borderRadius: 6,
         transition: theme.transitions.create(['width'], {
             duration: 200,
         }),
     },
     '& .MuiSwitch-track': {
-        borderRadius: 12,
+        borderRadius: 16 / 2,
         opacity: 1,
-        backgroundColor: '#E9E9EA',
+        backgroundColor: 'rgba(0,0,0,.25)',
         boxSizing: 'border-box',
-        '&.Mui-checked': {
-            backgroundColor: '#0066FF',
-        },
+        ...theme.applyStyles('dark', {
+            backgroundColor: 'rgba(255,255,255,.35)',
+        }),
     },
 }));
 
@@ -60,7 +68,7 @@ interface ProviderCardProps {
 
 interface StatCardProps {
     label: string;
-    value: string | number;
+    value: number;
 }
 
 const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo }) => (
@@ -92,21 +100,76 @@ const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo })
     </div>
 );
 
-const StatCard: FC<StatCardProps> = ({ label, value }) => (
-    <div className="flex flex-col gap-2 px-4 py-7 lg:min-w-[237px] w-full bg-[#000000] rounded-[12px] border border-secondaryBorder relative">
-        <div className="text-subButtonFont text-[12px] text-nowrap">{label}</div>
-        <div className="text-mainFont text-[32px] text-nowrap">{value}</div>
-        <Image src="/image/light.svg" alt="light" width={85} height={65} className="absolute top-0 left-0" />
-    </div>
-);
+const StatCard: FC<StatCardProps> = ({ label, value }) => {
+    let sparklineData: number[] = [];
+    if (label === "Total Nodes") {
+        sparklineData = [
+            Number(value) * 0.1,          // 10% of total
+            Number(value) * 0.2,          // 20% of total
+            Number(value) * 0.3,          // 30% of total
+            Number(value) * 0.4,          // 40% of total
+            Number(value) * 0.6,          // 60% of total
+            Number(value) * 0.75,         // 75% of total
+            Number(value) * 0.9,          // 90% of total
+            Number(value)                 // 100% of total (full value)
+        ];
+    } else if (label === "Live Nodes") {
+        sparklineData = [
+            Number(value) * 0.7,          // 10% of total
+            Number(value) * 0.5,          // 20% of total
+            Number(value) * 0.4,          // 30% of total
+            Number(value) * 0.3,          // 40% of total
+            Number(value) * 0.5,          // 60% of total
+            Number(value) * 0.75,         // 75% of total
+            Number(value) * 0.9,          // 90% of total
+            Number(value)                 // 100% of total (full value)
+        ];
+    }
+
+    return (
+        <div className="flex flex-col gap-2 px-4 pt-5 h-[157px] w-[calc(50%-10px)] rounded-[12px] border border-secondaryBorder relative">
+            <div className="text-subButtonFont text-[12px] text-nowrap flex items-center gap-2">
+                {label}
+                {
+                    label === "Live Nodes" &&
+                    <span className="relative flex w-[10px] h-[10px]">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FFFFFF] opacity-75"></span>
+                        <span className="relative inline-flex w-[10px] h-[10px] rounded-full bg-mainFont"></span>
+                    </span>
+                }
+            </div>
+            <div className="text-mainFont text-[32px] text-nowrap">{value.toLocaleString()}</div>
+            <div className="absolute bottom-[18px] right-[8px] sm:right-[18px] w-[100px] h-[43px]">
+                <Sparklines
+                    data={sparklineData}
+                    width={100}
+                    height={43}
+                >
+                    <SparklinesLine style={{ stroke: '#FFFFFF', strokeWidth: 1 }} />
+                </Sparklines>
+            </div>
+        </div>
+    );
+};
+
+const styles = `
+    @keyframes sparkle {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    .animate-sparkle {
+        animation: sparkle 2s ease-in-out infinite;
+    }
+`;
 
 const ExplorerWorker: FC = () => {
     const { user, setUser } = useAuth();
     const TOTAL_NODES = 13739;
     const [stats, setStats] = useState({
         pps: 0,
-        liveNodes: '0',
-        totalNodes: TOTAL_NODES.toLocaleString()
+        liveNodes: 0,
+        totalNodes: TOTAL_NODES
     });
     const [isConnected, setIsConnected] = useState(true);
     const [lastPointGain, setLastPointGain] = useState(0);
@@ -139,7 +202,32 @@ const ExplorerWorker: FC = () => {
         }
     ];
 
-    // Keep the original useEffect
+    // Separate useEffect for real-time PPS updates
+    useEffect(() => {
+        let ppsIntervalId: NodeJS.Timeout;
+
+        const updatePPS = () => {
+            // Random PPS between 0.5 to 370
+            const newPPS = Math.round(Math.random() * (370 - 0.5) + 0.5);
+
+            setStats(prevStats => ({
+                ...prevStats,
+                pps: newPPS
+            }));
+        };
+
+        // Update PPS every second
+        ppsIntervalId = setInterval(updatePPS, 1000);
+        updatePPS(); // Initial update
+
+        return () => {
+            if (ppsIntervalId) {
+                clearInterval(ppsIntervalId);
+            }
+        };
+    }, []);
+
+    // Original useEffect for other updates (points, live nodes)
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
         const getRandomNumber = (min: number, max: number) => {
@@ -150,8 +238,6 @@ const ExplorerWorker: FC = () => {
             if (!user) {
                 return;
             }
-            // Random PPS between 0.5 to 370
-            const newPPS = Math.round(getRandomNumber(0.5, 370));
 
             // Random point gain between 0.05 to 0.67
             const pointGain = getRandomNumber(0.05, 0.67);
@@ -162,8 +248,7 @@ const ExplorerWorker: FC = () => {
 
             setStats(prevStats => ({
                 ...prevStats,
-                pps: newPPS,
-                liveNodes: liveNodesCount.toLocaleString()
+                liveNodes: liveNodesCount
             }));
 
             fetch('/api/user/profile', {
@@ -197,51 +282,74 @@ const ExplorerWorker: FC = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = styles;
+        document.head.appendChild(styleSheet);
+        return () => {
+            document.head.removeChild(styleSheet);
+        };
+    }, []);
+
     return (
         <div className="flex flex-col gap-8">
-            <div className="text-white flex flex-col md:flex-row gap-9 w-full justify-between md:items-end">
-                <div className='flex flex-col gap-2 items-center'>
-                    <div className="flex items-center gap-6 max-md:w-full">
+            <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH supercomputer</h2>
+            <div className="text-white flex flex-col md:flex-row gap-5 w-full justify-between md:items-end">
+                <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] pt-9 pb-8 relative'>
+                    <Image src="/image/login/pixels.png" alt="logo" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[401px] h-auto" width={401} height={401} />
+                    <Image src='/image/logo-chat.png' alt='edith-logo' width={60} height={60} />
+                    <ShadowBtn
+                        className="rounded-full w-[164px] mt-5"
+                        mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+                    >
+                        <span className='text-sm w-full transition-all duration-300'>{isConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
+                        <AntSwitch
+                            inputProps={{ 'aria-label': 'Node Connection Status' }}
+                            onChange={(e) => setIsConnected(e.target.checked)}
+                            checked={isConnected}
+                        />
+                    </ShadowBtn>
+                    <div className="flex items-center gap-6 mt-7">
                         {/* PPS Display */}
                         <div className="flex flex-col items-center w-1/3 md:w-28">
-                            <span className="text-3xl font-bold">{stats.pps}</span>
-                            <span className="text-gray-400 text-sm">PPS</span>
+                            <span className="text-gray-400 text-[14px]">PPS</span>
+                            <span className="text-[36px] font-bold">{stats.pps}</span>
                         </div>
 
-                        {/* Connection Status */}
-                        <div className="flex flex-col items-center w-1/3 md:w-28">
-                            <AntSwitch
-                                inputProps={{ 'aria-label': 'Node Connection Status' }}
-                                onChange={(e) => setIsConnected(e.target.checked)}
-                                checked={isConnected}
-                            />
-                        </div>
+                        <Divider orientation="vertical" flexItem sx={{ backgroundColor: '#FFFFFF1F' }} />
 
                         {/* Points Display */}
                         <div className="flex flex-col items-center w-1/3 md:w-28">
-                            <span className="text-3xl font-bold">{user?.workerPoints ?? 0}</span>
-                            <div className="text-gray-400 text-sm flex items-center gap-1">
-                                Points <InfoIcon />
+                            <div className="text-gray-400 text-[14px] flex items-center gap-1">
+                                Points
                             </div>
+                            <span className="text-[36px] font-bold">{user?.workerPoints ?? 0}</span>
                         </div>
-                    </div>
-                    <div className="mt-2 text-sm font-medium">
-                        {isConnected ? 'CONNECTED' : 'DISCONNECTED'}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                        Welcome to the EDITH supercomputer
                     </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <StatCard label="Live Nodes" value={stats.liveNodes} />
-                    <StatCard label="Total Nodes" value={stats.totalNodes} />
+                <div className='flex flex-col border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] px-5 py-[21.5px] h-full gap-6'>
+                    <div className='w-full bg-[#0B0B0D] border border-[#252527] rounded-full p-[6px] flex items-center justify-between'>
+                        <ShadowBtn className='w-full rounded-full' mainClassName='rounded-full max-sm:text-[12px]'>
+                            Browser Node
+                        </ShadowBtn>
+                        <div className='w-full text-center max-sm:text-[12px] text-mainFont opacity-50'>
+                            Docker Node
+                        </div>
+                    </div>
+                    <Divider sx={{ backgroundColor: '#FFFFFF1F' }} />
+                    <div className='flex items-center justify-between gap-5 w-full'>
+                        <StatCard label="Total Nodes" value={stats.totalNodes} />
+                        {
+                            isConnected &&
+                            <StatCard label="Live Nodes" value={stats.liveNodes} />
+                        }
+                    </div>
                 </div>
             </div>
 
             {/* Provider Statistics Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {providers.map((provider) => (
                     <ProviderCard
                         key={provider.name}
@@ -251,6 +359,12 @@ const ExplorerWorker: FC = () => {
                         logo={provider.logo}
                     />
                 ))}
+            </div> */}
+            <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                <Image src='/image/blur/edith-blur.png' className='w-full' alt='edith' width={256} height={142} />
+                <Image src='/image/blur/akash-blur.png' className='w-full' alt='akash' width={256} height={142} />
+                <Image src='/image/blur/google-blur.png' className='w-full' alt='google-cloud' width={256} height={142} />
+                <Image src='/image/blur/io-blur.png' className='w-full' alt='ionet' width={256} height={142} />
             </div>
         </div>
     );

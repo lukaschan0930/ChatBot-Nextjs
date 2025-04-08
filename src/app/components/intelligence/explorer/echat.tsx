@@ -1,53 +1,20 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Sparklines, SparklinesLine } from 'react-sparklines';
+import dynamic from 'next/dynamic';
 
-interface DailyData {
-    date: string;
-    count: number;
-}
+const ApexChart = dynamic(() => import('./apexChart'), {
+    ssr: false,
+    loading: () => <div className="w-full h-[350px] bg-gray-700 rounded animate-pulse"></div>
+});
 
 interface LightBoxProps {
     title: string;
     value: number;
-    dailyData?: DailyData[];
 }
 
-const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
-    // Create simple increasing data for points
-    let sparklineData: number[] = [];
-
-    if (title === "Point Count") {
-        // Fixed pattern for points that only increases
-        sparklineData = [
-            value * 0.1,          // 10% of total
-            value * 0.2,          // 20% of total
-            value * 0.3,          // 30% of total
-            value * 0.4,          // 40% of total
-            value * 0.6,          // 60% of total
-            value * 0.75,         // 75% of total
-            value * 0.9,          // 90% of total
-            value                 // 100% of total (full value)
-        ];
-    } else {
-        // For other metrics, use the actual data
-        sparklineData = dailyData?.map(d => d.count) || [5, 10, 15, 25, 35, 55, 80, 120];
-    }
-
-    // Determine the graph description based on the title
-    let graphDescription = "Cumulative growth";
-    if (title === "Users Count") {
-        graphDescription = "Cumulative users growth";
-    } else if (title === "Prompt Count") {
-        graphDescription = "Cumulative prompts";
-    } else if (title === "Conversation Count") {
-        graphDescription = "Cumulative conversations";
-    } else if (title === "Point Count") {
-        graphDescription = "Cumulative points";
-    }
-
+const LightBox = ({ title, value }: LightBoxProps) => {
     return (
-        <div className="flex flex-col gap-2 w-full px-4 pt-3 pb-7 bg-[#000000] rounded-[12px] border border-secondaryBorder relative">
+        <div className="flex flex-col gap-2 w-full px-4 py-5 rounded-[12px] border border-secondaryBorder relative">
             <div className="text-subButtonFont text-[12px] text-nowrap">{title}</div>
             <div className="text-mainFont text-[32px] text-nowrap">
                 {typeof value === 'number'
@@ -58,20 +25,24 @@ const LightBox = ({ title, value, dailyData }: LightBoxProps) => {
                     : value
                 }
             </div>
-            <Image src="/image/light.svg" alt="light" width={85} height={65} className="absolute top-0 left-0" />
-            <div className="absolute bottom-[18px] right-[18px] w-[93px] h-[23px]">
-                <Sparklines
-                    data={sparklineData}
-                    width={93}
-                    height={23}
-                >
-                    <SparklinesLine style={{ stroke: '#FFFFFF', strokeWidth: 1 }} />
-                </Sparklines>
-                {/* <div className="text-[10px] text-gray-400 mt-1">
-                    {graphDescription}
-                    {dateRange && <span className="block">{dateRange}</span>}
-                </div> */}
-            </div>
+        </div>
+    )
+}
+
+const LightBoxSkeleton = () => {
+    return (
+        <div className="flex flex-col gap-2 w-full px-4 py-5 rounded-[12px] border border-secondaryBorder relative">
+            <div className="h-4 w-20 bg-gray-700 rounded animate-pulse"></div>
+            <div className="h-8 w-24 bg-gray-700 rounded animate-pulse"></div>
+        </div>
+    )
+}
+
+const ChartSkeleton = ({ height }: { height: number }) => {
+    return (
+        <div className="w-full rounded-[12px] border border-secondaryBorder p-4">
+            <div className="h-8 w-32 bg-gray-700 rounded animate-pulse mb-4"></div>
+            <div className="h-[calc(100%-48px)] w-full bg-gray-700 rounded animate-pulse"></div>
         </div>
     )
 }
@@ -81,14 +52,19 @@ const ExplorerEchat = () => {
     const [promptCount, setPromptCount] = useState(0);
     const [conversationCount, setConversationCount] = useState(0);
     const [pointsCount, setPointsCount] = useState(0);
+    const nodeCount = 13739;
     const [dailyData, setDailyData] = useState<{
-        users: DailyData[];
-        prompts: DailyData[];
-        conversations: DailyData[];
+        users: number[][];
+        activeUsers: number[][];
+        prompts: number[][];
+        dailyPrompts: number[][];
+        points: number[][];
     }>({
         users: [],
+        activeUsers: [],
         prompts: [],
-        conversations: []
+        dailyPrompts: [],
+        points: [],
     });
     const [loading, setLoading] = useState(true);
 
@@ -97,15 +73,18 @@ const ExplorerEchat = () => {
             try {
                 const res = await fetch('/api/intelligence/explorer');
                 const data = await res.json();
-                setUsersCount(data.usersCount);
-                setPromptCount(data.promptCount);
-                setConversationCount(data.conversationCount);
-                setPointsCount(data.pointsCount);
+                setUsersCount(data.currentStats.usersCount);
+                setPromptCount(data.currentStats.promptCount);
+                setConversationCount(data.currentStats.conversationCount);
+                setPointsCount(data.currentStats.pointsCount);
 
-                // Set daily data if available
-                if (data.dailyData) {
-                    setDailyData(data.dailyData);
-                }
+                setDailyData({
+                    users: data.userCountData,
+                    activeUsers: data.activeUsersData,
+                    prompts: data.promptCountData,
+                    dailyPrompts: data.dailyPromptCountData,
+                    points: data.pointsCountData
+                });
             } catch (error) {
                 console.error("Error fetching explorer data:", error);
             } finally {
@@ -116,33 +95,74 @@ const ExplorerEchat = () => {
         fetchData();
     }, []);
 
-    // Skeleton loader component
-    const SkeletonBox = () => (
-        <div className="flex flex-col gap-2 w-full px-4 py-3 bg-[#000000] rounded-[12px] border border-secondaryBorder relative animate-pulse">
-            <div className="h-3 bg-gray-700 rounded w-1/2 mb-2"></div>
-            <div className="h-6 bg-gray-700 rounded w-1/3"></div>
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="w-full pb-16">
+                <div className="flex max-md:flex-col gap-7 px-6 w-full bg-[#0E0E10] border border-[#25252799] rounded-[12px]">
+                    <div className="min-w-[260px] min-h-[260px] relative flex items-center justify-center">
+                        <div className="w-[260px] h-[260px] bg-gray-700 rounded animate-pulse"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-5 w-full justify-between py-5">
+                        <LightBoxSkeleton />
+                        <LightBoxSkeleton />
+                        <LightBoxSkeleton />
+                        <LightBoxSkeleton />
+                    </div>
+                </div>
+                <div className="mt-16 flex flex-col gap-4 text-white">
+                    <div className="text-[32px] font-medium">Points</div>
+                    <ChartSkeleton height={350} />
+                </div>
+                <div className="mt-11 flex flex-col gap-4 text-white">
+                    <div className="text-[32px] font-medium">Users</div>
+                    <div className="flex max-md:flex-col gap-6 w-full justify-between">
+                        <ChartSkeleton height={250} />
+                        <ChartSkeleton height={250} />
+                    </div>
+                </div>
+                <div className="mt-11 flex flex-col gap-4 text-white">
+                    <div className="text-[32px] font-medium">Prompts</div>
+                    <div className="flex max-md:flex-col gap-6 w-full justify-between">
+                        <ChartSkeleton height={250} />
+                        <ChartSkeleton height={250} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 ">
-            {
-                loading ? (
-                    <>
-                        <SkeletonBox />
-                        <SkeletonBox />
-                        <SkeletonBox />
-                        <SkeletonBox />
-                    </>
-                ) : (
-                    <>
-                        <LightBox title="Users Count" value={usersCount} dailyData={dailyData.users} />
-                        <LightBox title="Prompt Count" value={promptCount} dailyData={dailyData.prompts} />
-                        <LightBox title="Conversation Count" value={conversationCount} dailyData={dailyData.conversations} />
-                        <LightBox title="Point Count" value={pointsCount} />
-                    </>
-                )
-            }
+        <div className="w-full pb-16">
+            <div className="flex max-md:flex-col gap-7 px-6 w-full bg-[#0E0E10] border border-[#25252799] rounded-[12px]">
+                <div className="min-w-[260px] min-h-[260px] relative flex items-center justify-center">
+                    <Image src="/image/login/pixel.png" alt="light" width={260} height={260} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <Image src="/image/logo-chat.png" alt="logo" width={114} height={114} />
+                </div>
+                <div className="grid grid-cols-2 gap-5 w-full justify-between py-5">
+                    <LightBox title="Users Count" value={usersCount} />
+                    <LightBox title="Prompt Count" value={promptCount} />
+                    <LightBox title="Node Count" value={nodeCount} />
+                    <LightBox title="Conversation Count" value={conversationCount} />
+                </div>
+            </div>
+            <div className="mt-16 flex flex-col gap-4 text-white">
+                <div className="text-[32px] font-medium">Points</div>
+                <ApexChart data={dailyData.points} title="Total Points" height={350} />
+            </div>
+            <div className="mt-11 flex flex-col gap-4 text-white">
+                <div className="text-[32px] font-medium">Users</div>
+                <div className="flex max-md:flex-col gap-6 w-full justify-between">
+                    <ApexChart data={dailyData.users} title="Total Users" height={250} />
+                    <ApexChart data={dailyData.activeUsers} title="Active Users" height={250} />
+                </div>
+            </div>
+            <div className="mt-11 flex flex-col gap-4 text-white">
+                <div className="text-[32px] font-medium">Prompts</div>
+                <div className="flex max-md:flex-col gap-6 w-full justify-between">
+                    <ApexChart data={dailyData.prompts} title="Total Prompts" height={250} />
+                    <ApexChart data={dailyData.dailyPrompts} title="Daily Prompt Usage" height={250} />
+                </div>
+            </div>
         </div>
     )
 }

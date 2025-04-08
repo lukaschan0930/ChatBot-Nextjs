@@ -48,7 +48,8 @@ const db = {
     ChangeLog: changeLogModel(),
     TweetContent: tweetContentModel(),
     TaskList: taskListModel(),
-    Admin: adminModel()
+    Admin: adminModel(),
+    Explorer: explorerModel()
 }
 
 function userModel() {
@@ -383,10 +384,37 @@ function adminModel() {
         systemPrompt: {
             type: String,
             required: true
-        } 
+        }
     });
 
     return mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
+}
+
+function explorerModel() {
+    const ExplorerSchema = new Schema({
+        date: {
+            type: Number,
+            required: true
+        },
+        userCount: {
+            type: Number,
+            required: true
+        },
+        promptCount: {
+            type: Number,
+            required: true
+        },
+        dailyPromptCount: {
+            type: Number,
+            required: true
+        },
+        activeUsers: {
+            type: [String],
+            required: true
+        }
+    });
+
+    return mongoose.models.Explorer || mongoose.model('Explorer', ExplorerSchema);
 }
 
 export default db;

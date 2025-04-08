@@ -62,7 +62,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-10 text-mainFont">
+      <header className="absolute top-0 left-0 right-0 z-10 text-mainFont">
         <div className="w-full bg-[#FFFFFF0D] py-[6px] text-center text-sm text-[#FFFFFF99] sm:hidden">
           <span>
             TESTNET

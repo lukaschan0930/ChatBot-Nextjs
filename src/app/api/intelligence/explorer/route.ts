@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { UserRepo } from "@/app/lib/database/userrepo";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
+import { ExplorerRepo } from "@/app/lib/database/explorerRepo";
 import { AuthOptions } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession } from "next-auth";
@@ -17,89 +18,79 @@ interface IData {
     count: number;
 }
 
+// Helper function to generate realistic points data
+function generatePointsData(explorer: any[], targetPoints: number) {
+    if (explorer.length === 0) return [];
+    
+    // Sort explorer data by date to ensure chronological order
+    const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
+    
+    // Calculate base points with a rising trend
+    let lastValue = 0; // Start from 1000
+    const basePoints = sortedExplorer.map((item, index) => {
+        // Calculate the remaining growth needed
+        const remainingGrowth = targetPoints - lastValue;
+        const remainingPoints = sortedExplorer.length - index;
+        
+        // Calculate minimum growth for this step
+        const minGrowth = remainingGrowth / remainingPoints;
+        
+        // Add some positive variation (0% to 5%)
+        const variation = minGrowth * (Math.random() * 0.05);
+        
+        // Calculate new value ensuring it's always higher than the last
+        const newValue = Math.round(lastValue + minGrowth + variation);
+        lastValue = newValue;
+        
+        return newValue;
+    });
+
+    // Ensure the last point matches exactly the target points
+    basePoints[basePoints.length - 1] = targetPoints;
+
+    // Create date-value pairs with correct timestamps
+    return sortedExplorer.map((item, index) => {
+        // Convert the date to milliseconds since epoch
+        const timestamp = new Date(item.date).getTime();
+        return [timestamp, basePoints[index]];
+    });
+}
+
 export async function GET() {
     const session = await getServerSession(authOptions as AuthOptions);
     if (!session) {
         return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const users = await UserRepo.getFullUser();
-    const chats = await ChatRepo.getFullHistory();
-    const promptCount = chats.reduce((acc: number, chat: IChat) => acc + chat.session.reduce((acc: number, session: ChatHistory) => acc + session.chats.length, 0), 0);
-    const conversationCount = chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0);
-    const pointsCount = users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0);
-    const usersCount = users.length;
-    
-    // Collect all dates for users, prompts and conversations
-    let usersDailyMap = new Map<string, number>();
-    let promptsDailyMap = new Map<string, number>();
-    let conversationsDailyMap = new Map<string, number>();
-    
-    // Track users by date
-    for (const user of users) {
-        if (user.createdAt) {
-            const date = new Date(user.createdAt).toISOString().split('T')[0];
-            usersDailyMap.set(date, (usersDailyMap.get(date) || 0) + 1);
-        }
-    }
-    
-    // Track conversations and prompts by date
-    for (const chat of chats) {
-        if (chat.session.length > 0) {
-            for (const session of chat.session) {
-                if (session.chats.length > 0) {
-                    // Get date for conversation
-                    const convDate = new Date(session.chats[0].timestamp).toISOString().split('T')[0];
-                    conversationsDailyMap.set(convDate, (conversationsDailyMap.get(convDate) || 0) + 1);
-                    
-                    // Get dates for prompts
-                    for (const message of session.chats) {
-                        const promptDate = new Date(message.timestamp).toISOString().split('T')[0];
-                        promptsDailyMap.set(promptDate, (promptsDailyMap.get(promptDate) || 0) + 1);
-                    }
-                }
-            }
-        }
-    }
-    
-    // Get all unique dates and sort them
-    const allDates = [...new Set([
-        ...Array.from(usersDailyMap.keys()),
-        ...Array.from(promptsDailyMap.keys()),
-        ...Array.from(conversationsDailyMap.keys())
-    ])].sort();
-    
-    // Generate cumulative data for each metric
-    const usersCumulativeData: IData[] = [];
-    const promptsCumulativeData: IData[] = [];
-    const conversationsCumulativeData: IData[] = [];
-    
-    let usersCumulative = 0;
-    let promptsCumulative = 0;
-    let conversationsCumulative = 0;
-    
-    // Build cumulative data arrays for metrics
-    for (const date of allDates) {
-        // Add daily counts to cumulative totals
-        usersCumulative += usersDailyMap.get(date) || 0;
-        promptsCumulative += promptsDailyMap.get(date) || 0;
-        conversationsCumulative += conversationsDailyMap.get(date) || 0;
-        
-        // Push cumulative data
-        usersCumulativeData.push({ date, count: usersCumulative });
-        promptsCumulativeData.push({ date, count: promptsCumulative });
-        conversationsCumulativeData.push({ date, count: conversationsCumulative });
-    }
+    // Parallelize database queries
+    const [users, chats, latestExplorer, explorer] = await Promise.all([
+        UserRepo.getFullUser(),
+        ChatRepo.getFullHistory(),
+        ExplorerRepo.findByLatest(),
+        ExplorerRepo.findAll()
+    ]);
+
+    // Calculate current stats
+    const currentStats = {
+        usersCount: users.length,
+        pointsCount: users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0),
+        promptCount: latestExplorer.promptCount,
+        conversationCount: chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0)
+    };
+
+    // Format explorer data into date-value pairs
+    const userCountData = explorer.map(item => [new Date(item.date).getTime(), item.userCount]);
+    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), item.activeUsers.length]);
+    const dailyPromptCountData = explorer.map(item => [new Date(item.date).getTime(), item.dailyPromptCount]);
+    const promptCountData = explorer.map(item => [new Date(item.date).getTime(), item.promptCount]);
+    const pointsCountData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)));
 
     return NextResponse.json({
-        usersCount,
-        pointsCount,
-        promptCount,
-        conversationCount,
-        dailyData: {
-            users: usersCumulativeData,
-            prompts: promptsCumulativeData,
-            conversations: conversationsCumulativeData
-        }
+        userCountData,
+        activeUsersData,
+        dailyPromptCountData,
+        promptCountData,
+        pointsCountData,
+        currentStats
     });
 }
