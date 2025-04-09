@@ -72,10 +72,10 @@ interface StatCardProps {
 }
 
 const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo }) => (
-    <div className={`flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
+    <div className={`flex flex-col gap-4 w-full p-6 bg-[#0E0E10] rounded-[12px] border border-[#252527] ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
         <div className="flex items-center gap-3">
             {logo && (
-                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center">
                     {logo}
                 </div>
             )}
@@ -234,7 +234,7 @@ const ExplorerWorker: FC = () => {
             return Math.random() * (max - min) + min;
         };
 
-        const updateStats = () => {
+        const updateStats = async () => {
             // Random point gain between 0.05 to 0.67
             const pointGain = getRandomNumber(0.05, 0.67);
 
@@ -247,18 +247,17 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            fetch('/api/user/profile', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    name: user?.name,
-                    avatar: user?.avatar,
-                    wallet: user?.wallet,
-                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
-                })
-            });
-
             if (user && isConnected) {
                 console.log('user', user.workerPoints);
+                await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: user?.name,
+                        avatar: user?.avatar,
+                        wallet: user?.wallet,
+                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                    })
+                });
                 setUser({
                     ...user,
                     workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
