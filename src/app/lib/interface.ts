@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from "react";
+
 export interface User {
     name: string;
     avatar: string;
@@ -49,7 +51,7 @@ export interface AuthContextType {
     verifyCode: string | null;
     setVerifyCode: (code: string | null) => void;
     user: User | null;
-    setUser: (user: User | null) => void;
+    setUser: Dispatch<SetStateAction<User | null>>;
 }
 
 interface RequestFunction {
@@ -66,7 +68,7 @@ interface UseFetchReturn {
 
 export interface AdminContextType {
     user: User | null;
-    setUser: (user: User | null) => void;
+    setUser: Dispatch<SetStateAction<User | null>>;
     token: string | null;
     setToken: (token: string | null) => void;
     logined: boolean;
