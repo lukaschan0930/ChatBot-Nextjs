@@ -173,7 +173,6 @@ const ExplorerWorker: FC = () => {
         totalNodes: TOTAL_NODES
     });
     const [isConnected, setIsConnected] = useState(true);
-    const [lastPointGain, setLastPointGain] = useState(0);
 
     // Add the providers data
     const providers = [
@@ -248,27 +247,27 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            console.log('user', user.workerPoints);
-            await fetch('/api/user/profile', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    name: user?.name,
-                    avatar: user?.avatar,
-                    wallet: user?.wallet,
-                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
-                })
-            });
-            setUser(prevUser => {
-                if (prevUser) {
-                    return {
-                        ...prevUser,
-                        workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
-                    };
-                }
-                return prevUser;
-            });
+            if (isConnected) {
+                await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: user?.name,
+                        avatar: user?.avatar,
+                        wallet: user?.wallet,
+                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+                    })
+                });
+                setUser(prevUser => {
+                    if (prevUser) {
+                        return {
+                            ...prevUser,
+                            workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+                        };
+                    }
+                    return prevUser;
+                });
 
-            setLastPointGain(pointGain);
+            }
 
             // Schedule next update with random time between 5 to 30 minutes
             const nextUpdate = Math.round(getRandomNumber(5 * 60 * 1000, 30 * 60 * 1000));
