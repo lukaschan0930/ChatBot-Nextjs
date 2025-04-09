@@ -174,6 +174,7 @@ const ExplorerWorker: FC = () => {
         totalNodes: TOTAL_NODES
     });
     const [isConnected, setIsConnected] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Add the providers data
     const providers = [
@@ -248,7 +249,7 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            if (isConnected) {
+            if (isConnected && user) {
                 await fetch('/api/user/profile', {
                     method: 'PUT',
                     body: JSON.stringify({
@@ -273,16 +274,19 @@ const ExplorerWorker: FC = () => {
             // Schedule next update with random time between 5 to 30 minutes
             const nextUpdate = Math.round(getRandomNumber(5 * 60 * 1000, 30 * 60 * 1000));
             timeoutId = setTimeout(updateStats, nextUpdate);
+            setIsLoading(true);
         };
 
-        updateStats();
+        if (!isLoading && isConnected && user) {
+            updateStats();
+        }
 
         return () => {
             if (timeoutId) {
                 clearTimeout(timeoutId);
             }
         };
-    }, []);
+    }, [isConnected, user, isLoading]);
 
     useEffect(() => {
         const styleSheet = document.createElement("style");
