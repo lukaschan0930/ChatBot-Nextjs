@@ -116,13 +116,14 @@ const StatCard: FC<StatCardProps> = ({ label, value }) => {
         ];
     } else if (label === "Live Nodes") {
         sparklineData = [
-            Number(value) * 0.7,          // 10% of total
-            Number(value) * 0.5,          // 20% of total
-            Number(value) * 0.4,          // 30% of total
+            Number(value) * 0.1,          // 10% of total
+            Number(value) * 0.3,          // 20% of total
+            Number(value) * 0.6,          // 30% of total
             Number(value) * 0.3,          // 40% of total
             Number(value) * 0.5,          // 60% of total
-            Number(value) * 0.75,         // 75% of total
-            Number(value) * 0.9,          // 90% of total
+            Number(value) * 0.65,         // 75% of total
+            Number(value) * 0.87,
+            Number(value) * 0.76,          // 90% of total
             Number(value)                 // 100% of total (full value)
         ];
     }
