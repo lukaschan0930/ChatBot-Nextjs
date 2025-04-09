@@ -1,14 +1,18 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { AuthContextType, User } from "@/app/lib/interface";
 import { signOut, useSession } from "next-auth/react";
+import { getRandomNumber } from "../lib/stack";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [verifyCode, setVerifyCode] = useState<string | null>("");
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const { data: session } = useSession();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchUserData = async () => {
     try {
@@ -31,6 +35,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [session]);
 
+  const updateWorkerPoints = async () => {
+    if (!isConnected || !user) return;
+
+    // Random point gain between 0.05 to 0.67
+    const pointGain = getRandomNumber(0.05, 0.67);
+
+    try {
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        body: JSON.stringify({
+          name: user.name,
+          avatar: user.avatar,
+          wallet: user.wallet,
+          workerPoints: Math.round((Number((user.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+        })
+      });
+
+      setUser(prevUser => {
+        if (prevUser) {
+          return {
+            ...prevUser,
+            workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+          };
+        }
+        return prevUser;
+      });
+    } catch (error) {
+      console.error('Error updating stats:', error);
+    }
+  };
+
+  // Global worker points update effect
+  useEffect(() => {
+    const scheduleNextUpdate = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      const minutes = Math.floor(Math.random() * (30 - 5 + 1)) + 5;
+      const nextUpdate = minutes * 60 * 1000;
+      console.log("Next worker points update in:", minutes, "minutes");
+      
+      timerRef.current = setTimeout(async () => {
+        await updateWorkerPoints();
+        scheduleNextUpdate();
+      }, nextUpdate);
+    };
+
+    if (isConnected && user) {
+      scheduleNextUpdate();
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isConnected, user]);
 
   return (
     <AuthContext.Provider
@@ -39,6 +101,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setVerifyCode,
         user,
         setUser,
+        isLoading,
+        setIsLoading,
+        isConnected,
+        setIsConnected,
+        updateWorkerPoints
       }}
     >
       {children}

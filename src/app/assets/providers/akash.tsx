@@ -6,8 +6,8 @@ const Akash = () => {
             <path d="M4.14739 7.67554H12.3172L4.15078 21.8592L0.0625 14.7691L4.14739 7.67554Z" fill="#FF414C" />
             <defs>
                 <linearGradient id="paint0_linear_1409_34811" x1="13" y1="17.9053" x2="16.5213" y2="13.422" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#FF414C" />
-                    <stop offset="1" stop-color="#FA5757" stop-opacity="0" />
+                    <stop stopColor="#FF414C" />
+                    <stop offset="1" stopColor="#FA5757" stopOpacity="0" />
                 </linearGradient>
             </defs>
         </svg>

@@ -1,7 +1,7 @@
 const Ionet = () => {
     return (
         <svg width="50" height="18" viewBox="0 0 50 18" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[50px] text-white">
-            <rect width="50" height="18" fill="black" fill-opacity="0.01"></rect>
+            <rect width="50" height="18" fill="black" fillOpacity="0.01"></rect>
             <path d="M4.17174 6.36409H0V17.9992H4.17174V6.36409Z" fill="currentColor"></path>
             <path d="M0 0.000825629V3.63679L4.0242 6.44992L4.17174 6.36409V0.000825629H0Z" fill="currentColor"></path>
             <path d="M28.4689 0L4.17174 0.000825629L10.2401 4.24278H28.4689C29.1775 4.24278 29.7579 4.83311 29.7579 5.55371V8.71971L33.9297 11.6367V5.55371C33.9297 2.49983 31.4733 0 28.4689 0Z" fill="currentColor"></path><path d="M15.7026 18H40.0002L33.9315 13.7572H15.7026C14.9957 13.7572 14.4136 13.1652 14.4136 12.4463V9.28028L10.2419 6.36327V12.4446C10.2403 15.5051 12.6934 18 15.7026 18Z" fill="currentColor"></path><path d="M47.0381 5.47727L45.4173 1.81818H46.0736L47.2071 4.50284L48.3406 1.81818H48.9969L47.3762 5.47727H47.0381ZM45.298 5.47727V1.81818H45.9344V5.47727H45.298ZM48.4798 5.47727V1.81818H49.1162V5.47727H48.4798ZM42.9117 5.47727V2.13636H43.548V5.47727H42.9117ZM41.798 2.375V1.81818H44.6617V2.375H41.798Z" fill="currentColor"></path>

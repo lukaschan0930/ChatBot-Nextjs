@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useRef } from 'react';
 import InfoIcon from '@/app/assets/info';
 import Switch from '@mui/material/Switch';
 import { styled } from '@mui/material/styles';
@@ -166,15 +166,14 @@ const styles = `
 `;
 
 const ExplorerWorker: FC = () => {
-    const { user, setUser } = useAuth();
+    const { user, isConnected, setIsConnected } = useAuth();
     const TOTAL_NODES = 13739;
     const [stats, setStats] = useState({
         pps: 0,
         liveNodes: 0,
         totalNodes: TOTAL_NODES
     });
-    const [isConnected, setIsConnected] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
+    const [lastPointGain, setLastPointGain] = useState(0);
 
     // Add the providers data
     const providers = [
@@ -229,62 +228,13 @@ const ExplorerWorker: FC = () => {
         };
     }, []);
 
-    // Original useEffect for other updates (points, live nodes)
-    useEffect(() => {
-        let timeoutId: NodeJS.Timeout;
-
-        const updateStats = async () => {
-            // Random point gain between 0.05 to 0.67
-            const pointGain = getRandomNumber(0.05, 0.67);
-
-            // Random live nodes between 13% to 34% of total nodes
-            const liveNodesPercentage = getRandomNumber(0.13, 0.34);
-            const liveNodesCount = Math.round(TOTAL_NODES * liveNodesPercentage);
-
-            setStats(prevStats => ({
-                ...prevStats,
-                liveNodes: liveNodesCount
-            }));
-
-            if (isConnected && isLoading) {
-                console.log(user?.workerPoints);
-                await fetch('/api/user/profile', {
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        name: user?.name,
-                        avatar: user?.avatar,
-                        wallet: user?.wallet,
-                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
-                    })
-                });
-                setUser(prevUser => {
-                    if (prevUser) {
-                        return {
-                            ...prevUser,
-                            workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
-                        };
-                    }
-                    return prevUser;
-                });
-
-            }
-
-            // Schedule next update with random time between 5 to 30 minutes
-            const nextUpdate = Math.round(getRandomNumber(5 * 60 * 1000, 30 * 60 * 1000));
-            timeoutId = setTimeout(updateStats, nextUpdate);
-            setIsLoading(true);
-        };
-
-        if (!isLoading && isConnected && user) {
-            updateStats();
-        }
-
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [isConnected, user, isLoading]);
+    const liveNodeConnect = (isConnected: boolean) => {
+        setIsConnected(isConnected);
+        setStats(prevStats => ({
+            ...prevStats,
+            liveNodes: isConnected ? prevStats.liveNodes + 1 : prevStats.liveNodes - 1
+        }));
+    }
 
     useEffect(() => {
         const styleSheet = document.createElement("style");
@@ -294,22 +244,6 @@ const ExplorerWorker: FC = () => {
             document.head.removeChild(styleSheet);
         };
     }, []);
-
-    const liveNodeConnect = (isConnected: boolean) => {
-        if (isConnected) {
-            setIsConnected(true);
-            setStats(prevStats => ({
-                ...prevStats,
-                liveNodes: prevStats.liveNodes + 1
-            }));
-        } else {
-            setIsConnected(false);
-            setStats(prevStats => ({
-                ...prevStats,
-                liveNodes: prevStats.liveNodes - 1
-            }));
-        }
-    }
 
     return (
         <div className="flex flex-col gap-8">
