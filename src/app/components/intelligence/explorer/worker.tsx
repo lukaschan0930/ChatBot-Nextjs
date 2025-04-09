@@ -234,7 +234,7 @@ const ExplorerWorker: FC = () => {
             return Math.random() * (max - min) + min;
         };
 
-        const updateStats = () => {
+        const updateStats = async () => {
             // Random point gain between 0.05 to 0.67
             const pointGain = getRandomNumber(0.05, 0.67);
 
@@ -247,18 +247,17 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            fetch('/api/user/profile', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    name: user?.name,
-                    avatar: user?.avatar,
-                    wallet: user?.wallet,
-                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
-                })
-            });
-
             if (user && isConnected) {
                 console.log('user', user.workerPoints);
+                await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: user?.name,
+                        avatar: user?.avatar,
+                        wallet: user?.wallet,
+                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                    })
+                });
                 setUser({
                     ...user,
                     workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
