@@ -72,7 +72,7 @@ interface StatCardProps {
 }
 
 const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo }) => (
-    <div className="flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder blur-sm">
+    <div className={`flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
         <div className="flex items-center gap-3">
             {logo && (
                 <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
@@ -235,10 +235,6 @@ const ExplorerWorker: FC = () => {
         };
 
         const updateStats = () => {
-            if (!user) {
-                return;
-            }
-
             // Random point gain between 0.05 to 0.67
             const pointGain = getRandomNumber(0.05, 0.67);
 
@@ -261,10 +257,13 @@ const ExplorerWorker: FC = () => {
                 })
             });
 
-            setUser({
-                ...user,
-                workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
-            });
+            if (user && isConnected) {
+                console.log('user', user.workerPoints);
+                setUser({
+                    ...user,
+                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                });
+            }
 
             setLastPointGain(pointGain);
 
@@ -291,9 +290,25 @@ const ExplorerWorker: FC = () => {
         };
     }, []);
 
+    const liveNodeConnect = (isConnected: boolean) => {
+        if (isConnected) {
+            setIsConnected(true);
+            setStats(prevStats => ({
+                ...prevStats,
+                liveNodes: prevStats.liveNodes + 1
+            }));
+        } else {
+            setIsConnected(false);
+            setStats(prevStats => ({
+                ...prevStats,
+                liveNodes: prevStats.liveNodes - 1
+            }));
+        }
+    }
+
     return (
         <div className="flex flex-col gap-8">
-            <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH supercomputer</h2>
+            <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH Supercomputer</h2>
             <div className="text-white flex flex-col md:flex-row gap-5 w-full justify-between md:items-end">
                 <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] pt-9 pb-8 relative'>
                     <Image src="/image/login/pixels.png" alt="logo" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[401px] h-auto" width={401} height={401} />
@@ -305,7 +320,7 @@ const ExplorerWorker: FC = () => {
                         <span className='text-sm w-full transition-all duration-300'>{isConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
                         <AntSwitch
                             inputProps={{ 'aria-label': 'Node Connection Status' }}
-                            onChange={(e) => setIsConnected(e.target.checked)}
+                            onChange={(e) => liveNodeConnect(e.target.checked)}
                             checked={isConnected}
                         />
                     </ShadowBtn>
@@ -340,16 +355,13 @@ const ExplorerWorker: FC = () => {
                     <Divider sx={{ backgroundColor: '#FFFFFF1F' }} />
                     <div className='flex items-center justify-between gap-5 w-full'>
                         <StatCard label="Total Nodes" value={stats.totalNodes} />
-                        {
-                            isConnected &&
-                            <StatCard label="Live Nodes" value={stats.liveNodes} />
-                        }
+                        <StatCard label="Live Nodes" value={stats.liveNodes} />
                     </div>
                 </div>
             </div>
 
             {/* Provider Statistics Section */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {providers.map((provider) => (
                     <ProviderCard
                         key={provider.name}
@@ -359,13 +371,13 @@ const ExplorerWorker: FC = () => {
                         logo={provider.logo}
                     />
                 ))}
-            </div> */}
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+            </div>
+            {/* <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <Image src='/image/blur/edith-blur.png' className='w-full' alt='edith' width={256} height={142} />
                 <Image src='/image/blur/akash-blur.png' className='w-full' alt='akash' width={256} height={142} />
                 <Image src='/image/blur/google-blur.png' className='w-full' alt='google-cloud' width={256} height={142} />
                 <Image src='/image/blur/io-blur.png' className='w-full' alt='ionet' width={256} height={142} />
-            </div>
+            </div> */}
         </div>
     );
 };
