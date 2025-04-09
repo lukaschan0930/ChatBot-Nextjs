@@ -189,3 +189,7 @@ export const TweetStatus = [
     label: "Archived",
   }
 ]
+
+export const getRandomNumber = (min: number, max: number) => {
+  return Math.random() * (max - min) + min;
+};

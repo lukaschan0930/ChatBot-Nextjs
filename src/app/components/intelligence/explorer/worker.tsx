@@ -11,7 +11,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import ShadowBtn from '../../ShadowBtn';
 import { Divider } from '@mui/material';
 import { Sparklines, SparklinesLine } from 'react-sparklines';
-import { User } from '@/app/lib/interface';
+import { getRandomNumber } from '@/app/lib/stack';
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
     width: 28,
@@ -232,9 +232,6 @@ const ExplorerWorker: FC = () => {
     // Original useEffect for other updates (points, live nodes)
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
-        const getRandomNumber = (min: number, max: number) => {
-            return Math.random() * (max - min) + min;
-        };
 
         const updateStats = async () => {
             // Random point gain between 0.05 to 0.67
@@ -249,7 +246,8 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            if (isConnected && user) {
+            if (isConnected && isLoading) {
+                console.log(user?.workerPoints);
                 await fetch('/api/user/profile', {
                     method: 'PUT',
                     body: JSON.stringify({
