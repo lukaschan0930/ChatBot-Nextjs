@@ -80,7 +80,7 @@ export async function GET() {
 
     // Format explorer data into date-value pairs
     const userCountData = explorer.map(item => [new Date(item.date).getTime(), item.userCount]);
-    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), item.activeUsers.length * 100]);
+    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), Math.min(item.activeUsers.length * 100, item.userCount)]);
     const dailyPromptCountData = explorer.map(item => [new Date(item.date).getTime(), item.dailyPromptCount * 100]);
     const promptCountData = explorer.map(item => [new Date(item.date).getTime(), item.promptCount * 100]);
     const pointsCountData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)) * 100);
