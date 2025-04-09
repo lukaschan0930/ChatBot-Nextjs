@@ -173,7 +173,6 @@ const ExplorerWorker: FC = () => {
         liveNodes: 0,
         totalNodes: TOTAL_NODES
     });
-    const [lastPointGain, setLastPointGain] = useState(0);
 
     // Add the providers data
     const providers = [
@@ -235,6 +234,32 @@ const ExplorerWorker: FC = () => {
             liveNodes: isConnected ? prevStats.liveNodes + 1 : prevStats.liveNodes - 1
         }));
     }
+
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+
+        const updateStats = async () => {
+            const liveNodesPercentage = getRandomNumber(0.13, 0.34);
+            const liveNodesCount = Math.round(TOTAL_NODES * liveNodesPercentage);
+
+            setStats(prevStats => ({
+                ...prevStats,
+                liveNodes: liveNodesCount
+            }));
+
+            // Schedule next update with random time between 5 to 30 minutes
+            const nextUpdate = Math.round(getRandomNumber(5 * 60 * 1000, 30 * 60 * 1000));
+            timeoutId = setTimeout(updateStats, nextUpdate);
+        };
+
+        updateStats();
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const styleSheet = document.createElement("style");

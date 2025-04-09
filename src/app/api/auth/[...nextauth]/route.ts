@@ -13,7 +13,7 @@ import { AdapterUser } from 'next-auth/adapters';
 import { cookies } from 'next/headers'
 import { IUser } from '@/app/lib/interface';
 import { NextAuthOptions } from "next-auth";
-import { verifyRecaptcha } from '@/app/lib/recaptcha';
+// import { verifyRecaptcha } from '@/app/lib/recaptcha';
 
 const authOptions: NextAuthOptions = {
     providers: [
