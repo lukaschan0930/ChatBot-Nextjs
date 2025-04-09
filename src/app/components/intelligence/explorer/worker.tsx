@@ -72,10 +72,10 @@ interface StatCardProps {
 }
 
 const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo }) => (
-    <div className={`flex flex-col gap-4 w-full p-6 bg-[#000000] rounded-[12px] border border-secondaryBorder ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
+    <div className={`flex flex-col gap-4 w-full p-6 bg-[#0E0E10] rounded-[12px] border border-[#252527] ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
         <div className="flex items-center gap-3">
             {logo && (
-                <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center">
                     {logo}
                 </div>
             )}
