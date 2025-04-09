@@ -52,6 +52,11 @@ export interface AuthContextType {
     setVerifyCode: (code: string | null) => void;
     user: User | null;
     setUser: Dispatch<SetStateAction<User | null>>;
+    isLoading: boolean;
+    setIsLoading: (isLoading: boolean) => void;
+    isConnected: boolean;
+    setIsConnected: (isConnected: boolean) => void;
+    updateWorkerPoints: () => Promise<void>;
 }
 
 interface RequestFunction {
