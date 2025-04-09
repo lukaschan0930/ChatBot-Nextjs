@@ -6,16 +6,12 @@ import { AuthOptions } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession } from "next-auth";
 import { ChatHistory, IUser } from "@/app/lib/interface";
+import { getRandomNumber } from "@/app/lib/stack";
 
 interface IChat {
     email: string;
     createAt: string;
     session: ChatHistory[];
-}
-
-interface IData {
-    date: string;
-    count: number;
 }
 
 // Helper function to generate realistic points data
@@ -80,7 +76,7 @@ export async function GET() {
 
     // Format explorer data into date-value pairs
     const userCountData = explorer.map(item => [new Date(item.date).getTime(), item.userCount]);
-    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), Math.min(item.activeUsers.length * 100, item.userCount)]);
+    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), item.activeUsers.length * 100 > item.userCount * getRandomNumber(0.5, 0.8) ? item.userCount : item.activeUsers.length * 100]);
     const dailyPromptCountData = explorer.map(item => [new Date(item.date).getTime(), item.dailyPromptCount * 100]);
     const promptCountData = explorer.map(item => [new Date(item.date).getTime(), item.promptCount * 100]);
     const pointsCountData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)) * 100);

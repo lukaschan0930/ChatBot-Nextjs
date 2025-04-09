@@ -28,16 +28,16 @@ export async function PUT(request: NextRequest) {
     try {
         user.name = name;
         user.avatar = avatar;
-        user.wallet = wallet;
 
         if (workerPoints) {
             user.workerPoints = workerPoints;
         }
 
         const isExist = await UserRepo.findByWalletWithoutUser(wallet, session?.user?.email as string);
-        if (isExist) {
+        if (isExist && user.wallet !== wallet) {
             return Response.json({ success: false, message: "Wallet already exists" });
         }
+        user.wallet = wallet;
         // if (user.wallet) {
         const chatHistory = await ChatRepo.findHistoryByEmail(user.email);
         if (chatHistory) {
