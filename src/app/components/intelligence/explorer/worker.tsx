@@ -11,6 +11,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import ShadowBtn from '../../ShadowBtn';
 import { Divider } from '@mui/material';
 import { Sparklines, SparklinesLine } from 'react-sparklines';
+import { User } from '@/app/lib/interface';
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
     width: 28,
@@ -172,7 +173,6 @@ const ExplorerWorker: FC = () => {
         totalNodes: TOTAL_NODES
     });
     const [isConnected, setIsConnected] = useState(true);
-    const [lastPointGain, setLastPointGain] = useState(0);
 
     // Add the providers data
     const providers = [
@@ -247,27 +247,30 @@ const ExplorerWorker: FC = () => {
                 liveNodes: liveNodesCount
             }));
 
-            if (user && isConnected) {
-                console.log('user', user.workerPoints);
+            if (isConnected) {
                 await fetch('/api/user/profile', {
                     method: 'PUT',
                     body: JSON.stringify({
                         name: user?.name,
                         avatar: user?.avatar,
                         wallet: user?.wallet,
-                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                        workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
                     })
                 });
-                setUser({
-                    ...user,
-                    workerPoints: Math.round((Number((user?.workerPoints ?? 0) + Number(pointGain.toFixed(2)))))
+                setUser(prevUser => {
+                    if (prevUser) {
+                        return {
+                            ...prevUser,
+                            workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+                        };
+                    }
+                    return prevUser;
                 });
+
             }
 
-            setLastPointGain(pointGain);
-
             // Schedule next update with random time between 5 to 30 minutes
-            const nextUpdate = Math.round(getRandomNumber(5 * 60000, 30 * 60000));
+            const nextUpdate = Math.round(getRandomNumber(5 * 60 * 1000, 30 * 60 * 1000));
             timeoutId = setTimeout(updateStats, nextUpdate);
         };
 
