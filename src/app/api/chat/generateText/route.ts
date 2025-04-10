@@ -8,17 +8,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
 import { cerebras } from '@/app/lib/api/openai/const';
 import {
-    readDatasource,
-    sleep,
     generateDatasource,
-    getDataSource,
     createChatEngine,
-    readDataSourceFromIndex
 } from "@/app/lib/api/openai/util";
 import {
     OpenAI,
     VectorStoreIndex,
-    DeepSeekLLM,
 } from "llamaindex";
 
 const llm = new OpenAI({

@@ -22,8 +22,9 @@ export const LABELS = {
 
 export const processChunkedString = (chunkedString: string): Promise<{ content: string, inputToken: number, outputToken: number, inputTime: number, outputTime: number }> => {
   return new Promise((resolve, reject) => {
+    console.log("chunkedString", chunkedString);
     const jsonArrayString = `[${chunkedString.replace(/}\s*{/g, '},{')}]`;
-
+    console.log("jsonArrayString", jsonArrayString);
     let content = "";
     let inputToken = 0;
     let outputToken = 0;
