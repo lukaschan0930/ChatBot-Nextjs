@@ -272,7 +272,7 @@ const ExplorerWorker: FC = () => {
 
     return (
         <div className="flex flex-col gap-8">
-            <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH Supercomputer</h2>
+            <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH SuperComputer</h2>
             <div className="text-white flex flex-col md:flex-row gap-5 w-full justify-between md:items-end">
                 <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] pt-9 pb-8 relative'>
                     <Image src="/image/login/pixels.png" alt="logo" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[401px] h-auto" width={401} height={401} />
