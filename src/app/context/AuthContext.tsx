@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [verifyCode, setVerifyCode] = useState<string | null>("");
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
   const { data: session } = useSession();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -30,13 +29,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user && !user) {
       fetchUserData();
     }
   }, [session]);
 
   const updateWorkerPoints = async () => {
-    if (!isConnected || !user) return;
+    if (!user?.isNodeConnected) return;
 
     // Random point gain between 0.05 to 0.67
     const pointGain = getRandomNumber(0.05, 0.67);
@@ -83,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }, nextUpdate);
     };
 
-    if (isConnected && user) {
+    if (user?.isNodeConnected && user) {
       scheduleNextUpdate();
     }
 
@@ -92,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         clearTimeout(timerRef.current);
       }
     };
-  }, [isConnected, user]);
+  }, [user]);
 
   return (
     <AuthContext.Provider
@@ -103,9 +102,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser,
         isLoading,
         setIsLoading,
-        isConnected,
-        setIsConnected,
-        updateWorkerPoints
       }}
     >
       {children}

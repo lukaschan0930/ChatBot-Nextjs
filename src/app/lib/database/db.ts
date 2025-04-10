@@ -22,6 +22,7 @@ interface IUser extends Document {
     chatPoints: number;
     workerPoints: number;
     role: string;
+    isNodeConnected: boolean;
     reward: {
         platform: string;
         totalReward: number;
@@ -141,6 +142,10 @@ function userModel() {
                 }
             }
         ],
+        isNodeConnected: {
+            type: Boolean,
+            default: false
+        },
         role: {
             type: String,
             default: "user"

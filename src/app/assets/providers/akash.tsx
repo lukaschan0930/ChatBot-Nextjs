@@ -1,7 +1,7 @@
 const Akash = () => {
     return (
         <svg width="101" height="20" viewBox="0 0 101 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g clip-path="url(#clip0_3197_881)">
+            <g clipPath="url(#clip0_3197_881)">
                 <path d="M15.2259 13.2507L18.9855 19.8749H11.3911L7.5918 13.2507H15.2259Z" fill="url(#paint0_linear_3197_881)" />
                 <path d="M18.9835 19.8759L22.7765 13.2518L15.1841 0.000488281H7.5918L18.9835 19.8759Z" fill="#FF414C" />
                 <path d="M3.79614 6.62256H11.3885L3.7993 19.8739L0 13.2499L3.79614 6.62256Z" fill="#FF414C" />
@@ -13,8 +13,8 @@ const Akash = () => {
             </g>
             <defs>
                 <linearGradient id="paint0_linear_3197_881" x1="14.4667" y1="17.8308" x2="17.2663" y2="14.4891" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#FF414C" />
-                    <stop offset="1" stop-color="#FF414C" stop-opacity="0" />
+                    <stop stopColor="#FF414C" />
+                    <stop offset="1" stopColor="#FF414C" stopOpacity="0" />
                 </linearGradient>
                 <clipPath id="clip0_3197_881">
                     <rect width="101" height="20" fill="white" />

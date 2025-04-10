@@ -128,8 +128,8 @@ async function getTopBoardUsers() {
     return topUsers;
 };
 
-async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number, workerPoints: number) {
-    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints, workerPoints }, { upsert: true });
+async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number, workerPoints: number, isNodeConnected: boolean) {
+    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints, workerPoints, isNodeConnected }, { upsert: true });
 }
 
 async function count() {

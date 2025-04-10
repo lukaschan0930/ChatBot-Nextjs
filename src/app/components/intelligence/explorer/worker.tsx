@@ -166,7 +166,7 @@ const styles = `
 `;
 
 const ExplorerWorker: FC = () => {
-    const { user, isConnected, setIsConnected } = useAuth();
+    const { user, setUser } = useAuth();
     const TOTAL_NODES = 13739;
     const [stats, setStats] = useState({
         pps: 0,
@@ -227,12 +227,33 @@ const ExplorerWorker: FC = () => {
         };
     }, []);
 
-    const liveNodeConnect = (isConnected: boolean) => {
-        setIsConnected(isConnected);
-        setStats(prevStats => ({
-            ...prevStats,
-            liveNodes: isConnected ? prevStats.liveNodes + 1 : prevStats.liveNodes - 1
-        }));
+    const liveNodeConnect = async (isConnected: boolean) => {
+        try {
+            await fetch('/api/user/profile', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: user?.name,
+                    avatar: user?.avatar,
+                    wallet: user?.wallet,
+                    isNodeConnected: isConnected
+                })
+            });
+            setUser(prevUser => {
+                if (prevUser) {
+                    return {
+                        ...prevUser,
+                        isNodeConnected: isConnected
+                    };
+                }
+                return prevUser;
+            });
+            setStats(prevStats => ({
+                ...prevStats,
+                liveNodes: isConnected ? prevStats.liveNodes + 1 : prevStats.liveNodes - 1
+            }));
+        } catch (error) {
+            console.error('Error updating node connection status:', error);
+        }
     }
 
     useEffect(() => {
@@ -281,11 +302,11 @@ const ExplorerWorker: FC = () => {
                         className="rounded-full w-[164px] mt-5"
                         mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
                     >
-                        <span className='text-sm w-full transition-all duration-300'>{isConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
+                        <span className='text-sm w-full transition-all duration-300'>{user?.isNodeConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
                         <AntSwitch
                             inputProps={{ 'aria-label': 'Node Connection Status' }}
                             onChange={(e) => liveNodeConnect(e.target.checked)}
-                            checked={isConnected}
+                            checked={user?.isNodeConnected ?? false}
                         />
                     </ShadowBtn>
                     <div className="flex items-center gap-6 mt-7">
@@ -326,9 +347,9 @@ const ExplorerWorker: FC = () => {
 
             {/* Provider Statistics Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {providers.map((provider) => (
+                {providers.map((provider, index) => (
                     <ProviderCard
-                        key={provider.name}
+                        key={index}
                         name={provider.name}
                         gpuCount={provider.gpuCount}
                         cpuCount={provider.cpuCount}

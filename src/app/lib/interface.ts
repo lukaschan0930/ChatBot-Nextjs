@@ -10,6 +10,7 @@ export interface User {
     chatPoints?: number;
     workerPoints?: number;
     reward: Reward[];
+    isNodeConnected?: boolean;
     board: {
         score: number;
         rank: number;
@@ -54,9 +55,6 @@ export interface AuthContextType {
     setUser: Dispatch<SetStateAction<User | null>>;
     isLoading: boolean;
     setIsLoading: (isLoading: boolean) => void;
-    isConnected: boolean;
-    setIsConnected: (isConnected: boolean) => void;
-    updateWorkerPoints: () => Promise<void>;
 }
 
 interface RequestFunction {
@@ -129,6 +127,7 @@ export interface IUser {
     chatPoints: number;
     workerPoints: number;
     role: string;
+    isNodeConnected?: boolean;
     reward: {
         platform: string;
         totalReward: number;
