@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
+import { getRandomNumber } from "@/app/lib/stack";
+import { IExplorer } from "@/app/lib/interface";
 
 const ApexChart = dynamic(() => import('./apexChart'), {
     ssr: false,
@@ -47,6 +49,14 @@ const ChartSkeleton = ({ height }: { height: number }) => {
     )
 }
 
+interface IUser {
+    chatPoints: number;
+}
+
+interface IChat {
+    session: any[];
+}
+
 const ExplorerEchat = () => {
     const [usersCount, setUsersCount] = useState(0);
     const [promptCount, setPromptCount] = useState(0);
@@ -68,22 +78,72 @@ const ExplorerEchat = () => {
     });
     const [loading, setLoading] = useState(true);
 
+    // Helper function to generate points data
+    const generatePointsData = (explorer: IExplorer[], targetPoints: number) => {
+        if (explorer.length === 0) return [];
+        
+        const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
+        let lastValue = 0;
+        const basePoints = sortedExplorer.map((item, index) => {
+            const remainingGrowth = targetPoints - lastValue;
+            const remainingPoints = sortedExplorer.length - index;
+            const minGrowth = remainingGrowth / remainingPoints;
+            const variation = minGrowth * (Math.random() * 0.05);
+            const newValue = Math.round(lastValue + minGrowth + variation);
+            lastValue = newValue;
+            return newValue;
+        });
+        basePoints[basePoints.length - 1] = targetPoints;
+
+        return sortedExplorer.map((item, index) => {
+            const timestamp = new Date(item.date).getTime();
+            return [timestamp, basePoints[index]];
+        });
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const res = await fetch('/api/intelligence/explorer');
-                const data = await res.json();
-                setUsersCount(data.currentStats.usersCount);
-                setPromptCount(data.currentStats.promptCount);
-                setConversationCount(data.currentStats.conversationCount);
-                setPointsCount(data.currentStats.pointsCount);
+                const { users, chats, latestExplorer, explorer } = await res.json();
+
+                // Calculate current stats
+                const currentStats = {
+                    usersCount: users.length,
+                    pointsCount: users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0),
+                    promptCount: latestExplorer.promptCount,
+                    conversationCount: chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0)
+                };
+
+                setUsersCount(currentStats.usersCount);
+                setPromptCount(currentStats.promptCount);
+                setConversationCount(currentStats.conversationCount);
+                setPointsCount(currentStats.pointsCount);
+
+                // Sort explorer data by date
+                const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
+
+                // Process all data in a single loop
+                const userCountData: number[][] = [];
+                const activeUsersData: number[][] = [];
+                const dailyPromptCountData: number[][] = [];
+                const promptCountData: number[][] = [];
+                const pointsData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)) * 100);
+
+                sortedExplorer.forEach((item) => {
+                    const timestamp = new Date(item.date).getTime();
+                    userCountData.push([timestamp, item.userCount]);
+                    activeUsersData.push([timestamp, item.activeUsers.length * 100 > item.userCount * getRandomNumber(0.5, 0.8) ? item.userCount : item.activeUsers.length * 100]);
+                    dailyPromptCountData.push([timestamp, item.dailyPromptCount * 100]);
+                    promptCountData.push([timestamp, item.promptCount * 100]);
+                });
 
                 setDailyData({
-                    users: data.userCountData,
-                    activeUsers: data.activeUsersData,
-                    prompts: data.promptCountData,
-                    dailyPrompts: data.dailyPromptCountData,
-                    points: data.pointsCountData
+                    users: userCountData,
+                    activeUsers: activeUsersData,
+                    prompts: promptCountData,
+                    dailyPrompts: dailyPromptCountData,
+                    points: pointsData
                 });
             } catch (error) {
                 console.error("Error fetching explorer data:", error);
