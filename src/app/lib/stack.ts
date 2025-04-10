@@ -72,7 +72,7 @@ export const MenuItems = [
       {
         id: "explorer",
         label: "EXPLORER",
-        disable: false,
+        disable: true,
         tooltip: ""
       }
     ],

@@ -76,7 +76,7 @@ const ProviderCard: FC<ProviderCardProps> = ({ name, gpuCount, cpuCount, logo })
     <div className={`flex flex-col gap-4 w-full p-6 bg-[#0E0E10] rounded-[12px] border border-[#252527] ${name !== 'EDITH' ? 'blur-sm' : ''}`}>
         <div className="flex items-center gap-3">
             {logo && (
-                <div className="w-8 h-8 rounded-full bg-transparent flex items-center justify-center">
+                <div className="rounded-full h-7 bg-transparent flex items-center justify-center">
                     {logo}
                 </div>
             )}
@@ -179,23 +179,23 @@ const ExplorerWorker: FC = () => {
         {
             name: 'EDITH',
             gpuCount: 294,
-            cpuCount: 0,
+            cpuCount: 32,
             logo: <Edith />
         },
         {
-            name: 'Akash',
+            name: '',
             gpuCount: 238,
             cpuCount: 30,
             logo: <Akash />
         },
         {
-            name: 'Google Cloud',
+            name: '',
             gpuCount: 152,
             cpuCount: 0,
             logo: <GoogleCloud />
         },
         {
-            name: 'Ionet',
+            name: '',
             gpuCount: 112,
             cpuCount: 0,
             logo: <Ionet />
