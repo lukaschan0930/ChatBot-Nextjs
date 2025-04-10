@@ -5,7 +5,7 @@ import { ExplorerRepo } from "@/app/lib/database/explorerRepo";
 import { AuthOptions } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession } from "next-auth";
-import { ChatHistory, IUser } from "@/app/lib/interface";
+import { ChatHistory, IUser, IExplorer } from "@/app/lib/interface";
 import { getRandomNumber } from "@/app/lib/stack";
 
 interface IChat {
@@ -14,39 +14,36 @@ interface IChat {
     session: ChatHistory[];
 }
 
+interface IExplorerData {
+    date: number;
+    userCount: number;
+    activeUsers: string[];
+    dailyPromptCount: number;
+    promptCount: number;
+}
+
 // Helper function to generate realistic points data
-function generatePointsData(explorer: any[], targetPoints: number) {
+function generatePointsData(explorer: IExplorerData[], targetPoints: number) {
     if (explorer.length === 0) return [];
     
     // Sort explorer data by date to ensure chronological order
     const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
     
     // Calculate base points with a rising trend
-    let lastValue = 0; // Start from 1000
+    let lastValue = 0;
     const basePoints = sortedExplorer.map((item, index) => {
-        // Calculate the remaining growth needed
         const remainingGrowth = targetPoints - lastValue;
         const remainingPoints = sortedExplorer.length - index;
-        
-        // Calculate minimum growth for this step
         const minGrowth = remainingGrowth / remainingPoints;
-        
-        // Add some positive variation (0% to 5%)
         const variation = minGrowth * (Math.random() * 0.05);
-        
-        // Calculate new value ensuring it's always higher than the last
         const newValue = Math.round(lastValue + minGrowth + variation);
         lastValue = newValue;
-        
         return newValue;
     });
 
-    // Ensure the last point matches exactly the target points
     basePoints[basePoints.length - 1] = targetPoints;
 
-    // Create date-value pairs with correct timestamps
     return sortedExplorer.map((item, index) => {
-        // Convert the date to milliseconds since epoch
         const timestamp = new Date(item.date).getTime();
         return [timestamp, basePoints[index]];
     });
@@ -58,6 +55,18 @@ export async function GET() {
         return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
+    // Add caching headers
+    const response = await fetchData();
+    
+    return NextResponse.json(response, {
+        headers: {
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+        }
+    });
+}
+
+// Separate data fetching logic
+async function fetchData() {
     // Parallelize database queries
     const [users, chats, latestExplorer, explorer] = await Promise.all([
         UserRepo.getFullUser(),
@@ -74,19 +83,47 @@ export async function GET() {
         conversationCount: chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0)
     };
 
-    // Format explorer data into date-value pairs
-    const userCountData = explorer.map(item => [new Date(item.date).getTime(), item.userCount]);
-    const activeUsersData = explorer.map(item => [new Date(item.date).getTime(), item.activeUsers.length * 100 > item.userCount * getRandomNumber(0.5, 0.8) ? item.userCount : item.activeUsers.length * 100]);
-    const dailyPromptCountData = explorer.map(item => [new Date(item.date).getTime(), item.dailyPromptCount * 100]);
-    const promptCountData = explorer.map(item => [new Date(item.date).getTime(), item.promptCount * 100]);
-    const pointsCountData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)) * 100);
+    // Sort explorer data by date
+    const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
+    
+    // Initialize arrays for the data points
+    const userCountData: number[][] = [];
+    const activeUsersData: number[][] = [];
+    const dailyPromptCountData: number[][] = [];
+    const promptCountData: number[][] = [];
+    const pointsData: number[][] = [];
 
-    return NextResponse.json({
+    // Calculate points data
+    let lastValue = 0;
+    const targetPoints = Number(currentStats.pointsCount.toFixed(2)) * 100;
+    const basePoints = sortedExplorer.map((item, index) => {
+        const remainingGrowth = targetPoints - lastValue;
+        const remainingPoints = sortedExplorer.length - index;
+        const minGrowth = remainingGrowth / remainingPoints;
+        const variation = minGrowth * (Math.random() * 0.05);
+        const newValue = Math.round(lastValue + minGrowth + variation);
+        lastValue = newValue;
+        return newValue;
+    });
+    basePoints[basePoints.length - 1] = targetPoints;
+
+    // Process all data in a single loop
+    sortedExplorer.forEach((item: IExplorerData, index) => {
+        const timestamp = new Date(item.date).getTime();
+        
+        userCountData.push([timestamp, item.userCount]);
+        activeUsersData.push([timestamp, item.activeUsers.length * 100 > item.userCount * getRandomNumber(0.5, 0.8) ? item.userCount : item.activeUsers.length * 100]);
+        dailyPromptCountData.push([timestamp, item.dailyPromptCount * 100]);
+        promptCountData.push([timestamp, item.promptCount * 100]);
+        pointsData.push([timestamp, basePoints[index]]);
+    });
+
+    return {
         userCountData,
         activeUsersData,
         dailyPromptCountData,
         promptCountData,
-        pointsCountData,
+        pointsCountData: pointsData,
         currentStats
-    });
+    };
 }
