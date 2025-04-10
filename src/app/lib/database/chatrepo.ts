@@ -6,6 +6,7 @@ export const ChatRepo = {
     updateHistory,
     create,
     getFullHistory,
+    getFullHistroyWithSessions
 }
 
 async function findHistoryByEmail(email: string) {
@@ -22,4 +23,8 @@ async function create(chatHistory: { email: string, session: ChatHistory[] }) {
 
 async function getFullHistory() {
     return db.Chat.find();
+}
+
+async function getFullHistroyWithSessions() {
+    return db.Chat.find().populate('session');
 }

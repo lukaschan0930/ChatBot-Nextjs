@@ -21,6 +21,7 @@ export const UserRepo = {
     updateUserProfileWithEmail,
     count,
     getFullUser,
+    getFullUserWithChatPoints
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -137,4 +138,8 @@ async function count() {
 
 async function getFullUser() {
     return db.User.find();
+}
+
+async function getFullUserWithChatPoints() {
+    return db.User.find({chatPoints: {$gt: 0}}).select('email chatPoints');
 }
