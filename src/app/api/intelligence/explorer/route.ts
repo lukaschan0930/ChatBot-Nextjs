@@ -13,8 +13,9 @@ export async function GET() {
     }
 
     // Fetch raw data
-    const [users, chats, latestExplorer, explorer] = await Promise.all([
+    const [users, userCount, chats, latestExplorer, explorer] = await Promise.all([
         UserRepo.getFullUserWithChatPoints(),
+        UserRepo.count(),
         ChatRepo.getFullHistroyWithSessions(),
         ExplorerRepo.findByLatest(),
         ExplorerRepo.findAll()
@@ -23,6 +24,7 @@ export async function GET() {
     // Return raw data with caching
     return NextResponse.json({
         users,
+        userCount,
         chats,
         latestExplorer,
         explorer
