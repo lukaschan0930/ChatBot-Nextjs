@@ -14,7 +14,7 @@ export async function GET() {
 
     // Fetch raw data
     const [users, chats, latestExplorer, explorer] = await Promise.all([
-        UserRepo.getFullUser(),
+        UserRepo.getFullUserWithChatPoints(),
         ChatRepo.getFullHistroyWithSessions(),
         ExplorerRepo.findByLatest(),
         ExplorerRepo.findAll()
