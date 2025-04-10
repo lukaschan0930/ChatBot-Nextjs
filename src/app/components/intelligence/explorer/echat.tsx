@@ -133,7 +133,7 @@ const ExplorerEchat = () => {
                 sortedExplorer.forEach((item) => {
                     const timestamp = new Date(item.date).getTime();
                     userCountData.push([timestamp, item.userCount]);
-                    activeUsersData.push([timestamp, item.activeUsers.length * 100 > item.userCount * getRandomNumber(0.05, 0.08) ? item.userCount * getRandomNumber(0.05, 0.08) : item.activeUsers.length * 100]);
+                    activeUsersData.push([timestamp, item.activeUsers.length * 100 > Math.round(item.userCount * getRandomNumber(0.05, 0.08)) ? item.userCount * getRandomNumber(0.05, 0.08) : item.activeUsers.length * 100]);
                     dailyPromptCountData.push([timestamp, item.dailyPromptCount * 100]);
                     promptCountData.push([timestamp, item.promptCount * 100]);
                 });
