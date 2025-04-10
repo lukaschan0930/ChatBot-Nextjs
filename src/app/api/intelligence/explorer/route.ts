@@ -5,13 +5,6 @@ import { ExplorerRepo } from "@/app/lib/database/explorerRepo";
 import { AuthOptions } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession } from "next-auth";
-import { ChatHistory, IUser, IExplorer } from "@/app/lib/interface";
-
-interface IChat {
-    email: string;
-    createAt: string;
-    session: ChatHistory[];
-}
 
 export async function GET() {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -22,7 +15,7 @@ export async function GET() {
     // Fetch raw data
     const [users, chats, latestExplorer, explorer] = await Promise.all([
         UserRepo.getFullUser(),
-        ChatRepo.getFullHistory(),
+        ChatRepo.getFullHistroyWithSessions(),
         ExplorerRepo.findByLatest(),
         ExplorerRepo.findAll()
     ]);
