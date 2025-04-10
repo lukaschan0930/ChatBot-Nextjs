@@ -105,11 +105,11 @@ const ExplorerEchat = () => {
         const fetchData = async () => {
             try {
                 const res = await fetch('/api/intelligence/explorer');
-                const { users, chats, latestExplorer, explorer } = await res.json();
+                const { users, userCount, chats, latestExplorer, explorer } = await res.json();
 
                 // Calculate current stats
                 const currentStats = {
-                    usersCount: users.length,
+                    usersCount: userCount,
                     pointsCount: users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0),
                     promptCount: latestExplorer.promptCount,
                     conversationCount: chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0)

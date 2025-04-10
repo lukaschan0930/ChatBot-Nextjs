@@ -21,7 +21,7 @@ export const UserRepo = {
     updateUserProfileWithEmail,
     count,
     getFullUser,
-    getFullUserWithChatPoints
+    getFullUserWithChatPoints,
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
