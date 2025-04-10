@@ -26,5 +26,5 @@ async function getFullHistory() {
 }
 
 async function getFullHistroyWithSessions() {
-    return db.Chat.find().populate('session');
+    return db.Chat.find().populate('session').select('session');
 }

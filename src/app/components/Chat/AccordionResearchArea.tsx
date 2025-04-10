@@ -117,7 +117,7 @@ const AccordionResearchArea = () => {
                                                 <CheckboxIcon /> :
                                                 index === researchStep &&
                                                 <Image
-                                                    src="/image/chat_logo.svg"
+                                                    src="/image/logo-chat.png"
                                                     alt="chat loading"
                                                     className="w-3 h-auto"
                                                     width={12}
@@ -136,7 +136,7 @@ const AccordionResearchArea = () => {
                                         index === researchStep ?
                                             <div className="ml-1 flex items-center mt-1">
                                                 <Image
-                                                    src="/image/chat_logo.svg"
+                                                    src="/image/logo-chat.png"
                                                     alt="chat loading"
                                                     className={`w-8 h-auto ${step.researchSteps[step.researchSteps.length - 1].type === 1 ? 'rotate' : ''}`}
                                                     width={100}
@@ -148,7 +148,7 @@ const AccordionResearchArea = () => {
                                             index < researchStep &&
                                             <div className="ml-1 flex items-center mt-1">
                                                 <Image
-                                                    src="/image/chat_logo.svg"
+                                                    src="/image/logo-chat.png"
                                                     alt="chat loading"
                                                     className="w-8 h-auto"
                                                     width={100}

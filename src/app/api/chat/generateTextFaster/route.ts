@@ -19,6 +19,7 @@ import {
     VectorStoreIndex,
     DeepSeekLLM,
 } from "llamaindex";
+import { ExplorerRepo } from "@/app/lib/database/explorerRepo";
 
 const llm = new OpenAI({
     model: "gpt-4o-mini",
@@ -208,6 +209,28 @@ export async function POST(request: NextRequest) {
                 }
 
                 await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+
+                const explorerDate = Number(new Date().setHours(0, 0, 0, 0).toString());
+                console.log("explorerDate", explorerDate);
+                const explorer = await ExplorerRepo.findByDate(explorerDate);
+                if (!explorer) {
+                    const latestExplorer = await ExplorerRepo.findByLatest();
+                    await ExplorerRepo.create({
+                        date: explorerDate,
+                        userCount: latestExplorer.userCount,
+                        promptCount: latestExplorer.promptCount + 1,
+                        dailyPromptCount: 1,
+                        activeUsers: [session?.user?.email as string]
+                    });
+                } else {
+                    await ExplorerRepo.update({
+                        date: explorerDate,
+                        userCount: explorer.userCount,
+                        promptCount: explorer.promptCount + 1,
+                        dailyPromptCount: explorer.dailyPromptCount + 1,
+                        activeUsers: [...explorer.activeUsers, session?.user?.email as string]
+                    });
+                }
                 return NextResponse.json({
                     success: true,
                     content: responseText,
@@ -331,6 +354,27 @@ export async function POST(request: NextRequest) {
                 }
 
                 await ChatRepo.updateHistory(session?.user?.email as string, chatHistory);
+                const explorerDate = Number(new Date().setHours(0, 0, 0, 0).toString());
+                console.log("explorerDate", explorerDate);
+                const explorer = await ExplorerRepo.findByDate(explorerDate);
+                if (!explorer) {
+                    const latestExplorer = await ExplorerRepo.findByLatest();
+                    await ExplorerRepo.create({
+                        date: explorerDate,
+                        userCount: latestExplorer.userCount,
+                        promptCount: latestExplorer.promptCount + 1,
+                        dailyPromptCount: 1,
+                        activeUsers: [session?.user?.email as string]
+                    });
+                } else {
+                    await ExplorerRepo.update({
+                        date: explorerDate,
+                        userCount: explorer.userCount,
+                        promptCount: explorer.promptCount + 1,
+                        dailyPromptCount: explorer.dailyPromptCount + 1,
+                        activeUsers: [...explorer.activeUsers, session?.user?.email as string]
+                    });
+                }
                 return NextResponse.json({
                     success: true,
                     content: responseText,
