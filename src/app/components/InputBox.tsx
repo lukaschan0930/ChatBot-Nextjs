@@ -107,6 +107,7 @@ const InputBox = () => {
 
   const [files, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
   const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+  const timer = useRef<number>(0)
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -235,6 +236,7 @@ const InputBox = () => {
   };
 
   const handleSendMessage = async () => {
+    timer.current = Number(Date.now().toString());
     if (inputPrompt === "") {
       toast({
         variant: "destructive",
@@ -411,8 +413,9 @@ const InputBox = () => {
 
             // Decode the incoming chunk and add it to our buffer.
             const chunk = decoder.decode(value, { stream: true });
-            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
-            fullResponse += content;
+            // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+            // fullResponse += content;
+            fullResponse += chunk;
 
             setChatLog((prevChatLog) => {
               const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
@@ -421,10 +424,10 @@ const InputBox = () => {
                   prompt,
                   response: fullResponse,
                   timestamp: newLog[newLog.length - 1].timestamp,
-                  inputToken: inputToken,
-                  outputToken: outputToken,
-                  inputTime: inputTime,
-                  outputTime: outputTime,
+                  inputToken: 0,
+                  outputToken: 0,
+                  inputTime: 0,
+                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
                   chatType: chatType,
                   datasource: datasource,
                   fileUrls: files.map((file) => file.url)
@@ -434,10 +437,10 @@ const InputBox = () => {
                   prompt,
                   response: fullResponse,
                   timestamp: Date.now().toString(),
-                  inputToken: inputToken,
-                  outputToken: outputToken,
-                  inputTime: inputTime,
-                  outputTime: outputTime,
+                  inputToken: 0,
+                  outputToken: 0,
+                  inputTime: 0,
+                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
                   chatType: chatType,
                   datasource: datasource,
                   fileUrls: files.map((file) => file.url)
@@ -448,8 +451,8 @@ const InputBox = () => {
           }
 
           if (buffer.trim() !== "") {
-            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
-            fullResponse += content;
+            // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+            fullResponse += buffer;
             setChatLog((prevChatLog) => {
               const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
               if (newLog.length > 0) {
@@ -457,10 +460,10 @@ const InputBox = () => {
                   prompt,
                   response: fullResponse,
                   timestamp: newLog[newLog.length - 1].timestamp,
-                  inputToken: inputToken,
-                  outputToken: outputToken,
-                  inputTime: inputTime,
-                  outputTime: outputTime,
+                  inputToken: 0,
+                  outputToken: 0,
+                  inputTime: 0,
+                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
                   chatType: chatType,
                   datasource: datasource,
                   fileUrls: files.map((file) => file.url)
@@ -470,10 +473,10 @@ const InputBox = () => {
                   prompt,
                   response: fullResponse,
                   timestamp: Date.now().toString(),
-                  inputToken: inputToken,
-                  outputToken: outputToken,
-                  inputTime: inputTime,
-                  outputTime: outputTime,
+                  inputToken: 0,
+                  outputToken: 0,
+                  inputTime: 0,
+                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
                   chatType: chatType,
                   datasource: datasource,
                   fileUrls: files.map((file) => file.url)

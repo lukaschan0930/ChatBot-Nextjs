@@ -1,5 +1,5 @@
 import { FiCopy, FiRefreshCw } from "react-icons/fi";
-import React from "react";
+import React, { useRef } from "react";
 import { CodeBlock } from "react-code-block";
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
@@ -64,6 +64,7 @@ const Response = (
   const [, setResearchStep] = useAtom(researchStepAtom);
   const [, setChatHistory] = useAtom(chatHistoryAtom);
   const [chatMode] = useAtom(chatModeAtom);
+  const timer = useRef<number>(0);
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -126,6 +127,7 @@ const Response = (
       }
       return newChatHistory;
     });
+    timer.current = Date.now();
     if (chatType == 0) {
       sendMessage([], 0);
     } else {
@@ -395,7 +397,7 @@ const Response = (
           inputToken: 0,
           outputToken: 0,
           inputTime: 0,
-          outputTime: 0,
+          outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
           totalTime: 0,
           chatType: chatType,
           datasource: datasource,
@@ -469,8 +471,9 @@ const Response = (
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
-            fullResponse += content;
+            // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
+            // fullResponse += content;
+            fullResponse += chunk;
 
             setChatLog((prevChatLog) => {
               const newLog = [...prevChatLog];
@@ -478,11 +481,11 @@ const Response = (
                 prompt,
                 response: fullResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                totalTime: totalTime,
+                inputToken: 0,
+                outputToken: 0,
+                inputTime: 0,
+                outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                totalTime: 0,
                 chatType: chatLog[chatLog.length - 1].chatType,
                 datasource: chatLog[chatLog.length - 1].datasource,
                 fileUrls: chatLog[chatLog.length - 1].fileUrls
@@ -492,19 +495,20 @@ const Response = (
           }
 
           if (buffer.trim() !== "") {
-            const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
-            fullResponse += content;
+            // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
+            // fullResponse += content;
+            fullResponse += buffer;
             setChatLog((prevChatLog) => {
               const newLog = [...prevChatLog];
               newLog[newLog.length - 1] = {
                 prompt,
                 response: fullResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
-                inputToken: inputToken,
-                outputToken: outputToken,
-                inputTime: inputTime,
-                outputTime: outputTime,
-                totalTime: totalTime,
+                inputToken: 0,
+                outputToken: 0,
+                inputTime: 0,
+                outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                totalTime: 0,
                 chatType: newLog[newLog.length - 1].chatType,
                 datasource: chatLog[chatLog.length - 1].datasource,
                 fileUrls: chatLog[chatLog.length - 1].fileUrls

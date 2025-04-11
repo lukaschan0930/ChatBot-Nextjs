@@ -125,7 +125,8 @@ export async function POST(request: NextRequest) {
                             const content = chunk.message.content || "";
                             if (content) {
                                 fullResponse += content;
-                                controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                                // controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                                controller.enqueue(content);
                                 await new Promise(resolve => setTimeout(resolve, 2));
                             }
                         }
@@ -134,20 +135,21 @@ export async function POST(request: NextRequest) {
                     }
                     totalTime = (Date.now() - startTime) / 1000;
                     outputTime = totalTime - inputTime - queueTime;
-                    controller.enqueue(
-                        encoder.encode(
-                            JSON.stringify(
-                                {
-                                    content: "",
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime + time / 1000
-                                }
-                            )
-                        )
-                    );
+                    // controller.enqueue(
+                    //     encoder.encode(
+                    //         JSON.stringify(
+                    //             {
+                    //                 content: "",
+                    //                 inputToken: inputToken,
+                    //                 outputToken: outputToken,
+                    //                 inputTime: inputTime,
+                    //                 outputTime: outputTime,
+                    //                 totalTime: totalTime + time / 1000
+                    //             }
+                    //         )
+                    //     )
+                    // );
+                    controller.enqueue("");
                     controller.close();
 
                     try {
@@ -291,7 +293,7 @@ export async function POST(request: NextRequest) {
                             const content = data.choices?.[0]?.delta?.content || "";
                             if (content) {
                                 fullResponse += content;
-                                controller.enqueue(encoder.encode(JSON.stringify({ content: content, inputToken: inputToken, outputToken: outputToken, inputTime: inputTime, outputTime: outputTime, totalTime: totalTime + time / 1000 })));
+                                controller.enqueue(content);
                                 await new Promise(resolve => setTimeout(resolve, 2));
                             }
                         }
@@ -300,20 +302,21 @@ export async function POST(request: NextRequest) {
                     }
                     totalTime = (Date.now() - startTime) / 1000;
                     outputTime = totalTime - inputTime - queueTime;
-                    controller.enqueue(
-                        encoder.encode(
-                            JSON.stringify(
-                                {
-                                    content: "",
-                                    inputToken: inputToken,
-                                    outputToken: outputToken,
-                                    inputTime: inputTime,
-                                    outputTime: outputTime,
-                                    totalTime: totalTime + time / 1000
-                                }
-                            )
-                        )
-                    );
+                    // controller.enqueue(
+                    //     encoder.encode(
+                    //         JSON.stringify(
+                    //             {
+                    //                 content: "",
+                    //                 inputToken: inputToken,
+                    //                 outputToken: outputToken,
+                    //                 inputTime: inputTime,
+                    //                 outputTime: outputTime,
+                    //                 totalTime: totalTime + time / 1000
+                    //             }
+                    //         )
+                    //     )
+                    // );
+                    controller.enqueue("");
                     controller.close();
 
                     try {
