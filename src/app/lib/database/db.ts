@@ -23,6 +23,7 @@ interface IUser extends Document {
     workerPoints: number;
     role: string;
     isNodeConnected: boolean;
+    isNodeAdded: boolean;
     reward: {
         platform: string;
         totalReward: number;
@@ -143,6 +144,10 @@ function userModel() {
             }
         ],
         isNodeConnected: {
+            type: Boolean,
+            default: false
+        },
+        isNodeAdded: {
             type: Boolean,
             default: false
         },
@@ -389,6 +394,11 @@ function adminModel() {
         systemPrompt: {
             type: String,
             required: true
+        },
+        totalNode: {
+            type: Number,
+            required: true,
+            default: 19739
         }
     });
 

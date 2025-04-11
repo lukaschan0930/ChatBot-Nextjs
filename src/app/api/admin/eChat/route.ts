@@ -32,3 +32,14 @@ export async function GET() {
         return NextResponse.json({ message: "Admin Fetch Failed", status: false });
     }
 }
+
+export async function PUT(request: NextRequest) {
+    const { totalNode } = await request.json();
+    try {
+        await AdminRepo.updateTotalNode(totalNode);
+        return NextResponse.json({ message: "Total Node Updated", status: true });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ message: "Total Node Update Failed", status: false });
+    }
+}

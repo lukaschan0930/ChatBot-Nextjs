@@ -11,6 +11,7 @@ export interface User {
     workerPoints?: number;
     reward: Reward[];
     isNodeConnected?: boolean;
+    isNodeAdded?: boolean;
     board: {
         score: number;
         rank: number;

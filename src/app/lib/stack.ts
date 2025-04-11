@@ -134,34 +134,6 @@ export const ChatTypeItems = [
   },
 ]
 
-export const WorkerTypes = [
-  {
-    id: "compute",
-    label: "Compute",
-    disable: false,
-  },
-  {
-    id: "data",
-    label: "Data",
-    disable: true,
-  }
-  // {
-  //   id: "marketing",
-  //   label: "Marketing",
-  //   disable: true,
-  // },
-  // {
-  //   id: "sales",
-  //   label: "Sales",
-  //   disable: true,
-  // },
-  // {
-  //   id: "customer",
-  //   label: "Customer",
-  //   disable: true,
-  // }
-]
-
 export const MaketingPlatforms = [
   {
     id: "twitter",
