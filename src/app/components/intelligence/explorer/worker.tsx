@@ -170,6 +170,7 @@ const styles = `
 const ExplorerWorker: FC = () => {
     const { user, setUser } = useAuth();
     const [totalNodes, setTotalNodes] = useState(0);
+    const [isConnecting, setIsConnecting] = useState(false);
     const [stats, setStats] = useState({
         pps: 0,
         liveNodes: 0,
@@ -245,6 +246,8 @@ const ExplorerWorker: FC = () => {
     }, []);
 
     const liveNodeConnect = async (isConnected: boolean) => {
+        if (isConnecting) return;
+        setIsConnecting(true);
         try {
             await fetch('/api/user/profile', {
                 method: 'PUT',
@@ -270,6 +273,8 @@ const ExplorerWorker: FC = () => {
             }));
         } catch (error) {
             console.error('Error updating node connection status:', error);
+        } finally {
+            setIsConnecting(false);
         }
     }
 
@@ -360,11 +365,19 @@ const ExplorerWorker: FC = () => {
                                     className="rounded-full w-[164px] mt-5"
                                     mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
                                 >
-                                    <span className='text-sm w-full transition-all duration-300'>{user?.isNodeConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
+                                    <span className='text-sm w-full transition-all duration-300'>
+                                        {
+                                            isConnecting ?
+                                                (user?.isNodeConnected ? 'disconnecting...' : 'connecting...') :
+                                                user?.isNodeConnected ?
+                                                    'connected' : 'disconnected'
+                                        }
+                                    </span>
                                     <AntSwitch
                                         inputProps={{ 'aria-label': 'Node Connection Status' }}
                                         onChange={(e) => liveNodeConnect(e.target.checked)}
                                         checked={user?.isNodeConnected ?? false}
+                                        disabled={isConnecting}
                                     />
                                 </ShadowBtn>
                                 <div className="flex items-center gap-6 mt-7">
