@@ -6,7 +6,7 @@ import { ChatRepo } from "@/app/lib/database/chatrepo";
 import { verifyRecaptcha, getRecaptchaTokenFromRequest } from "@/app/lib/recaptcha";
 
 export async function PUT(request: NextRequest) {
-    const { name, avatar, wallet, workerPoints, isNodeConnected } = await request.json();
+    const { name, avatar, wallet, workerPoints, isNodeConnected, isNodeAdded } = await request.json();
     const session = await getServerSession(authOptions as AuthOptions);
 
     // Verify reCAPTCHA
@@ -37,6 +37,10 @@ export async function PUT(request: NextRequest) {
             user.isNodeConnected = isNodeConnected;
         }
 
+        if (isNodeAdded) {
+            user.isNodeAdded = isNodeAdded;
+        }
+
         const isExist = await UserRepo.findByWalletWithoutUser(wallet, session?.user?.email as string);
         if (isExist && user.wallet !== wallet) {
             return Response.json({ success: false, message: "Wallet already exists" });
@@ -48,7 +52,7 @@ export async function PUT(request: NextRequest) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
         // }
-        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected);
+        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected, user.isNodeAdded);
         return Response.json({ success: true, message: "User updated", user: user });
     } catch (error) {   
         console.error(error);
@@ -70,7 +74,7 @@ export async function GET() {
         if (chatHistory) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
-        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected ?? false);
+        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected ?? false, user.isNodeAdded ?? false);
         return Response.json({ success: true, user: user });
     } catch (error) {
         console.error(error);

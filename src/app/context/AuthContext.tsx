@@ -74,7 +74,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const minutes = getRandomNumber(1.7, 10);
       const nextUpdate = minutes * 60 * 1000;
-      console.log("Next worker points update in:", minutes, "minutes");
       
       timerRef.current = setTimeout(async () => {
         await updateWorkerPoints();
