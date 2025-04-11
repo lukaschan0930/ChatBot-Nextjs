@@ -62,10 +62,10 @@ const Workers = () => {
                     <div className="bg-[#0B0B0D] border-[#25252799] border rounded-[8px] px-3 py-[14px] flex gap-3">
                         {
                             WorkerTypes.map((workerType) => (
-                                <div key={workerType.id} className="flex gap-2 w-[282px] h-[182px] flex-col justify-center items-center">
+                                <div key={workerType.id} className="flex gap-2 w-[282px] flex-col justify-center items-center">
                                     <ShadowBtn
                                         className={`w-full rounded-md ${workerType.disable && 'bg-transparent'}`}
-                                        mainClassName={`bg-[#29292980] text-white flex flex-col items-center justify-center py-7 px-2 md:px-16 relative`}
+                                        mainClassName={`bg-[#29292980] text-white flex flex-col items-center justify-center py-14 px-2 md:px-16 relative`}
                                         onClick={() => router.push(`/workers/${workerType.id}`)}
                                     >
                                         <div className={`w-[46px] h-[46px] flex flex-col items-center justify-center ${workerType.disable && 'opacity-30'}`}>
