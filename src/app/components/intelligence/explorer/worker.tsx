@@ -368,9 +368,9 @@ const ExplorerWorker: FC = () => {
                                     <span className='text-sm w-full transition-all duration-300'>
                                         {
                                             isConnecting ?
-                                                (user?.isNodeConnected ? 'disconnecting...' : 'connecting...') :
+                                                (user?.isNodeConnected ? 'Disconnecting...' : 'Connecting...') :
                                                 user?.isNodeConnected ?
-                                                    'connected' : 'disconnected'
+                                                    'Connected' : 'Disconnected'
                                         }
                                     </span>
                                     <AntSwitch
