@@ -316,7 +316,7 @@ const ExplorerWorker: FC = () => {
     }, []);
 
     const addTotalNodes = async () => {
-        if (isLoading || user?.isNodeAdded) return;
+        if (isLoading || user?.isNodeAdded || totalNodes > 0) return;
         setIsLoading(true);
         try {
             await fetch('/api/admin/eChat', {

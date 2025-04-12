@@ -34,6 +34,15 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
+    const token = authHeader.split(' ')[1];
+    const decodedToken = await verifyConfirmationToken(token);
+    if (!decodedToken) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     const { totalNode } = await request.json();
     try {
         await AdminRepo.updateTotalNode(totalNode);
