@@ -131,7 +131,7 @@ const StatCard: FC<StatCardProps> = ({ label, value }) => {
     }
 
     return (
-        <div className="flex flex-col gap-2 px-4 pt-5 h-[157px] w-[calc(50%-10px)] rounded-[12px] border border-secondaryBorder relative min-w-fit">
+        <div className="flex flex-col gap-2 px-4 pt-5 h-[157px] w-full md:w-[calc(50%-10px)] rounded-[12px] border border-secondaryBorder relative min-w-fit">
             <div className="text-subButtonFont text-[12px] text-nowrap flex items-center gap-2">
                 {label}
                 {
@@ -168,7 +168,7 @@ const styles = `
 `;
 
 const ExplorerWorker: FC = () => {
-    const { user, setUser } = useAuth();
+    const { user, setUser, isNodeConnected, setIsNodeConnected } = useAuth();
     const [totalNodes, setTotalNodes] = useState(0);
     const [isConnecting, setIsConnecting] = useState(false);
     const [stats, setStats] = useState({
@@ -249,24 +249,7 @@ const ExplorerWorker: FC = () => {
         if (isConnecting) return;
         setIsConnecting(true);
         try {
-            await fetch('/api/user/profile', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    name: user?.name,
-                    avatar: user?.avatar,
-                    wallet: user?.wallet,
-                    isNodeConnected: isConnected
-                })
-            });
-            setUser(prevUser => {
-                if (prevUser) {
-                    return {
-                        ...prevUser,
-                        isNodeConnected: isConnected
-                    };
-                }
-                return prevUser;
-            });
+            setIsNodeConnected(isConnected);
             setStats(prevStats => ({
                 ...prevStats,
                 liveNodes: isConnected ? prevStats.liveNodes + 1 : prevStats.liveNodes - 1
@@ -316,7 +299,7 @@ const ExplorerWorker: FC = () => {
     }, []);
 
     const addTotalNodes = async () => {
-        if (!user || isLoading || user?.isNodeAdded || totalNodes > 0) return;
+        if (!user || isLoading || user?.isNodeAdded || totalNodes == 0) return;
         setIsLoading(true);
         try {
             await fetch('/api/admin/eChat', {
@@ -352,13 +335,13 @@ const ExplorerWorker: FC = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen w-full">
+        <div className="min-h-screen h-fit w-full md:flex md:flex-col md:items-center md:justify-center mt-[120px] md:mt-[80px] lg:mt-0 pb-10 px-5">
             {
                 user?.isNodeAdded ?
                     <div className="flex flex-col gap-8">
                         <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH SuperComputer</h2>
-                        <div className="text-white flex flex-col md:flex-row gap-5 w-full justify-between md:items-end">
-                            <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] pt-9 pb-8 relative'>
+                        <div className="text-white flex flex-col lg:flex-row gap-5 w-full justify-between lg:items-end">
+                            <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full lg:w-[calc(50%-10px)] pt-9 pb-8 relative'>
                                 <Image src="/image/login/pixels.png" alt="logo" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[401px] h-auto" width={401} height={401} />
                                 <Image src='/image/logo-chat.png' alt='edith-logo' width={60} height={60} />
                                 <ShadowBtn
@@ -368,15 +351,15 @@ const ExplorerWorker: FC = () => {
                                     <span className='text-sm w-full transition-all duration-300'>
                                         {
                                             isConnecting ?
-                                                (user?.isNodeConnected ? 'Disconnecting...' : 'Connecting...') :
-                                                user?.isNodeConnected ?
+                                                (isNodeConnected ? 'Disconnecting...' : 'Connecting...') :
+                                                isNodeConnected ?
                                                     'Connected' : 'Disconnected'
                                         }
                                     </span>
                                     <AntSwitch
                                         inputProps={{ 'aria-label': 'Node Connection Status' }}
                                         onChange={(e) => liveNodeConnect(e.target.checked)}
-                                        checked={user?.isNodeConnected ?? false}
+                                        checked={isNodeConnected}
                                         disabled={isConnecting}
                                     />
                                 </ShadowBtn>
@@ -399,7 +382,7 @@ const ExplorerWorker: FC = () => {
                                 </div>
                             </div>
 
-                            <div className='flex flex-col border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:w-[calc(50%-10px)] px-5 py-[21.5px] h-full gap-6'>
+                            <div className='flex flex-col border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full lg:w-[calc(50%-10px)] px-5 py-[21.5px] h-full gap-6'>
                                 <div className='w-full bg-[#0B0B0D] border border-[#252527] rounded-full p-[6px] flex items-center justify-between'>
                                     <ShadowBtn className='w-full rounded-full' mainClassName='rounded-full max-sm:text-[12px]'>
                                         Browser Node
@@ -409,7 +392,7 @@ const ExplorerWorker: FC = () => {
                                     </div>
                                 </div>
                                 <Divider sx={{ backgroundColor: '#FFFFFF1F' }} />
-                                <div className='flex items-center justify-between gap-5 w-full'>
+                                <div className='flex items-center justify-between gap-5 w-full max-sm:flex-col'>
                                     <StatCard label="Total Nodes" value={totalNodes} />
                                     <StatCard label="Live Nodes" value={stats.liveNodes} />
                                 </div>
@@ -454,7 +437,7 @@ const ExplorerWorker: FC = () => {
                                 </button>
                             </div>
                             <Divider sx={{ backgroundColor: '#FFFFFF1F' }} />
-                            <div className='flex items-center justify-between gap-5 w-full'>
+                            <div className='flex items-center justify-between gap-5 w-full max-sm:flex-col'>
                                 <StatCard label="Total Nodes" value={totalNodes} />
                                 <StatCard label="Live Nodes" value={stats.liveNodes} />
                             </div>

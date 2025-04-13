@@ -12,6 +12,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: session } = useSession();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isNodeConnected, setIsNodeConnected] = useState<boolean>(false);
+  const [isActiveSession, setIsActiveSession] = useState<boolean>(false);
+
+  const checkActiveSession = async () => {
+    try {
+      const res = await fetch('/api/user/check-session');
+      const data = await res.json();
+      setIsActiveSession(data.isActive);
+      return data.isActive;
+    } catch (error) {
+      console.error('Error checking active session:', error);
+      return false;
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -35,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [session]);
 
   const updateWorkerPoints = async () => {
-    if (!user?.isNodeConnected) return;
+    if (!isNodeConnected || !user) return;
 
     // Random point gain between 0.05 to 0.67
     const pointGain = getRandomNumber(0.05, 0.67);
@@ -67,22 +81,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Global worker points update effect
   useEffect(() => {
-    const scheduleNextUpdate = () => {
+    const scheduleNextUpdate = async () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
 
       const minutes = getRandomNumber(1.7, 10);
+      console.log("minutes", minutes);
       const nextUpdate = minutes * 60 * 1000;
-      
+
       timerRef.current = setTimeout(async () => {
-        await updateWorkerPoints();
+        const isActive = await checkActiveSession();
+        if (isActive) {
+          await updateWorkerPoints();
+        }
         scheduleNextUpdate();
       }, nextUpdate);
     };
 
-    if (user?.isNodeConnected && user) {
-      scheduleNextUpdate();
+    if (isNodeConnected && user) {
+      checkActiveSession().then(isActive => {
+        if (isActive) {
+          scheduleNextUpdate();
+        }
+      });
     }
 
     return () => {
@@ -90,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         clearTimeout(timerRef.current);
       }
     };
-  }, [user]);
+  }, [user, isNodeConnected]);
 
   return (
     <AuthContext.Provider
@@ -101,6 +123,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser,
         isLoading,
         setIsLoading,
+        isNodeConnected,
+        setIsNodeConnected,
+        isActiveSession
       }}
     >
       {children}

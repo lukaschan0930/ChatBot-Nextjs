@@ -17,6 +17,7 @@ interface IUser extends Document {
     api: string;
     verify: boolean;
     lastLogin: Date;
+    lastActiveSession: Date;
     logins: number;
     wallet: string;
     chatPoints: number;
@@ -104,6 +105,10 @@ function userModel() {
         lastLogin: { // lastest login time
             type: Date,
             default: Date.now()
+        },
+        lastActiveSession: { // last active session timestamp
+            type: Date,
+            default: null
         },
         logins: { // login number
             type: Number,
