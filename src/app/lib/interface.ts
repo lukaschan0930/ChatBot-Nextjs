@@ -56,6 +56,9 @@ export interface AuthContextType {
     setUser: Dispatch<SetStateAction<User | null>>;
     isLoading: boolean;
     setIsLoading: (isLoading: boolean) => void;
+    isNodeConnected: boolean;
+    setIsNodeConnected: (isNodeConnected: boolean) => void;
+    isActiveSession: boolean;
 }
 
 interface RequestFunction {
@@ -123,6 +126,7 @@ export interface IUser {
     api?: string;
     verify: boolean;
     lastLogin?: Date;
+    lastActiveSession?: Date;
     logins: number;
     wallet: string;
     chatPoints: number;

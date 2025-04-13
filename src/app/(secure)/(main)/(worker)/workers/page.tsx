@@ -59,10 +59,10 @@ const Workers = () => {
                     Select the worker type you want to become.
                 </div>
                 <div className="mt-6 bg-[#0E0E10] rounded-[20px] border border-[#1C1C1E] p-4">
-                    <div className="bg-[#0B0B0D] border-[#25252799] border rounded-[8px] px-3 py-[14px] flex gap-3">
+                    <div className="bg-[#0B0B0D] border-[#25252799] border rounded-[8px] px-3 py-[14px] flex gap-3 max-md:flex-col">
                         {
                             WorkerTypes.map((workerType) => (
-                                <div key={workerType.id} className="flex gap-2 w-[282px] flex-col justify-center items-center">
+                                <div key={workerType.id} className="flex gap-2 w-full md:min-w-[282px] flex-col justify-center items-center">
                                     <ShadowBtn
                                         className={`w-full rounded-md ${workerType.disable && 'bg-transparent'}`}
                                         mainClassName={`bg-[#29292980] text-white flex flex-col items-center justify-center py-14 px-2 md:px-16 relative`}
