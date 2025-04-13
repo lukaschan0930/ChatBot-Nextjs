@@ -335,10 +335,10 @@ const ExplorerWorker: FC = () => {
     }
 
     return (
-        <div className="min-h-screen h-fit w-full md:flex md:flex-col md:items-center md:justify-center mt-[120px] md:mt-[80px] lg:mt-0 pb-10 px-5">
+        <div className="min-h-screen h-fit w-full md:flex md:flex-col md:items-center md:justify-center mt-[120px] md:mt-[80px] lg:mt-0 px-2 sm:px-5">
             {
                 user?.isNodeAdded ?
-                    <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-8 mb-10">
                         <h2 className="text-white text-2xl font-bold text-center">Welcome to the EDITH SuperComputer</h2>
                         <div className="text-white flex flex-col lg:flex-row gap-5 w-full justify-between lg:items-end">
                             <div className='flex flex-col gap-2 items-center border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full lg:w-[calc(50%-10px)] pt-9 pb-8 relative'>
@@ -365,7 +365,7 @@ const ExplorerWorker: FC = () => {
                                 </ShadowBtn>
                                 <div className="flex items-center gap-6 mt-7">
                                     {/* PPS Display */}
-                                    <div className="flex flex-col items-center w-1/3 md:w-28">
+                                    <div className="flex flex-col items-center min-w-1/3 md:w-28">
                                         <span className="text-gray-400 text-[14px]">PPS</span>
                                         <span className="text-[36px] font-bold">{stats.pps}</span>
                                     </div>
@@ -373,7 +373,7 @@ const ExplorerWorker: FC = () => {
                                     <Divider orientation="vertical" flexItem sx={{ backgroundColor: '#FFFFFF1F' }} />
 
                                     {/* Points Display */}
-                                    <div className="flex flex-col items-center w-1/3 md:w-28">
+                                    <div className="flex flex-col items-center min-w-1/3 md:w-28">
                                         <div className="text-gray-400 text-[14px] flex items-center gap-1">
                                             Points
                                         </div>
@@ -418,8 +418,8 @@ const ExplorerWorker: FC = () => {
                         <div className="text-[#525252] text-[16px]">
                             Select the node type you want to add.
                         </div>
-                        <div className='flex flex-col border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:min-w-[589px] px-5 py-[21.5px] h-full gap-6'>
-                            <div className='flex w-full items-center gap-4'>
+                        <div className='flex flex-col border border-[#25252799] rounded-[12px] bg-[#0E0E10] w-full md:min-w-[589px] px-2 sm:px-5 py-[21.5px] h-full gap-6'>
+                            <div className='flex w-full items-center gap-2 sm:gap-4'>
                                 <div className='w-full bg-[#0B0B0D] border border-[#252527] rounded-[8px] p-[6px] flex items-center justify-between'>
                                     <ShadowBtn className='w-full rounded-[8px]' mainClassName='rounded-[8px] max-sm:text-[12px] text-nowrap w-full text-white'>
                                         Browser Node
