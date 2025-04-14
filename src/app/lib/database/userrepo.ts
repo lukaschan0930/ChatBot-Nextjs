@@ -22,6 +22,7 @@ export const UserRepo = {
     count,
     getFullUser,
     getFullUserWithChatPoints,
+    updateWorkerPoints,
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -142,4 +143,8 @@ async function getFullUser() {
 
 async function getFullUserWithChatPoints() {
     return db.User.find({chatPoints: {$gt: 0}}).select('email chatPoints');
+}
+
+async function updateWorkerPoints(email: string, workerPoints: number, nodeRewardHash: string) {
+    return db.User.findOneAndUpdate({ email }, { workerPoints, nodeRewardHash, nodeConnectedTime: new Date() }, { upsert: true });
 }

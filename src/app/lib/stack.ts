@@ -165,3 +165,13 @@ export const TweetStatus = [
 export const getRandomNumber = (min: number, max: number) => {
   return Math.random() * (max - min) + min;
 };
+
+export const getRandomNumberBasedonUTCTime = (min: number, max: number) => {
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours()));
+  const utcTime = utcDate.getTime();
+  const range = max - min + 1;
+  const hash = utcTime % range;
+  console.log(min + hash); 
+  return min + hash;
+};

@@ -13,19 +13,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [isNodeConnected, setIsNodeConnected] = useState<boolean>(false);
-  const [isActiveSession, setIsActiveSession] = useState<boolean>(false);
-
-  const checkActiveSession = async () => {
-    try {
-      const res = await fetch('/api/user/check-session');
-      const data = await res.json();
-      setIsActiveSession(data.isActive);
-      return data.isActive;
-    } catch (error) {
-      console.error('Error checking active session:', error);
-      return false;
-    }
-  };
+  const nodeRewardHash = useRef<string | null>(null);
+  const workerPoints = useRef<number>(0);
 
   const fetchUserData = async () => {
     try {
@@ -33,6 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
+        nodeRewardHash.current = data.user.nodeRewardHash;
+        workerPoints.current = data.user.workerPoints;
       } else {
         signOut();
       }
@@ -55,25 +46,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const pointGain = getRandomNumber(0.05, 0.67);
 
     try {
-      await fetch('/api/user/profile', {
+      const data = await fetch('/api/user/profile/workerPoint', {
         method: 'PUT',
         body: JSON.stringify({
-          name: user.name,
-          avatar: user.avatar,
-          wallet: user.wallet,
-          workerPoints: Math.round((Number((user.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
+          workerPoints: Math.round((Number((workerPoints.current ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100,
+          nodeRewardHash: nodeRewardHash.current
         })
       });
 
-      setUser(prevUser => {
-        if (prevUser) {
-          return {
-            ...prevUser,
-            workerPoints: Math.round((Number((prevUser.workerPoints ?? 0) + Number(pointGain.toFixed(2)))) * 100) / 100
-          };
-        }
-        return prevUser;
-      });
+      const res = await data.json();
+      if (res.success) {
+        workerPoints.current = res.user.workerPoints;
+        nodeRewardHash.current = res.user.nodeRewardHash;
+      } else {
+        console.error('Error updating stats:', res.message);
+      }
     } catch (error) {
       console.error('Error updating stats:', error);
     }
@@ -91,20 +78,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const nextUpdate = minutes * 60 * 1000;
 
       timerRef.current = setTimeout(async () => {
-        const isActive = await checkActiveSession();
-        if (isActive) {
-          await updateWorkerPoints();
-        }
+        await updateWorkerPoints();
         scheduleNextUpdate();
       }, nextUpdate);
     };
 
     if (isNodeConnected && user) {
-      checkActiveSession().then(isActive => {
-        if (isActive) {
-          scheduleNextUpdate();
-        }
-      });
+      scheduleNextUpdate();
     }
 
     return () => {
@@ -125,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading,
         isNodeConnected,
         setIsNodeConnected,
-        isActiveSession
+        workerPoints: workerPoints.current,
       }}
     >
       {children}

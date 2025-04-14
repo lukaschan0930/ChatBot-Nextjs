@@ -127,8 +127,8 @@ export const authOptions = {
                         wallet: "",
                         chatPoints: 0,
                         workerPoints: 0,
-                        reward: [],
-                        board: []
+                        // board: [],
+                        nodeRewardHash: generateNodeRewardHash(),
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;
@@ -229,4 +229,8 @@ export function getChatPoints(chatHistory: ChatHistory[]) {
     const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
     
     return 0.2 * chatLogCount;
+}
+
+export function generateNodeRewardHash() {
+    return crypto.randomBytes(32).toString('hex');
 }

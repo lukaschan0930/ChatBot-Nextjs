@@ -9,13 +9,15 @@ export interface User {
     wallet?: string;
     chatPoints?: number;
     workerPoints?: number;
-    reward: Reward[];
-    isNodeConnected?: boolean;
+    // reward: IReward[];
+    // isNodeConnected?: boolean;
+    nodeConnectedTime?: Date;
+    nodeRewardHash?: string;
     isNodeAdded?: boolean;
-    board: {
-        score: number;
-        rank: number;
-    }[];
+    // board: {
+    //     score: number;
+    //     rank: number;
+    // }[];
 }
 
 export interface LoginProps {
@@ -28,10 +30,10 @@ export interface ApiResponse<T> {
     message?: string;
 }
 
-export interface Reward {
-    platform: string;
-    totalReward: number;
-}
+// export interface IReward {
+//     platform: string;
+//     totalReward: number;
+// }
 
 export class AuthError extends Error {
     constructor(message: string) {
@@ -58,7 +60,7 @@ export interface AuthContextType {
     setIsLoading: (isLoading: boolean) => void;
     isNodeConnected: boolean;
     setIsNodeConnected: (isNodeConnected: boolean) => void;
-    isActiveSession: boolean;
+    workerPoints: number;
 }
 
 interface RequestFunction {
@@ -132,15 +134,17 @@ export interface IUser {
     chatPoints: number;
     workerPoints: number;
     role: string;
-    isNodeConnected?: boolean;
-    reward: {
-        platform: string;
-        totalReward: number;
-    }[];
-    board: {
-        score: number;
-        rank: number;
-    }[];
+    isNodeAdded?: boolean;
+    nodeConnectedTime?: Date;
+    nodeRewardHash?: string;
+    // reward: {
+    //     platform: string;
+    //     totalReward: number;
+    // }[];
+    // board: {
+    //     score: number;
+    //     rank: number;
+    // }[];
     jumpReward?: {
         jumpUserId?: string;
         jumpTransactionId?: string;
