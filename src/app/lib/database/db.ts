@@ -23,16 +23,9 @@ interface IUser extends Document {
     chatPoints: number;
     workerPoints: number;
     role: string;
-    isNodeConnected: boolean;
     isNodeAdded: boolean;
-    reward: {
-        platform: string;
-        totalReward: number;
-    }[];
-    board: {
-        score: number;
-        ranking: number;
-    }[];
+    nodeConnectedTime: Date;
+    nodeRewardHash: string;
     jumpReward: {
         jumpUserId: string,
         jumpTransactionId: string,
@@ -106,10 +99,6 @@ function userModel() {
             type: Date,
             default: Date.now()
         },
-        lastActiveSession: { // last active session timestamp
-            type: Date,
-            default: null
-        },
         logins: { // login number
             type: Number,
             default: 0
@@ -126,35 +115,39 @@ function userModel() {
             type: Number,
             default: 0
         },
-        reward: [{
-            platform: {
-                type: String,
-                required: true
-            },
-            totalReward: {
-                type: Number,
-                default: 0
-            }
-        }],
-        board: [
-            {
-                score: {
-                    type: Number,
-                    default: 0
-                },
-                rank: {
-                    type: Number,
-                    default: 0
-                }
-            }
-        ],
-        isNodeConnected: {
-            type: Boolean,
-            default: false
-        },
+        // reward: [{
+        //     platform: {
+        //         type: String,
+        //         required: true
+        //     },
+        //     totalReward: {
+        //         type: Number,
+        //         default: 0
+        //     }
+        // }],
+        // board: [
+        //     {
+        //         score: {
+        //             type: Number,
+        //             default: 0
+        //         },
+        //         rank: {
+        //             type: Number,
+        //             default: 0
+        //         }
+        //     }
+        // ],
         isNodeAdded: {
             type: Boolean,
             default: false
+        },
+        nodeConnectedTime: { // last active session timestamp
+            type: Date,
+            default: null
+        },
+        nodeRewardHash: {
+            type: String,
+            default: ""
         },
         role: {
             type: String,

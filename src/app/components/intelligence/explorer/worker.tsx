@@ -13,7 +13,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import ShadowBtn from '../../ShadowBtn';
 import { Divider } from '@mui/material';
 import { Sparklines, SparklinesLine } from 'react-sparklines';
-import { getRandomNumber } from '@/app/lib/stack';
+import { getRandomNumber, getRandomNumberBasedonUTCTime } from '@/app/lib/stack';
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
     width: 28,
@@ -168,7 +168,7 @@ const styles = `
 `;
 
 const ExplorerWorker: FC = () => {
-    const { user, setUser, isNodeConnected, setIsNodeConnected } = useAuth();
+    const { user, setUser, isNodeConnected, setIsNodeConnected, workerPoints } = useAuth();
     const [totalNodes, setTotalNodes] = useState(0);
     const [isConnecting, setIsConnecting] = useState(false);
     const [stats, setStats] = useState({
@@ -235,7 +235,7 @@ const ExplorerWorker: FC = () => {
             const response = await fetch('/api/admin/eChat');
             const data = await response.json();
             setTotalNodes(data.data.totalNode);
-            const liveNodesPercentage = getRandomNumber(0.13, 0.34);
+            const liveNodesPercentage = getRandomNumberBasedonUTCTime(0.13, 0.34);
             const liveNodesCount = Math.round(data.data.totalNode * liveNodesPercentage);
             setStats(prevStats => ({
                 ...prevStats,
@@ -265,7 +265,7 @@ const ExplorerWorker: FC = () => {
         let timeoutId: NodeJS.Timeout;
 
         const updateStats = async () => {
-            const liveNodesPercentage = getRandomNumber(0.13, 0.34);
+            const liveNodesPercentage = getRandomNumberBasedonUTCTime(0.13, 0.34);
             const liveNodesCount = Math.round(totalNodes * liveNodesPercentage);
 
             if (totalNodes > 0) {
@@ -377,7 +377,7 @@ const ExplorerWorker: FC = () => {
                                         <div className="text-gray-400 text-[14px] flex items-center gap-1">
                                             Points
                                         </div>
-                                        <span className="text-[36px] font-bold">{user?.workerPoints ?? 0}</span>
+                                        <span className="text-[36px] font-bold">{workerPoints}</span>
                                     </div>
                                 </div>
                             </div>
