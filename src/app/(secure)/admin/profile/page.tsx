@@ -95,9 +95,7 @@ const AdminProfile = () => {
                                 email: e.target.value,
                                 name: user?.name || "",
                                 avatar: user?.avatar || "",
-                                inviteCode: user?.inviteCode || "",
-                                reward: user?.reward || [],
-                                board: user?.board || []
+                                inviteCode: user?.inviteCode || ""
                             })}
                         />
                     </div>
