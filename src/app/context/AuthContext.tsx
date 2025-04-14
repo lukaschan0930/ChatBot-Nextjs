@@ -74,7 +74,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       const minutes = getRandomNumber(1.7, 10);
-      console.log("minutes", minutes);
       const nextUpdate = minutes * 60 * 1000;
 
       timerRef.current = setTimeout(async () => {
