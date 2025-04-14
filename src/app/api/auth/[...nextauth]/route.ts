@@ -169,8 +169,6 @@ const authOptions: NextAuthOptions = {
                         logins: 0,
                         role: 'user',
                         name: profile?.name as string,
-                        reward: [],
-                        board: [],
                         wallet: "",
                         chatPoints: 0,
                         workerPoints: 0,

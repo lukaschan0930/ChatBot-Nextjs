@@ -51,8 +51,6 @@ export async function POST(request: NextRequest) {
                 verify: false,
                 role: "user",
                 logins: 0,
-                reward: [],
-                board: [],
                 wallet: "",
                 chatPoints: 0,
                 workerPoints: 0,

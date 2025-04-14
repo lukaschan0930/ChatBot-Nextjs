@@ -374,7 +374,7 @@ const TwitterMarketing = () => {
                                                         <div className="flex flex-col gap-3">
                                                             <div className="text-[#FFFFFF99] text-[12px]">RANK / (Total)</div>
                                                             <div className="flex gap-[6px] items-end">
-                                                                <div className="text-mainFont text-[40px] font-bold">
+                                                                {/* <div className="text-mainFont text-[40px] font-bold">
                                                                     {
                                                                         user?.board[user?.board?.length - 1]?.rank ?? 0
                                                                     }
@@ -382,7 +382,7 @@ const TwitterMarketing = () => {
                                                                 {
                                                                     user?.board[user?.board?.length - 1]?.rank / twitterUserCount * 100 < 10 &&
                                                                     <div className="text-sm text-[#FFFFFF99] pb-3">(Top 10%)</div>
-                                                                }
+                                                                } */}
                                                             </div>
                                                         </div>
                                                         <div className="w-[94px] h-[50px]">
@@ -397,14 +397,15 @@ const TwitterMarketing = () => {
                                                     </div>
                                                     <DotDivider />
                                                     <div className="flex gap-1 w-full">
-                                                        <LightBox title="Current Score" value={user?.board[user?.board?.length - 1]?.score ?? 0} />
+                                                        <LightBox title="Current Score" value={0} />
                                                         <LightBox title="Daily Pool" value={parseInt(process.env.DAILY_POOL ?? "0")} />
                                                     </div>
                                                     <div className="flex gap-1 mt-[6px] w-full">
                                                         <LightBox
                                                             title="Estimated Cut"
                                                             value={(() => {
-                                                                const rank = user?.board[user?.board?.length - 1]?.rank;
+                                                                // const rank = user?.board[user?.board?.length - 1]?.rank;
+                                                                const rank = 0;
                                                                 const totalUsers = twitterUserCount;
                                                                 const percentile = (rank / totalUsers) * 100;
 
