@@ -316,7 +316,7 @@ const ChatHistory = () => {
                                                         ) : (
                                                             <>
                                                                 <div className="text-white truncate text-sm">{extractTitleFromMd(session.title) || "Untitled Chat"}</div>
-                                                                <div className="text-[12px] text-[#3E3E40]">{moment(Number(session.chats[session.chats.length - 1].createdAt)).format("Do MMM YY HH:mm:ss")}</div>
+                                                                <div className="text-[12px] text-[#3E3E40]">{moment(session.chats[session.chats.length - 1].createdAt).format("Do MMM YY HH:mm:ss")}</div>
                                                             </>
                                                         )}
                                                     </div>
