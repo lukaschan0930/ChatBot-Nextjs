@@ -1,3 +1,5 @@
+import { FaLessThanEqual } from "react-icons/fa6";
+
 export const MenuItems = [
   {
     id: "innovations",
@@ -8,6 +10,12 @@ export const MenuItems = [
         label: "ECHAT",
         disable: false,
         tooltip: "A dedicated platform where users can interact with EDITH AI."
+      },
+      {
+        id: "roboChat",
+        label: "ROBO",
+        disable: false,
+        tooltip: ""
       },
       {
         id: "goland",
@@ -133,6 +141,30 @@ export const ChatTypeItems = [
     image: "/image/pro.png"
   },
 ]
+
+export const RoboModels = [
+  {
+    label: "DeepSeek V3",
+    value: "deepseek-ai/DeepSeek-V3",
+  },
+  {
+    label: "Qwen 2.5 Coder 32B",
+    value: "Qwen/Qwen2.5-Coder-32B-Instruct",
+  },
+
+  {
+    label: "Llama 4 Maverick",
+    value: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+  },
+  {
+    label: "Llama 3.3 70B",
+    value: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+  },
+  {
+    label: "Llama 3.1 405B",
+    value: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+  },
+];
 
 export const MaketingPlatforms = [
   {

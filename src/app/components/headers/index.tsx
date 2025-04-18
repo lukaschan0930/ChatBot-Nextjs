@@ -12,7 +12,7 @@ import DocsIcon from "@/app/assets/docs";
 import ProfileIcon from "@/app/assets/profile";
 // import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
-import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom } from "@/app/lib/store";
+import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom, roboActiveChatAtom } from "@/app/lib/store";
 import HistoryIcon from "@/app/assets/history";
 import NewChatIcon from "@/app/assets/newChat";
 import { IFileWithUrl } from "@/app/lib/interface";
@@ -36,6 +36,7 @@ const Header = () => {
   const [, setSessionId] = useAtom(sessionIdAtom);
   const [, setChatLog] = useAtom(chatLogAtom);
   const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
+  const [, setRoboActiveChat] = useAtom(roboActiveChatAtom);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -90,7 +91,8 @@ const Header = () => {
                   (
                     endPoint[1] === "chatText" ||
                     endPoint[1] === "changeLog" ||
-                    endPoint[1] === "userSetting"
+                    endPoint[1] === "userSetting" ||
+                    endPoint[1] === "roboChat"
                   ) &&
                   <>
                     <ShadowBtn
@@ -115,7 +117,8 @@ const Header = () => {
                         setFiles([]);
                         setIsSidebarVisible(false);
                         setChatLog([]);
-                        router.push("/chatText");
+                        setRoboActiveChat(undefined);
+                        router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
                       }}
                     >
                       <NewChatIcon />
@@ -148,7 +151,8 @@ const Header = () => {
               {
                 (endPoint[1] === "chatText" ||
                   endPoint[1] === "changeLog" ||
-                  endPoint[1] === "userSetting") &&
+                  endPoint[1] === "userSetting" ||
+                  endPoint[1] === "roboChat") &&
                 <>
                   <ShadowBtn
                     mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
@@ -169,7 +173,8 @@ const Header = () => {
                       setFiles([]);
                       setIsSidebarVisible(false);
                       setChatLog([]);
-                      router.push("/chatText");
+                      setRoboActiveChat(undefined);
+                      router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
                     }}
                   >
                     <NewChatIcon />

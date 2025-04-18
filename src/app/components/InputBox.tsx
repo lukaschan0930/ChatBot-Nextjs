@@ -27,7 +27,7 @@ import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
 import ChatFileMenu from "./Chat/ChatFileMenu";
-import ChatTypeMenu from "./Chat/ChatTypeMenu";
+// import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
