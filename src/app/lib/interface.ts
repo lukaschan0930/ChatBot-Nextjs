@@ -192,6 +192,7 @@ export interface IRoboChatLog {
     quality?: string;
     prompt?: string;
     createdAt?: Date;
+    timestamp: number;
 }
 
 export interface IChangeLog {
