@@ -273,7 +273,8 @@ const RoboInputBox = () => {
               createdAt: new Date(),
               model: RoboModels[roboModel].value,
               quality: roboQuality == 1 ? "high" : "low",
-              prompt: inputPrompt
+              prompt: inputPrompt,
+              timestamp: Number(Date.now())
             }
           ]
         });
@@ -291,13 +292,15 @@ const RoboInputBox = () => {
           createdAt: new Date(),
           model: RoboModels[roboModel].value,
           quality: roboQuality == 1 ? "high" : "low",
-          prompt: inputPrompt
+          prompt: inputPrompt,
+          timestamp: Number(Date.now())
         });
         newRoboChatLog.push({
           role: "assistant",
           content: "",
           position: prevRoboChatLog.length + 1,
           createdAt: new Date(),
+          timestamp: Number(Date.now())
         });
         return newRoboChatLog;
       });
@@ -349,14 +352,16 @@ const RoboInputBox = () => {
                 prompt: inputPrompt,
                 content: fullResponse,
                 position: newLog[newLog.length - 1].position,
-                role: "assistant"
+                role: "assistant",
+                timestamp: Number(Date.now())
               };
             } else {
               newLog.push({
                 prompt: inputPrompt,
                 content: fullResponse,
                 position: newLog[newLog.length - 1].position,
-                role: "assistant"
+                role: "assistant",
+                timestamp: Number(Date.now())
               });
             }
             return newLog;
@@ -368,7 +373,8 @@ const RoboInputBox = () => {
             quality: roboQuality == 1 ? "high" : "low",
             prompt: inputPrompt,
             role: "assistant",
-            position: roboChatLog.length - 1
+            position: roboChatLog.length - 1,
+            timestamp: Number(Date.now())
           });
         }
 
@@ -382,14 +388,16 @@ const RoboInputBox = () => {
                 prompt: inputPrompt,
                 content: fullResponse,
                 position: newLog[newLog.length - 1].position,
-                role: "assistant"
+                role: "assistant",
+                timestamp: Number(Date.now())
               };
             } else {
               newLog.push({
                 prompt: inputPrompt,
                 content: fullResponse,
                 position: newLog[newLog.length - 1].position,
-                role: "assistant"
+                role: "assistant",
+                timestamp: Number(Date.now())
               });
             }
             return newLog;
@@ -401,7 +409,8 @@ const RoboInputBox = () => {
             quality: roboQuality == 1 ? "high" : "low",
             prompt: inputPrompt,
             role: "assistant",
-            position: roboChatLog.length - 1
+            position: roboChatLog.length - 1,
+            timestamp: Number(Date.now())
           });
         }
       } finally {

@@ -314,6 +314,9 @@ function roboChatModel() {
             createdAt: {
                 type: Date,
                 default: Date.now()
+            },
+            timestamp: {
+                type: Number,
             }
         }]
     }, {

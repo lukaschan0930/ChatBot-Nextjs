@@ -5,7 +5,7 @@ import { AuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { getMainCodingPrompt, screenshotToCodePrompt, softwareArchitectPrompt } from "@/app/lib/api/propmts";
-import { IRoboChatHistory } from "@/app/lib/interface";
+import { IRoboChatHistory, IRoboChatLog } from "@/app/lib/interface";
 
 type RoboChat = {
     email: string;
@@ -105,16 +105,16 @@ export async function POST(request: NextRequest) {
                 llamaCoderVersion: "v2",
                 shadcn: true,
                 chats: [
-                    { role: "system", content: systemMessage, position: 0 },
-                    { role: "user", content: userMessage, position: 1, model: model, quality: quality, prompt: prompt },
+                    { role: "system", content: systemMessage, position: 0, timestamp: Number(Date.now()) },
+                    { role: "user", content: userMessage, position: 1, model: model, quality: quality, prompt: prompt, timestamp: Number(Date.now()) },
                 ],
             };
         } else {
             const userMessage = await getUserMessage(files, quality, prompt, together);
-            chatSession.chats.push({ role: "user", content: userMessage, position: chatSession.chats.length, model: model, quality: quality, prompt: prompt });
+            chatSession.chats.push({ role: "user", content: userMessage, position: chatSession.chats.length, model: model, quality: quality, prompt: prompt, timestamp: Number(Date.now()) });
         }
 
-        let messages = chatSession.chats.map((m) => ({ role: m.role as "user" | "system" | "assistant", content: m.content }));
+            let messages = chatSession.chats.map((m) => ({ role: m.role as "user" | "system" | "assistant", content: m.content }));
 
         if (messages.length > 10) {
             messages = [messages[0], messages[1], messages[2], ...messages.slice(-7)];
@@ -156,7 +156,8 @@ export async function POST(request: NextRequest) {
                             { 
                                 role: "assistant", 
                                 content: fullResponse, 
-                                position: chatSession.chats.length 
+                                position: chatSession.chats.length,
+                                timeStamp: Number(Date.now())
                             }
                         ]
                     };
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
                     if (sessionIndex !== -1) {
                         // Session exists, update it
                         updatedSessions = roboChat.session;
-                        updatedSessions[sessionIndex].chats = updatedChatSession.chats;
+                        updatedSessions[sessionIndex].chats = updatedChatSession.chats as IRoboChatLog[];
                     } else {
                         // Session doesn't exist, push it
                         updatedSessions = [...roboChat.session, updatedChatSession];
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
                         
                         const result = await RoboRepo.updateRoboChat(
                             session.user?.email || "",
-                            updatedSessions
+                            updatedSessions as IRoboChatHistory[]
                         );
 
                         if (!result) {
