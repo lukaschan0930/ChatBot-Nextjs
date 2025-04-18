@@ -81,7 +81,7 @@ const RoboCodeViewer = ({ fullScreen, setFullScreen }: { fullScreen: boolean, se
                 </ShadowBtn>
             </div>
             <Divider className="w-full" sx={{ borderColor: "#25252799" }} />
-            <div className={`flex-auto w-[calc(100vw-100px)] xl:w-[calc(100vw-800px)] lg:w-[calc(100vw-600px)] md:w-[calc(50vw-60px)] h-full overflow-auto`}>
+            <div className={`flex-auto ${fullScreen ? "w-[calc(100vw-100px)]" : "xl:w-[calc(100vw-800px)] lg:w-[calc(100vw-600px)] md:w-[calc(50vw-60px)] w-[calc(100vw-10px)]"} h-full overflow-auto`}>
                 {
                     isCode ?
                         <SyntaxHighlighter code={code} language={language} />
