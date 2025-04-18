@@ -246,7 +246,6 @@ const RoboInputBox = () => {
   };
 
   const handleSendMessage = async () => {
-    console.log(roboModel, roboQuality);
     if (inputPrompt.trim() === "") {
       return;
     }
@@ -258,7 +257,6 @@ const RoboInputBox = () => {
     setIsStreaming(true);
     setIsStartChat(true);
 
-    console.log(roboChatLog);
     if (roboChatLog.length == 0) {
       setRoboChatHistory((prevRoboChatHistory) => {
         const newRoboChatHistory = [...prevRoboChatHistory];
