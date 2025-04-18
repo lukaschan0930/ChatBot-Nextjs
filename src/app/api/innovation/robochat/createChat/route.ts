@@ -169,9 +169,8 @@ export async function POST(request: NextRequest) {
                     
                     if (sessionIndex !== -1) {
                         // Session exists, update it
-                        updatedSessions = roboChat.session.map(s => 
-                            s.id === chatSession.id ? updatedChatSession : s
-                        );
+                        updatedSessions = roboChat.session;
+                        updatedSessions[sessionIndex].chats = updatedChatSession.chats;
                     } else {
                         // Session doesn't exist, push it
                         updatedSessions = [...roboChat.session, updatedChatSession];
@@ -180,12 +179,33 @@ export async function POST(request: NextRequest) {
                     console.log("Final sessions to save:", JSON.stringify(updatedSessions, null, 2));
 
                     // Save the updated sessions
-                    const result = await RoboRepo.updateRoboChat(
-                        session.user?.email || "",
-                        updatedSessions
-                    );
+                    try {
+                        console.log("Attempting to update database with sessions:", JSON.stringify(updatedSessions, null, 2));
+                        
+                        const result = await RoboRepo.updateRoboChat(
+                            session.user?.email || "",
+                            updatedSessions
+                        );
 
-                    console.log("Database update result:", result);
+                        if (!result) {
+                            console.error("Database update failed - no result returned");
+                            throw new Error("Database update failed");
+                        }
+
+                        console.log("Database update successful. Updated document:", JSON.stringify(result, null, 2));
+                        
+                        // Verify the update
+                        const verifyUpdate = await RoboRepo.getRoboChat(session.user?.email || "");
+                        if (!verifyUpdate || !verifyUpdate.session) {
+                            console.error("Verification failed - could not retrieve updated document");
+                            throw new Error("Update verification failed");
+                        }
+                        
+                        console.log("Update verified. Current sessions:", JSON.stringify(verifyUpdate.session, null, 2));
+                    } catch (error) {
+                        console.error("Error updating chat history:", error);
+                        return new NextResponse("Error updating chat history.", { status: 500 });
+                    }
                 } catch (error) {
                     console.error("Error updating chat history:", error);
                     return new NextResponse("Error updating chat history.", { status: 500 });

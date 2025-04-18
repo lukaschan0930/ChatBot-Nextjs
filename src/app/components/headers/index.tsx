@@ -12,7 +12,7 @@ import DocsIcon from "@/app/assets/docs";
 import ProfileIcon from "@/app/assets/profile";
 // import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
-import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom, roboActiveChatAtom } from "@/app/lib/store";
+import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom, roboActiveChatAtom, roboChatLogAtom } from "@/app/lib/store";
 import HistoryIcon from "@/app/assets/history";
 import NewChatIcon from "@/app/assets/newChat";
 import { IFileWithUrl } from "@/app/lib/interface";
@@ -37,6 +37,7 @@ const Header = () => {
   const [, setChatLog] = useAtom(chatLogAtom);
   const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
   const [, setRoboActiveChat] = useAtom(roboActiveChatAtom);
+  const [, setRoboChatLog] = useAtom(roboChatLogAtom);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -118,6 +119,7 @@ const Header = () => {
                         setIsSidebarVisible(false);
                         setChatLog([]);
                         setRoboActiveChat(undefined);
+                        setRoboChatLog([]);
                         router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
                       }}
                     >
@@ -174,6 +176,7 @@ const Header = () => {
                       setIsSidebarVisible(false);
                       setChatLog([]);
                       setRoboActiveChat(undefined);
+                      setRoboChatLog([]);
                       router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
                     }}
                   >
