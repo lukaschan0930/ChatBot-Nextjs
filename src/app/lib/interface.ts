@@ -173,6 +173,27 @@ export interface ChatLog {
     fileUrls: string[];
 }
 
+export interface IRoboChatHistory {
+    id: string;
+    title: string;
+    llamaCoderVersion: string;
+    shadcn: boolean;
+    chats: IRoboChatLog[];
+    loading?: boolean;
+    createdAt?: Date;
+}
+
+export interface IRoboChatLog {
+    _id?: string;
+    role: string;
+    content: string;
+    position: number;
+    model?: string;
+    quality?: string;
+    prompt?: string;
+    createdAt?: Date;
+}
+
 export interface IChangeLog {
     _id: string;
     title: string;

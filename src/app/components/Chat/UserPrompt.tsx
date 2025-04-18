@@ -2,7 +2,7 @@
 const UserPrompt = ({ prompt }: { prompt: string }) => {
 
   return (
-    <div className="pl-20 flex justify-end">
+    <div className="pl-20 w-full flex justify-end lg:max-w-[700px] md:px-4">
       <div className={`flex 
         items-start justify-between h-full 
         gap-4 p-[2px] w-fit bg-inputBg group text-mainFont

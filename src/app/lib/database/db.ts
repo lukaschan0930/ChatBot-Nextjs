@@ -45,7 +45,8 @@ const db = {
     TweetContent: tweetContentModel(),
     TaskList: taskListModel(),
     Admin: adminModel(),
-    Explorer: explorerModel()
+    Explorer: explorerModel(),
+    RoboChat: roboChatModel()
 }
 
 function userModel() {
@@ -257,6 +258,69 @@ function chatModel() {
     });
 
     return mongoose.models.Chat || mongoose.model('Chat', ChatSchema);
+}
+
+function roboChatModel() {
+    const RoboChatSchema = new Schema({
+        email: {
+            type: String,
+            required: true  
+        },
+        session: [{
+            id: {
+                type: String,
+                required: true,
+            },
+            title: {
+                type: String,
+            },
+            llamaCoderVersion: {
+                type: String,
+                required: true,
+                default: "v2"
+            },
+            shadcn: {
+                type: Boolean,
+                required: true,
+            },
+            chats: [{
+                model: {
+                    type: String,
+                },
+                quality: {
+                    type: String,
+                },
+                prompt: {
+                    type: String,
+                },
+                role: {
+                    type: String,
+                    required: true
+                },
+                content: {
+                    type: String,
+                    required: true,
+                    default: ""
+                },
+                position: {
+                    type: Number,
+                    required: true,
+                },
+                createdAt: {
+                    type: Date,
+                    default: Date.now()
+                }
+            }],
+            createdAt: {
+                type: Date,
+                default: Date.now()
+            }
+        }]
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.RoboChat || mongoose.model('RoboChat', RoboChatSchema);
 }
 
 function tweetContentModel() {
