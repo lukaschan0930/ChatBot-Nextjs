@@ -14,18 +14,6 @@ export const MenuItems = [
       {
         id: "roboChat",
         label: "ROBO",
-        disable: false,
-        tooltip: ""
-      },
-      {
-        id: "goland",
-        label: "GOLAND",
-        disable: true,
-        tooltip: ""
-      },
-      {
-        id: "eg",
-        label: "EG",
         disable: true,
         tooltip: ""
       },
@@ -46,12 +34,6 @@ export const MenuItems = [
         label: "WORKERS",
         disable: false,
         tooltip: ""
-      },
-      {
-        id: "rwa",
-        label: "RWA",
-        disable: true,
-        tooltip: ""
       }
     ],
   },
@@ -59,18 +41,6 @@ export const MenuItems = [
     id: "intelligence",
     label: "Intelligence",
     subItems: [
-      {
-        id: "governance",
-        label: "GOVERNANCE",
-        disable: true,
-        tooltip: ""
-      },
-      {
-        id: "citizenship",
-        label: "CITIZENSHIP",
-        disable: true,
-        tooltip: ""
-      },
       {
         id: "studio",
         label: "STUDIO",
