@@ -14,7 +14,7 @@ export const MenuItems = [
       {
         id: "roboChat",
         label: "ROBO",
-        disable: true,
+        disable: false,
         tooltip: ""
       },
       {
@@ -74,9 +74,17 @@ export const AdminMenuItems = [
     id: "changeLog",
     label: "Change Log",
   },
+  // {
+  //   id: "taskManagement",
+  //   label: "Task Management",
+  // }
   {
-    id: "taskManagement",
-    label: "Task Management",
+    id: "modelManagement",
+    label: "Model Management",
+  },
+  {
+    id: "subscriptionPlan",
+    label: "Subscription Plan",
   }
 ];
 

@@ -12,21 +12,26 @@ export async function GET() {
         return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch raw data
-    const [users, userCount, chats, latestExplorer, explorer] = await Promise.all([
-        UserRepo.getFullUserWithChatPoints(),
-        UserRepo.count(),
-        ChatRepo.getFullHistroyWithSessions(),
-        ExplorerRepo.findByLatest(),
-        ExplorerRepo.findAll()
-    ]);
+    try {
+        // Fetch raw data
+        const [users, userCount, chats, latestExplorer, explorer] = await Promise.all([
+            UserRepo.getFullUserWithChatPoints(),
+            UserRepo.count(),
+            ChatRepo.getFullHistroyWithSessions(),
+            ExplorerRepo.findByLatest(),
+            ExplorerRepo.findAll()
+        ]);
 
-    // Return raw data with caching
-    return NextResponse.json({
-        users,
-        userCount,
-        chats,
-        latestExplorer,
-        explorer
-    });
+        // Return raw data with caching
+        return NextResponse.json({
+            users,
+            userCount,
+            chats,
+            latestExplorer,
+            explorer
+        });
+    } catch (error) {
+        console.log(error);
+        return Response.json({ success: false, message: "Internal server error" }, { status: 500 });
+    }
 }

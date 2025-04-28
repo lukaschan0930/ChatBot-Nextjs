@@ -137,14 +137,9 @@ export interface IUser {
     isNodeAdded?: boolean;
     nodeConnectedTime?: Date;
     nodeRewardHash?: string;
-    // reward: {
-    //     platform: string;
-    //     totalReward: number;
-    // }[];
-    // board: {
-    //     score: number;
-    //     rank: number;
-    // }[];
+    pointsUsed: number;
+    pointResetDate: Date;
+    currentplan?: string;
     jumpReward?: {
         jumpUserId?: string;
         jumpTransactionId?: string;
@@ -283,4 +278,26 @@ export interface IExplorer {
     promptCount: number;
     dailyPromptCount: number;
     activeUsers: string[];
+}
+
+export interface IAI {
+    _id: string;
+    name: string;
+    inputCost: number;
+    outputCost: number;
+    multiplier: number;
+}
+
+export interface ISubscriptionPlan {
+    _id: string;
+    name: string;
+    price: number;
+    description: string;
+    features: string[];
+    isYearlyPlan: boolean;
+    priceId: string;
+    productId: string;
+    points: number;
+    bonusPoints: number;
+    disableModel: string[];
 }

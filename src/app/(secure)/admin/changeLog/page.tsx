@@ -8,6 +8,7 @@ import moment from "moment";
 import { toast } from "@/app/hooks/use-toast";
 import { IChangeLog } from "@/app/lib/interface";
 import { useAdmin } from "@/app/context/AdminContext";
+
 const ChangeLog = () => {
     const router = useRouter();
     const [changeLogs, setChangeLogs] = useState<IChangeLog[]>([]);
@@ -81,8 +82,8 @@ const ChangeLog = () => {
                         Add New
                     </Button>
                 </div>
-                <div className="mt-[60px] w-full overflow-x-auto">
-                    <table className="w-full">
+                <div className="mt-[60px] w-full max-sm:overflow-x-auto max-sm:w-[calc(100vw-30px)]">
+                    <table className="w-full max-sm:w-fit">
                         <thead>
                             <tr className="border-b border-secondaryBorder">
                                 <td className="text-mainFont text-[18px] font-bold w-1/3 py-2">Title</td>

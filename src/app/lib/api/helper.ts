@@ -129,6 +129,8 @@ export const authOptions = {
                         workerPoints: 0,
                         // board: [],
                         nodeRewardHash: generateNodeRewardHash(),
+                        pointsUsed: 0,
+                        pointResetDate: new Date(),
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;
@@ -227,7 +229,7 @@ export function trimPrompt(
 
 export function getChatPoints(chatHistory: ChatHistory[]) {
     const chatLogCount = chatHistory.reduce((acc, curr) => acc + curr.chats.length, 0);
-    
+
     return 0.2 * chatLogCount;
 }
 

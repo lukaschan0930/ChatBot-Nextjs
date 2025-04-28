@@ -31,6 +31,10 @@ interface IUser extends Document {
         jumpTransactionId: string,
         isReward: boolean
     }
+    pointsUsed: number;
+    pointResetDate: Date;
+    currentplan: mongoose.Schema.Types.ObjectId;
+    disableModel: mongoose.Schema.Types.ObjectId[];
 }
 
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp')
@@ -46,7 +50,10 @@ const db = {
     TaskList: taskListModel(),
     Admin: adminModel(),
     Explorer: explorerModel(),
-    RoboChat: roboChatModel()
+    RoboChat: roboChatModel(),
+    RouterChat: routerChatModel(),
+    Plan: planModel(),
+    AI: aiModel()
 }
 
 function userModel() {
@@ -116,28 +123,6 @@ function userModel() {
             type: Number,
             default: 0
         },
-        // reward: [{
-        //     platform: {
-        //         type: String,
-        //         required: true
-        //     },
-        //     totalReward: {
-        //         type: Number,
-        //         default: 0
-        //     }
-        // }],
-        // board: [
-        //     {
-        //         score: {
-        //             type: Number,
-        //             default: 0
-        //         },
-        //         rank: {
-        //             type: Number,
-        //             default: 0
-        //         }
-        //     }
-        // ],
         isNodeAdded: {
             type: Boolean,
             default: false
@@ -165,6 +150,24 @@ function userModel() {
                 type: Boolean,
                 default: false
             }
+        },
+        pointsUsed: {
+            type: Number,
+            default: 0
+        },
+        pointResetDate: {
+            type: Date,
+            default: null
+        },
+        currentplan: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Plan',
+            default: null
+        },
+        disableModel: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: 'AI',
+            default: []
         },
         salt: {
             type: String
@@ -324,6 +327,60 @@ function roboChatModel() {
     });
 
     return mongoose.models.RoboChat || mongoose.model('RoboChat', RoboChatSchema);
+}
+
+function routerChatModel() {
+    const RouterChatSchema = new Schema({
+        email: {
+            type: String,
+            required: true
+        },
+        session: [{
+            id: {
+                type: String,
+                required: true,
+            },
+            title: {
+                type: String,
+            },
+            chats: [{
+                prompt: {
+                    type: String,
+                    required: true
+                },
+                model: {
+                    type: String,
+                    required: true
+                },
+                response: {
+                    type: String,
+                },
+                timestamp: {
+                    type: Number,
+                    required: true,
+                },
+                inputToken: {
+                    type: Number
+                },
+                outputToken: {
+                    type: Number
+                },
+                points: {
+                    type: Number,
+                    required: true,
+                    default: 0
+                }
+            }]
+        }],
+        updatedAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.RouterChat || mongoose.model('RouterChat', RouterChatSchema);
 }
 
 function tweetContentModel() {
@@ -495,6 +552,80 @@ function explorerModel() {
     });
 
     return mongoose.models.Explorer || mongoose.model('Explorer', ExplorerSchema);
+}
+
+function planModel() {
+    const PlanSchema = new Schema({
+        name: {
+            type: String,
+            required: true
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        description: {
+            type: String,
+            required: true
+        },
+        features: {
+            type: [String],
+            required: true
+        },
+        isYearlyPlan: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        priceId: {
+            type: String,
+            required: true
+        },
+        productId: {
+            type: String,
+            required: true
+        },
+        points: {
+            type: Number,
+            required: true
+        },
+        bonusPoints: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        disableModel: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: 'AI',
+            required: true,
+            default: []
+        }
+    });
+
+    return mongoose.models.Plan || mongoose.model('Plan', PlanSchema);
+}
+
+function aiModel() {
+    const AiSchema = new Schema({
+        name: {
+            type: String,
+            required: true
+        },
+        inputCost: {
+            type: Number,
+            required: true
+        },
+        outputCost: {
+            type: Number,
+            required: true
+        },
+        multiplier: {
+            type: Number,
+            required: true
+        }
+    });
+
+    return mongoose.models.Ai || mongoose.model('Ai', AiSchema);
 }
 
 export default db;

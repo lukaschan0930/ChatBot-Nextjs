@@ -142,7 +142,7 @@ async function getFullUser() {
 }
 
 async function getFullUserWithChatPoints() {
-    return db.User.find({chatPoints: {$gt: 0}}).select('email chatPoints');
+    return db.User.find({chatPoints: {$gt: 0}}).select('chatPoints');
 }
 
 async function updateWorkerPoints(email: string, workerPoints: number, nodeRewardHash: string) {

@@ -112,7 +112,7 @@ const ExplorerEchat = () => {
                     usersCount: userCount,
                     pointsCount: users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0),
                     promptCount: latestExplorer.promptCount,
-                    conversationCount: chats.reduce((acc: number, chat: IChat) => acc + chat.session.length, 0)
+                    conversationCount: chats.reduce((acc: number, chat: {sessionLength: number}) => acc + chat.sessionLength, 0)
                 };
 
                 setUsersCount(currentStats.usersCount);
@@ -133,7 +133,7 @@ const ExplorerEchat = () => {
                 sortedExplorer.forEach((item) => {
                     const timestamp = new Date(item.date).getTime();
                     userCountData.push([timestamp, item.userCount]);
-                    activeUsersData.push([timestamp, item.activeUsers.length * 100 > item.userCount * 0.1 ? Math.round(item.userCount * getRandomNumber(0.05, 0.1)) : item.activeUsers.length * 100]);
+                    activeUsersData.push([timestamp, item.activeUsers * 100 > item.userCount * 0.1 ? Math.round(item.userCount * getRandomNumber(0.05, 0.1)) : item.activeUsers * 100]);
                     dailyPromptCountData.push([timestamp, item.dailyPromptCount * 100]);
                     promptCountData.push([timestamp, item.promptCount * 100]);
                 });

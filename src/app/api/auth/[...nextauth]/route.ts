@@ -176,7 +176,9 @@ const authOptions: NextAuthOptions = {
                             jumpUserId: jumpUserId || "",
                             jumpTransactionId: jumpTransactionId || "",
                             isReward: false
-                        }
+                        },
+                        pointsUsed: 0,
+                        pointResetDate: new Date(),
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;

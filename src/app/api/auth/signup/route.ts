@@ -58,7 +58,9 @@ export async function POST(request: NextRequest) {
                     jumpUserId: userId || "",
                     jumpTransactionId: transactionId || "",
                     isReward: false
-                }
+                },
+                pointsUsed: 0,
+                pointResetDate: new Date(),
             });
         }
         const token = await generateConfirmationToken(email, "email");
