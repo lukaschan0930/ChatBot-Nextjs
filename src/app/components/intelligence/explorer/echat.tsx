@@ -105,45 +105,19 @@ const ExplorerEchat = () => {
         const fetchData = async () => {
             try {
                 const res = await fetch('/api/intelligence/explorer');
-                const { users, userCount, chats, latestExplorer, explorer } = await res.json();
+                const { usersCount, pointsCount, promptCount, conversationCount, userCountData, activeUsersData, dailyPromptCountData, promptCountData, points } = await res.json();
 
-                // Calculate current stats
-                const currentStats = {
-                    usersCount: userCount,
-                    pointsCount: users.reduce((acc: number, user: IUser) => acc + user.chatPoints, 0),
-                    promptCount: latestExplorer.promptCount,
-                    conversationCount: chats.reduce((acc: number, chat: {sessionLength: number}) => acc + chat.sessionLength, 0)
-                };
-
-                setUsersCount(currentStats.usersCount);
-                setPromptCount(currentStats.promptCount);
-                setConversationCount(currentStats.conversationCount);
-                setPointsCount(currentStats.pointsCount);
-
-                // Sort explorer data by date
-                const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
-
-                // Process all data in a single loop
-                const userCountData: number[][] = [];
-                const activeUsersData: number[][] = [];
-                const dailyPromptCountData: number[][] = [];
-                const promptCountData: number[][] = [];
-                const pointsData = generatePointsData(explorer, Number(currentStats.pointsCount.toFixed(2)) * 100);
-
-                sortedExplorer.forEach((item) => {
-                    const timestamp = new Date(item.date).getTime();
-                    userCountData.push([timestamp, item.userCount]);
-                    activeUsersData.push([timestamp, item.activeUsers * 100 > item.userCount * 0.1 ? Math.round(item.userCount * getRandomNumber(0.05, 0.1)) : item.activeUsers * 100]);
-                    dailyPromptCountData.push([timestamp, item.dailyPromptCount * 100]);
-                    promptCountData.push([timestamp, item.promptCount * 100]);
-                });
+                setUsersCount(usersCount);
+                setPromptCount(promptCount);
+                setConversationCount(conversationCount);
+                setPointsCount(pointsCount);
 
                 setDailyData({
                     users: userCountData,
                     activeUsers: activeUsersData,
                     prompts: promptCountData,
                     dailyPrompts: dailyPromptCountData,
-                    points: pointsData
+                    points: points
                 });
             } catch (error) {
                 console.error("Error fetching explorer data:", error);
