@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AiRepo } from "@/app/lib/database/aiRepo";
+import { checkAdmin } from "@/app/lib/api/helper";
 
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const model = await AiRepo.findById(params.id);
         if (!model) {
@@ -20,6 +25,10 @@ export async function PUT(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const { name, inputCost, outputCost, multiplier } = await request.json();
         const model = await AiRepo.update(params.id, { name, inputCost, outputCost, multiplier });
@@ -36,6 +45,10 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const model = await AiRepo.deleteAI(params.id);
         if (!model) {

@@ -25,8 +25,21 @@ async function create(plan: {
     points: number;
     bonusPoints: number;
     disableModel: string[];
+    priceId: string;
+    productId: string;
 }) {
-    return await db.Plan.create(plan);
+    return await db.Plan.create({
+        name: plan.name,
+        price: plan.price,
+        description: plan.description,
+        features: plan.features,
+        isYearlyPlan: plan.isYearlyPlan,
+        points: plan.points,
+        bonusPoints: plan.bonusPoints,
+        disableModel: plan.disableModel,
+        priceId: plan.priceId,
+        productId: plan.productId
+    });
 }
 
 async function update(id: string, plan: {
@@ -38,6 +51,8 @@ async function update(id: string, plan: {
     points: number;
     bonusPoints: number;
     disableModel: string[];
+    priceId: string;
+    productId: string;
 }) {
     return await db.Plan.findByIdAndUpdate(id, plan, { new: true });
 }

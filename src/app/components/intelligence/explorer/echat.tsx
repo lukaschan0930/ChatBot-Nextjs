@@ -79,27 +79,27 @@ const ExplorerEchat = () => {
     const [loading, setLoading] = useState(true);
 
     // Helper function to generate points data
-    const generatePointsData = (explorer: IExplorer[], targetPoints: number) => {
-        if (explorer.length === 0) return [];
+    // const generatePointsData = (explorer: IExplorer[], targetPoints: number) => {
+    //     if (explorer.length === 0) return [];
         
-        const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
-        let lastValue = 0;
-        const basePoints = sortedExplorer.map((item, index) => {
-            const remainingGrowth = targetPoints - lastValue;
-            const remainingPoints = sortedExplorer.length - index;
-            const minGrowth = remainingGrowth / remainingPoints;
-            const variation = minGrowth * (Math.random() * 0.05);
-            const newValue = Math.round(lastValue + minGrowth + variation);
-            lastValue = newValue;
-            return newValue;
-        });
-        basePoints[basePoints.length - 1] = targetPoints;
+    //     const sortedExplorer = [...explorer].sort((a, b) => a.date - b.date);
+    //     let lastValue = 0;
+    //     const basePoints = sortedExplorer.map((item, index) => {
+    //         const remainingGrowth = targetPoints - lastValue;
+    //         const remainingPoints = sortedExplorer.length - index;
+    //         const minGrowth = remainingGrowth / remainingPoints;
+    //         const variation = minGrowth * (Math.random() * 0.05);
+    //         const newValue = Math.round(lastValue + minGrowth + variation);
+    //         lastValue = newValue;
+    //         return newValue;
+    //     });
+    //     basePoints[basePoints.length - 1] = targetPoints;
 
-        return sortedExplorer.map((item, index) => {
-            const timestamp = new Date(item.date).getTime();
-            return [timestamp, basePoints[index]];
-        });
-    };
+    //     return sortedExplorer.map((item, index) => {
+    //         const timestamp = new Date(item.date).getTime();
+    //         return [timestamp, basePoints[index]];
+    //     });
+    // };
 
     useEffect(() => {
         const fetchData = async () => {

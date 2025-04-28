@@ -19,6 +19,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                     'Content-Type': 'application/json',
                 },
             });
+            if (response.status === 401) {
+                setLogined(false);
+                setToken(null);
+                setUser(null);
+                router.push('/admin');
+            }
             return response.json();
         };
 
@@ -31,6 +37,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                 },
                 body: JSON.stringify(body),
             });
+            if (response.status === 401) {
+                setLogined(false);
+                setToken(null);
+                setUser(null);
+                router.push('/admin');
+            }
             return response.json();
         };
 
@@ -43,6 +55,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                 },
                 body: JSON.stringify(body),
             });
+            if (response.status === 401) {
+                setLogined(false);
+                setToken(null);
+                setUser(null);
+                router.push('/admin');
+            }
             return response.json();
         };
 
@@ -54,6 +72,12 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                     'Content-Type': 'application/json',
                 },
             });
+            if (response.status === 401) {
+                setLogined(false);
+                setToken(null);
+                setUser(null);
+                router.push('/admin');
+            }
             return response.json();
         };
 

@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyConfirmationToken } from "@/app/lib/api/token";
 import { AdminRepo } from "@/app/lib/database/adminRepo";
+import { checkAdmin } from "@/app/lib/api/helper";
 
 export async function POST(request: NextRequest) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
 
@@ -23,7 +18,11 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const admin = await AdminRepo.findAdmin();
         return NextResponse.json({ data: admin, message: "Admin Fetched", status: true });
@@ -34,15 +33,11 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
+
     const { totalNode } = await request.json();
     try {
         await AdminRepo.updateTotalNode(totalNode);
