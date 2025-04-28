@@ -6,8 +6,11 @@ import { useAtom } from "jotai";
 import { isStartChatAtom, isSidebarVisibleAtom } from "@/app/lib/store";
 import Image from "next/image";
 import ResearchArea from "@/app/components/Chat/ResearchArea";
+import { notFound } from "next/navigation";
 
 const ChatText = () => {
+  notFound();
+
   const [isStartChat,] = useAtom(isStartChatAtom);
   const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
 
