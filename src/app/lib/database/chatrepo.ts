@@ -26,5 +26,11 @@ async function getFullHistory() {
 }
 
 async function getFullHistroyWithSessions() {
-    return db.Chat.find().populate('session').select('session');
+    return db.Chat.aggregate([
+        {
+            $project: {
+                sessionLength: { $size: { $ifNull: ["$session", []] } }
+            }
+        }
+    ]);
 }

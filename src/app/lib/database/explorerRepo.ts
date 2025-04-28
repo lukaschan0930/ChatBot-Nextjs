@@ -10,7 +10,18 @@ export const ExplorerRepo = {
 }
 
 async function findAll() {
-    return db.Explorer.find();
+    return db.Explorer.aggregate([
+        {
+            $project: {
+                _id: 1,
+                date: 1,
+                userCount: 1,
+                promptCount: 1,
+                dailyPromptCount: 1,
+                activeUsers: { $size: { $ifNull: ["$activeUsers", []] } }
+            }
+        }
+    ]);
 }
 
 async function create(explorer: IExplorer) {
@@ -26,5 +37,5 @@ async function findByDate(date: number) {
 }
 
 async function findByLatest() {
-    return db.Explorer.findOne().sort({ date: -1 });
+    return db.Explorer.findOne({}, { _id: 1, date: 1, userCount: 1, promptCount: 1, dailyPromptCount: 1}).sort({ date: -1 });
 }
