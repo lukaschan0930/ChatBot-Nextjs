@@ -12,6 +12,7 @@ import { JWT } from 'next-auth/jwt';
 import { getEncoding } from 'js-tiktoken';
 import { RecursiveCharacterTextSplitter } from '@/app/lib/api/text-splitter';
 import { ChatHistory } from '../interface';
+import { NextRequest } from 'next/server';
 const MinChunkSize = 140;
 const encoder = getEncoding('o200k_base');
 
@@ -235,4 +236,26 @@ export function getChatPoints(chatHistory: ChatHistory[]) {
 
 export function generateNodeRewardHash() {
     return crypto.randomBytes(32).toString('hex');
+}
+
+export async function checkAdmin(req: NextRequest) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+        return false;
+    }
+    const token = authHeader.split(' ')[1];
+    const decodedToken = await verifyConfirmationToken(token);
+    if (!decodedToken) {
+        return false;
+    }
+
+    const id = decodedToken.email;
+    const user = await UserRepo.findById(id as string);
+    if (!user) {
+        return false;
+    }
+    if (user.role !== "admin") {
+        return false;
+    }
+    return true;
 }

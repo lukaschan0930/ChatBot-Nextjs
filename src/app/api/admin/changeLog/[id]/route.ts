@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChangeLogRepo } from "@/app/lib/database/changeLogRepo";
-import { verifyConfirmationToken } from "@/app/lib/api/token";
+import { checkAdmin } from "@/app/lib/api/helper";
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
 
@@ -25,13 +20,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function GET(request: NextRequest, { params }: { params?: { id: string } }) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
 

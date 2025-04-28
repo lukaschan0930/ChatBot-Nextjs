@@ -232,7 +232,7 @@ const ExplorerWorker: FC = () => {
 
     useEffect(() => {
         const fetchTotalNodes = async () => {
-            const response = await fetch('/api/admin/eChat');
+            const response = await fetch('/api/intelligence/totalNode');
             const data = await response.json();
             setTotalNodes(data.data.totalNode);
             const liveNodesPercentage = getRandomNumberBasedonUTCTime(0.13, 0.34);

@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server';
-import { ISubscriptionPlan } from '@/app/lib/interface';
+import { NextRequest, NextResponse } from 'next/server';
 import { PlanRepo } from '@/app/lib/database/planRepo';
+import { checkAdmin } from '@/app/lib/api/helper';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const plans = await PlanRepo.findAll();
         return NextResponse.json({
@@ -18,7 +22,11 @@ export async function GET() {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const body = await request.json();
         const newPlan = await PlanRepo.create(body);

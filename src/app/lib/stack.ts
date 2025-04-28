@@ -1,5 +1,3 @@
-import { FaLessThanEqual } from "react-icons/fa6";
-
 export const MenuItems = [
   {
     id: "innovations",
@@ -14,7 +12,7 @@ export const MenuItems = [
       {
         id: "roboChat",
         label: "ROBO",
-        disable: false,
+        disable: true,
         tooltip: ""
       },
       {

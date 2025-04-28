@@ -566,11 +566,9 @@ function planModel() {
         },
         description: {
             type: String,
-            required: true
         },
         features: {
             type: [String],
-            required: true
         },
         isYearlyPlan: {
             type: Boolean,
@@ -579,15 +577,16 @@ function planModel() {
         },
         priceId: {
             type: String,
-            required: true
+            default: ""
         },
         productId: {
             type: String,
-            required: true
+            default: ""
         },
         points: {
             type: Number,
-            required: true
+            required: true,
+            default: 0
         },
         bonusPoints: {
             type: Number,
@@ -597,7 +596,6 @@ function planModel() {
         disableModel: {
             type: [mongoose.Schema.Types.ObjectId],
             ref: 'AI',
-            required: true,
             default: []
         }
     });

@@ -25,7 +25,7 @@ const SubscriptionPlan = () => {
     const fetchSubscriptionPlans = async () => {
         setLoading(true);
         try {
-            const response = await fetch.get('/api/subscription-plans');
+            const response = await fetch.get('/api/admin/subscription-plans');
             if (response.success) {
                 setSubscriptionPlans(response.data);
             } else {
@@ -50,7 +50,7 @@ const SubscriptionPlan = () => {
         
         setLoading(true);
         try {
-            const response = await fetch.delete(`/api/subscription-plans/${id}`);
+            const response = await fetch.delete(`/api/admin/subscription-plans/${id}`);
             if (response.success) {
                 toast({
                     description: "Subscription plan deleted successfully"
@@ -94,7 +94,7 @@ const SubscriptionPlan = () => {
                         <Input 
                             type="text" 
                             placeholder="Search plans..." 
-                            className="w-full px-4 py-2 border border-secondaryBorder rounded-lg focus:outline-none text-mainFont" 
+                            className="w-full px-4 py-2 border border-secondaryBorder rounded-lg focus:outline-none !text-mainFont" 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -160,7 +160,7 @@ const SubscriptionPlan = () => {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 hover:bg-[#FFFFFF]"
+                                            className="border-secondaryBorder hover:bg-[#FFFFFF10] bg-[#FFFFFF05] w-8 h-8 p-0"
                                             onClick={() => router.push(`/admin/subscriptionPlan/edit/${plan._id}`)}
                                         >
                                             <Pencil className="h-4 w-4" />
@@ -168,7 +168,7 @@ const SubscriptionPlan = () => {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 hover:bg-[#FFFFFF]"
+                                            className="border-secondaryBorder hover:bg-[#FFFFFF10] bg-[#FFFFFF05] w-8 h-8 p-0"
                                             onClick={() => handleDelete(plan._id)}
                                         >
                                             <Trash2 className="h-4 w-4" />

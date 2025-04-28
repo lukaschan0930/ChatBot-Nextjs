@@ -10,6 +10,7 @@ import { Input } from '@mui/material';
 import { toast } from '@/app/hooks/use-toast';
 import { Loader2, Plus, Trash2, CreditCard, Gift, Calendar, Tag, Package, CheckCircle2 } from 'lucide-react';
 import { CircularProgress } from '@mui/material';
+import { useAdmin } from '@/app/context/AdminContext';
 
 const subscriptionPlanSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -18,8 +19,8 @@ const subscriptionPlanSchema = z.object({
     points: z.number().min(0, 'Points must be greater than or equal to 0'),
     bonusPoints: z.number().min(0, 'Bonus points must be greater than or equal to 0'),
     isYearlyPlan: z.boolean(),
-    priceId: z.string().min(1, 'Stripe Price ID is required'),
-    productId: z.string().min(1, 'Stripe Product ID is required'),
+    priceId: z.string().min(0, 'Stripe Price ID is required'),
+    productId: z.string().min(0, 'Stripe Product ID is required'),
     features: z.array(z.string()),
     disableModel: z.array(z.string())
 });
@@ -35,11 +36,14 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [features, setFeatures] = useState<string[]>([]);
     const [newFeature, setNewFeature] = useState('');
+    const { useFetch } = useAdmin();
+    const fetch = useFetch();
 
     const {
         register,
         handleSubmit,
         setValue,
+        reset,
         formState: { errors },
     } = useForm<SubscriptionPlanFormData>({
         resolver: zodResolver(subscriptionPlanSchema),
@@ -61,21 +65,24 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
         if (id) {
             const fetchSubscriptionPlan = async () => {
                 try {
-                    const response = await fetch(`/api/subscription-plans/${id}`);
-                    if (!response.ok) throw new Error('Failed to fetch subscription plan');
-                    const data = await response.json();
-                    setValue('name', data.name);
-                    setValue('description', data.description);
-                    setValue('price', data.price);
-                    setValue('points', data.points);
-                    setValue('bonusPoints', data.bonusPoints);
-                    setValue('isYearlyPlan', data.isYearlyPlan);
-                    setValue('priceId', data.priceId);
-                    setValue('productId', data.productId);
+                    const response = await fetch.get(`/api/admin/subscription-plans/${id}`);
+                    if (!response.success) throw new Error('Failed to fetch subscription plan');
+                    const data = response.data;
+                    reset({
+                        name: data.name,
+                        description: data.description,
+                        price: data.price,
+                        points: data.points,
+                        bonusPoints: data.bonusPoints,
+                        isYearlyPlan: data.isYearlyPlan,
+                        priceId: data.priceId,
+                        productId: data.productId,
+                        features: data.features,
+                        disableModel: data.disableModel
+                    });
                     setFeatures(data.features);
-                    setValue('features', data.features);
-                    setValue('disableModel', data.disableModel);
                 } catch (error) {
+                    console.error('Error fetching subscription plan:', error);
                     toast({
                         description: 'Failed to load subscription plan',
                         variant: 'destructive'
@@ -84,30 +91,23 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
             };
             fetchSubscriptionPlan();
         }
-    }, [id, setValue]);
+    }, [id, reset]);
 
     const onSubmit = async (data: SubscriptionPlanFormData) => {
         setIsLoading(true);
         try {
-            const url = id ? `/api/subscription-plans/${id}` : '/api/subscription-plans';
-            const method = id ? 'PUT' : 'POST';
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
+            const url = id ? `/api/admin/subscription-plans/${id}` : '/api/admin/subscription-plans';
+            const response = id ? await fetch.put(url, data) : await fetch.post(url, data);
 
-            if (!response.ok) throw new Error('Failed to save subscription plan');
+            if (!response.success) throw new Error('Failed to save subscription plan');
 
             toast({
                 description: `Subscription plan ${id ? 'updated' : 'created'} successfully`,
                 variant: 'default'
             });
-            router.push('/admin/subscription-plans');
-            router.refresh();
+            router.push('/admin/subscriptionPlan');
         } catch (error) {
+            console.error('Error saving subscription plan:', error);
             toast({
                 description: 'Failed to save subscription plan',
                 variant: 'destructive'
@@ -174,7 +174,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                                 placeholder="Enter plan description"
                                 multiline
                                 rows={4}
-                                className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont"
+                                className="!px-4 !py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont"
                             />
                             {errors.description && (
                                 <p className="text-sm text-red-500">{errors.description.message}</p>
@@ -248,7 +248,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                         <div className="flex flex-col gap-5 w-full">
                             <div className="text-mainFont text-[18px]">Features</div>
                             {
-                                features.length > 0 &&
+                                features && features.length > 0 &&
                                 <div className="flex flex-wrap gap-2">
                                     {features.map((feature, index) => (
                                         <div
@@ -290,7 +290,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                             <Button
                                 type="button"
                                 variant="outlined"
-                                onClick={() => router.push('/admin/subscription-plans')}
+                                onClick={() => router.push('/admin/subscriptionPlan')}
                                 className="bg-inherit hover:!bg-[#FFFFFF] h-10 disabled:!bg-[#FAFAFA]/80 !text-mainFont !text-sm !border !border-secondaryBorder"
                             >
                                 Cancel

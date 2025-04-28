@@ -1,10 +1,37 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PlanRepo } from '@/app/lib/database/planRepo';
+import { checkAdmin } from '@/app/lib/api/helper';
 
-export async function DELETE(
-    request: Request,
+export async function GET(
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
+    try {
+        const { id } = params;
+        const plan = await PlanRepo.findById(id);
+
+        return NextResponse.json({
+            success: true,
+            data: plan
+        });
+    } catch (error) {
+        console.error('Error fetching subscription plan:', error);
+    }
+}
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
+    
     try {
         const { id } = params;
         const plan = await PlanRepo.findById(id);
@@ -32,9 +59,13 @@ export async function DELETE(
 }
 
 export async function PUT(
-    request: Request,
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const { id } = params;
         const body = await request.json();

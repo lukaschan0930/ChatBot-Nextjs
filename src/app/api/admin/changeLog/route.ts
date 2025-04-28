@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChangeLogRepo } from "@/app/lib/database/changeLogRepo";
-import { verifyConfirmationToken } from "@/app/lib/api/token";
+import { checkAdmin } from "@/app/lib/api/helper";
 
 export async function POST(request: NextRequest) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
 
@@ -23,7 +18,11 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
+        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    }
     try {
         const logs = await ChangeLogRepo.findAll();
         return NextResponse.json({ data: logs, message: "Change Log Fetched", status: true });
@@ -34,13 +33,8 @@ export async function GET() {
 }
 
 export async function DELETE(request: NextRequest) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
-    const token = authHeader.split(' ')[1];
-    const decodedToken = await verifyConfirmationToken(token);
-    if (!decodedToken) {
+    const isAdmin = await checkAdmin(request);
+    if (!isAdmin) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
 

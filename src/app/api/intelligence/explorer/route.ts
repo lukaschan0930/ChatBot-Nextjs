@@ -11,7 +11,7 @@ import { getRandomNumber } from "@/app/lib/stack";
 export async function GET() {
     const session = await getServerSession(authOptions as AuthOptions);
     if (!session) {
-        return Response.json({ success: false, message: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
     try {
@@ -55,9 +55,10 @@ export async function GET() {
             promptCountData: promptCountData,
             points: pointsData
         }, { status: 200 });
+
     } catch (error) {
         console.log(error);
-        return Response.json({ success: false, message: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -71,11 +72,11 @@ const generatePointsData = (explorer: IExplorer[], targetPoints: number) => {
         const remainingPoints = sortedExplorer.length - index;
         const minGrowth = remainingGrowth / remainingPoints;
         const variation = minGrowth * (Math.random() * 0.05);
-        const newValue = Math.round(lastValue + minGrowth + variation);
+        const newValue = parseInt(Math.round(lastValue + minGrowth + variation).toFixed(0));
         lastValue = newValue;
         return newValue;
     });
-    basePoints[basePoints.length - 1] = targetPoints;
+    basePoints[basePoints.length - 1] = Math.round(targetPoints);
 
     return sortedExplorer.map((item, index) => {
         const timestamp = new Date(item.date).getTime();
