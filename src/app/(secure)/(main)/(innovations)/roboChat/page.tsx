@@ -1,5 +1,6 @@
 "use client"
 
+import { notFound } from "next/navigation";
 import { useState } from "react";
 import { useAtom } from "jotai";
 import { isSidebarVisibleAtom, isStartChatAtom, roboActiveChatAtom } from "@/app/lib/store";
@@ -11,6 +12,8 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import RoboCodeViewer from "@/app/components/innovation/robochat/RoboCodeViewer";
 
 const RoboChat = () => {
+    notFound();
+    
     const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
     const [isStartChat,] = useAtom(isStartChatAtom);
     const [roboActiveChat,] = useAtom(roboActiveChatAtom);
