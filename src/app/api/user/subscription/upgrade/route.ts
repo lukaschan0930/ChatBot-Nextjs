@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!plan) {
         return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
-    if (user.currentPlan === planId) {
+    if (user.currentplan === planId) {
         return NextResponse.json({ error: "User already on this plan" }, { status: 400 });
     }
 

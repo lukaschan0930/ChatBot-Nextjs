@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { ISubscriptionPlan } from '@/app/lib/interface';
 import Divider from '@mui/material/Divider';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/app/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 
 const formatNumber = (num: number): string => {
     if (num >= 1000000) {
@@ -18,12 +19,37 @@ const formatNumber = (num: number): string => {
     return num.toString();
 };
 
-export default function SubscriptionPage() {
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SubscriptionPage />
+        </Suspense>
+    );
+}
+
+const SubscriptionPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
     const { user } = useAuth();
     const [isYearly, setIsYearly] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+
+    useEffect(() => {
+        if (success) {
+            toast({
+                description: "Subscription created successfully",
+            });
+        }
+        if (canceled) {
+            toast({
+                description: "Subscription creation canceled",
+                variant: "destructive"
+            });
+        }
+    }, [success, canceled]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,7 +78,7 @@ export default function SubscriptionPage() {
             const plan = plans.find(p => p._id === planId);
             if (!plan) throw new Error("Plan not found");
 
-            if (!user?.currentPlan) {
+            if (!user?.currentplan) {
                 const response = await fetch("/api/user/subscription/createCheckoutSession", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -141,7 +167,7 @@ export default function SubscriptionPage() {
                         key={plan._id}
                         plan={plan}
                         isYearly={isYearly}
-                        currentPlan={user?.currentPlan || null}
+                        currentplan={user?.currentplan || null}
                         planEndDate={user?.planEndDate || null}
                         onUpgrade={handleUpgrade}
                         onDowngrade={handleDowngrade}
@@ -179,7 +205,7 @@ const YearlyPlanTab = ({ isYearly, setIsYearly }: { isYearly: boolean, setIsYear
 const PlanCard = ({
     plan,
     isYearly,
-    currentPlan,
+    currentplan,
     planEndDate,
     onUpgrade,
     onDowngrade,
@@ -187,15 +213,15 @@ const PlanCard = ({
 }: {
     plan: ISubscriptionPlan,
     isYearly: boolean,
-    currentPlan: ISubscriptionPlan | null,
+    currentplan: ISubscriptionPlan | null,
     planEndDate: Date | null,
     onUpgrade: (planId: string) => void,
     onDowngrade: (planId: string) => void,
     isLoading: boolean
 }) => {
-    const isCurrentPlan = (currentPlan?._id === plan._id && planEndDate && planEndDate >= new Date()) || (!currentPlan && plan.price === 0);
-    const canUpgrade = currentPlan && plan.price > currentPlan.price || (!currentPlan && plan.price > 0);
-    const canDowngrade = currentPlan && plan.price < currentPlan.price && planEndDate && planEndDate < new Date();
+    const isCurrentPlan = (currentplan?._id === plan._id && planEndDate && new Date(planEndDate).getTime() >= new Date().getTime()) || (!currentplan && plan.price === 0);
+    const canUpgrade = currentplan && plan.price > currentplan.price || (!currentplan && plan.price > 0);
+    const canDowngrade = currentplan && plan.price < currentplan.price && planEndDate && new Date(planEndDate).getTime() < new Date().getTime();
 
     return (
         <div className='bg-[rgba(255,255,255,0.12)] p-[1px] bg-no-repeat rounded-[20px] bg-[linear-gradient(-195deg,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0)_20%)] w-full md:w-[330px] max-w-[330px]'>

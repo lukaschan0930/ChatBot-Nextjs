@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    if (user.currentPlan === planId) {
+    if (user.currentplan === planId) {
         return NextResponse.json({ error: "User already on this plan" }, { status: 400 });
     }
 
     // Check if current plan has ended
-    const isCurrentPlanEnded = user.planEndDate && user.planEndDate < new Date();
+    const isCurrentPlanEnded = user.planEndDate && new Date(user.planEndDate).getTime() < new Date().getTime();
 
     if (!isCurrentPlanEnded) {
         return NextResponse.json({ error: "Current plan has not ended" }, { status: 400 });

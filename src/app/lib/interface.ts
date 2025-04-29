@@ -14,7 +14,7 @@ export interface User {
     nodeConnectedTime?: Date;
     nodeRewardHash?: string;
     isNodeAdded?: boolean;
-    currentPlan?: ISubscriptionPlan;
+    currentplan?: ISubscriptionPlan;
     planStartDate?: Date;
     planEndDate?: Date;
     // board: {
