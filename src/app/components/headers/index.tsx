@@ -187,7 +187,7 @@ const Header = () => {
                 </>
               }
               {
-                endPoint[1] === "workers" &&
+                (endPoint[1] === "workers" || endPoint[1] === "subscription") &&
                 <>
                   <ShadowBtn
                     mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"

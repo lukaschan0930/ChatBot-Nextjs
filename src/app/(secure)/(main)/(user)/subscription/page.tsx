@@ -31,7 +31,7 @@ export default function Page() {
 const SubscriptionPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
     const { user, setUser } = useAuth();
-    const [isYearly, setIsYearly] = useState(false);
+    const [isYearly, setIsYearly] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -256,7 +256,7 @@ const PlanCard = ({
                 <Divider className='my-2 sm:my-3' sx={{ borderColor: '#FFFFFF33', borderWidth: '1px', borderStyle: 'dashed' }} />
 
                 <button
-                    className={`w-full mt-4 sm:mt-5 py-2 rounded-full text-base sm:text-lg font-medium border transition-all
+                    className={`w-full mt-4 sm:mt-5 py-2 rounded-full text-base sm:text-lg font-medium border h-11 hover:outline-none hover:border-transparent
                         ${isCurrentPlan || isRequestPlan
                             ? 'bg-[#FFFFFF14] text-white border-[#ffffff30]'
                             : canUpgrade
