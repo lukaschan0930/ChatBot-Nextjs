@@ -1,8 +1,9 @@
-import db from "@/app/lib/database/db";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import Stripe from "stripe";
+import { UserRepo } from "@/app/lib/database/userrepo";
+import { PlanRepo } from "@/app/lib/database/planRepo";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2025-02-24.acacia",
@@ -14,11 +15,11 @@ export async function POST(request: NextRequest) {
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const user = await db.User.findOne({ email: session.user?.email });
+    const user = await UserRepo.findByEmail(session.user?.email || '');
     if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    const plan = await db.Plan.findOne({ _id: planId });
+    const plan = await PlanRepo.findById(planId);
     if (!plan) {
         return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
@@ -42,12 +43,10 @@ export async function POST(request: NextRequest) {
         });
 
         // Update user's current plan in database
-        await db.User.updateOne(
-            { _id: user._id },
-            { $set: { requestPlanId: planId } }
-        );
+        user.requestPlanId = planId;
+        await user.save();
 
-        return NextResponse.json({ success: true }, { status: 200 });
+        return NextResponse.json({ success: true, user }, { status: 200 });
     } catch (error) {
         console.error('Subscription update error:', error);
         return NextResponse.json(

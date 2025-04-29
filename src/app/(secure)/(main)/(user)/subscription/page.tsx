@@ -109,7 +109,7 @@ const SubscriptionPage = () => {
                     toast({
                         description: "Your Request is being processed, please wait for the confirmation",
                     });
-                    router.refresh();
+                    setUser(data.user);
                 } else {
                     throw new Error(data.error || "Failed to upgrade subscription");
                 }
@@ -142,7 +142,7 @@ const SubscriptionPage = () => {
                 toast({
                     description: "Your Request is being processed, please wait for the confirmation",
                 });
-                router.refresh();
+                setUser(data.user);
             } else {
                 throw new Error(data.error || "Failed to downgrade subscription");
             }
