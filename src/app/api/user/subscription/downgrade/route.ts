@@ -38,24 +38,32 @@ export async function POST(request: NextRequest) {
     if (plan.price === 0) {
         // If user has an active subscription, cancel it
         if (user.subscriptionId) {
+            const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
             try {
                 await stripe.subscriptions.cancel(user.subscriptionId);
             } catch (error) {
                 console.error('Error canceling subscription:', error);
             }
         }
-        
+
         return NextResponse.json({ success: true }, { status: 200 });
     }
 
     // Handle paid plan
+    const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+    const subscriptionItemId = subscription.items.data[0].id;
     await stripe.subscriptions.update(user.subscriptionId, {
-        items: [{ id: user.subscriptionId, price: plan.priceId }],
+        items: [{ id: subscriptionItemId, price: plan.priceId }],
         proration_behavior: 'always_invoice',
         billing_cycle_anchor: 'now'
     });
 
-    return NextResponse.json({ 
+    await db.User.updateOne(
+        { _id: user._id },
+        { $set: { requestPlanId: planId } }
+    );
+
+    return NextResponse.json({
         success: true,
     }, { status: 200 });
 
@@ -64,12 +72,12 @@ export async function POST(request: NextRequest) {
     // if (!subscription) {
     //     return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
     // }
-    
+
     // await stripe.subscriptions.update(user.subscriptionId, {
     //     items: [{ id: user.subscriptionId, price: plan.priceId }],
     //     proration_behavior: 'always_invoice',
     //     billing_cycle_anchor: 'now'
     // });
-    
+
     // return NextResponse.json({ success: true }, { status: 200 });
 }

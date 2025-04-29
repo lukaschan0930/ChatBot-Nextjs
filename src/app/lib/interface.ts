@@ -15,6 +15,7 @@ export interface User {
     nodeRewardHash?: string;
     isNodeAdded?: boolean;
     currentplan?: ISubscriptionPlan;
+    requestPlanId?: string;
     planStartDate?: Date;
     planEndDate?: Date;
     // board: {
@@ -143,6 +144,7 @@ export interface IUser {
     pointsUsed: number;
     pointResetDate: Date;
     currentplan?: string;
+    requestPlanId?: string;
     disableModel?: string[];
     jumpReward?: {
         jumpUserId?: string;

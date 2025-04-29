@@ -36,6 +36,7 @@ interface IUser extends Document {
     disableModel: mongoose.Schema.Types.ObjectId[];
     planStartDate: Date;
     planEndDate: Date;
+    requestPlanId: mongoose.Schema.Types.ObjectId;
     subscriptionId: string;
     subscriptionStatus: string;
     stripeCustomerId: string;
@@ -165,6 +166,11 @@ function userModel() {
             default: 0
         },
         currentplan: {
+            type: Schema.Types.ObjectId,
+            ref: 'Plan',
+            default: null
+        },
+        requestPlanId: {
             type: Schema.Types.ObjectId,
             ref: 'Plan',
             default: null

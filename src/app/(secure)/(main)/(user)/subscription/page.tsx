@@ -8,6 +8,7 @@ import { toast } from '@/app/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useSearchParams } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 const formatNumber = (num: number): string => {
     if (num >= 1000000) {
@@ -29,7 +30,7 @@ export default function Page() {
 
 const SubscriptionPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const [isYearly, setIsYearly] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -44,9 +45,14 @@ const SubscriptionPage = () => {
             });
         }
         if (canceled) {
-            toast({
-                description: "Subscription creation canceled",
-                variant: "destructive"
+            fetch('/api/user/subscription/requestCancel').then(res => res.json()).then(data => {
+                if (data.success) {
+                    setUser(data.user);
+                    toast({
+                        description: "Subscription creation canceled",
+                        variant: "destructive"
+                    });
+                }
             });
         }
     }, [success, canceled]);
@@ -101,7 +107,7 @@ const SubscriptionPage = () => {
                 const data = await response.json();
                 if (data.success) {
                     toast({
-                        description: "Subscription upgraded successfully",
+                        description: "Your Request is being processed, please wait for the confirmation",
                     });
                     router.refresh();
                 } else {
@@ -134,7 +140,7 @@ const SubscriptionPage = () => {
             const data = await response.json();
             if (data.success) {
                 toast({
-                    description: "Subscription will be downgraded at the end of the current period",
+                    description: "Your Request is being processed, please wait for the confirmation",
                 });
                 router.refresh();
             } else {
@@ -171,6 +177,7 @@ const SubscriptionPage = () => {
                         planEndDate={user?.planEndDate || null}
                         onUpgrade={handleUpgrade}
                         onDowngrade={handleDowngrade}
+                        requestPlanId={user?.requestPlanId || null}
                         isLoading={isLoading}
                     />
                 ))}
@@ -209,7 +216,8 @@ const PlanCard = ({
     planEndDate,
     onUpgrade,
     onDowngrade,
-    isLoading
+    isLoading,
+    requestPlanId
 }: {
     plan: ISubscriptionPlan,
     isYearly: boolean,
@@ -217,11 +225,13 @@ const PlanCard = ({
     planEndDate: Date | null,
     onUpgrade: (planId: string) => void,
     onDowngrade: (planId: string) => void,
-    isLoading: boolean
+    isLoading: boolean,
+    requestPlanId: string | null
 }) => {
     const isCurrentPlan = (currentplan?._id === plan._id && planEndDate && new Date(planEndDate).getTime() >= new Date().getTime()) || (!currentplan && plan.price === 0);
     const canUpgrade = currentplan && plan.price > currentplan.price || (!currentplan && plan.price > 0);
     const canDowngrade = currentplan && plan.price < currentplan.price && planEndDate && new Date(planEndDate).getTime() < new Date().getTime();
+    const isRequestPlan = requestPlanId === plan._id;
 
     return (
         <div className='bg-[rgba(255,255,255,0.12)] p-[1px] bg-no-repeat rounded-[20px] bg-[linear-gradient(-195deg,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0)_20%)] w-full md:w-[330px] max-w-[330px]'>
@@ -247,7 +257,7 @@ const PlanCard = ({
 
                 <button
                     className={`w-full mt-4 sm:mt-5 py-2 rounded-full text-base sm:text-lg font-medium border transition-all
-                        ${isCurrentPlan
+                        ${isCurrentPlan || isRequestPlan
                             ? 'bg-[#FFFFFF14] text-white border-[#ffffff30]'
                             : canUpgrade
                                 ? 'bg-gradient-to-b from-[#FFFFFF] to-[#898989] text-black hover:opacity-90'
@@ -256,21 +266,23 @@ const PlanCard = ({
                                     : 'bg-[#FFFFFF14] text-white border-[#ffffff30] cursor-not-allowed'
                         }`}
                     onClick={() => {
-                        if (isCurrentPlan) return;
+                        if (isCurrentPlan || isRequestPlan) return;
                         if (canUpgrade) onUpgrade(plan._id);
                         if (canDowngrade) onDowngrade(plan._id);
                     }}
-                    disabled={isLoading || (!canUpgrade && !canDowngrade && !isCurrentPlan)}
+                    disabled={isLoading || (!canUpgrade && !canDowngrade && !isCurrentPlan && !isRequestPlan)}
                 >
                     {isLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                     ) : isCurrentPlan ? (
                         'Current Plan'
+                    ) : isRequestPlan ? (
+                        'Confirming...'
                     ) : canUpgrade ? (
                         'Upgrade Plan'
                     ) : canDowngrade ? (
                         'Downgrade Plan'
-                    ) : (
+                    ) :  (
                         'Not Available'
                     )}
                 </button>

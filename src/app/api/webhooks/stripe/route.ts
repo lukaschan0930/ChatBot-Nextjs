@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
                 user.planEndDate = new Date(subscription.current_period_end * 1000);
                 user.monthlyPoints = plan.points;
                 user.pointsUsed = 0;
+                user.requestPlanId = null;
                 await user.save();
                 break;
             }
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
                         user.planEndDate = new Date(expandedSubscription.current_period_end * 1000);
                         user.pointsUsed = 0;
                         user.subscriptionId = subscription.id;
+                        user.requestPlanId = null;
                     }
                 }
 
@@ -126,6 +128,7 @@ export async function POST(request: NextRequest) {
                 user.planEndDate = null;
                 user.monthlyPoints = 0;
                 user.pointsUsed = 0;
+                user.requestPlanId = null;
                 await user.save();
                 break;
             }
@@ -163,6 +166,7 @@ export async function POST(request: NextRequest) {
                 user.currentplan = planId;
                 user.subscriptionId = subscriptionId;
                 user.pointsUsed = 0;
+                user.requestPlanId = null;
                 await user.save();
 
                 console.log(`Subscription renewed for user: ${user.id}`);
