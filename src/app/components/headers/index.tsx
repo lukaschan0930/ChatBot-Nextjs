@@ -93,7 +93,8 @@ const Header = () => {
                     endPoint[1] === "chatText" ||
                     endPoint[1] === "changeLog" ||
                     endPoint[1] === "userSetting" ||
-                    endPoint[1] === "roboChat"
+                    endPoint[1] === "roboChat" ||
+                    endPoint[1] === "router"
                   ) &&
                   <>
                     <ShadowBtn
@@ -154,7 +155,8 @@ const Header = () => {
                 (endPoint[1] === "chatText" ||
                   endPoint[1] === "changeLog" ||
                   endPoint[1] === "userSetting" ||
-                  endPoint[1] === "roboChat") &&
+                  endPoint[1] === "roboChat" ||
+                  endPoint[1] === "router") &&
                 <>
                   <ShadowBtn
                     mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"

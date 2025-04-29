@@ -1,0 +1,274 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { ISubscriptionPlan } from '@/app/lib/interface';
+import Divider from '@mui/material/Divider';
+import { useRouter } from 'next/navigation';
+import { toast } from '@/app/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/app/context/AuthContext';
+
+const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(0) + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(0) + 'k';
+    }
+    return num.toString();
+};
+
+export default function SubscriptionPage() {
+    const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
+    const { user } = useAuth();
+    const [isYearly, setIsYearly] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch plans
+                const plansRes = await fetch("/api/user/subscription");
+                const plansData = await plansRes.json();
+                if (plansData.status) {
+                    setPlans(plansData.plans);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                toast({
+                    description: "Failed to load subscription data",
+                    variant: "destructive"
+                });
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleUpgrade = async (planId: string) => {
+        setIsLoading(true);
+        try {
+            const plan = plans.find(p => p._id === planId);
+            if (!plan) throw new Error("Plan not found");
+
+            if (!user?.currentPlan) {
+                const response = await fetch("/api/user/subscription/createCheckoutSession", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ planId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    router.push(data.url);
+                } else {
+                    throw new Error(data.error || "Failed to create checkout session");
+                }
+            } else {
+                const response = await fetch("/api/user/subscription/upgrade", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ planId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    toast({
+                        description: "Subscription upgraded successfully",
+                    });
+                    router.refresh();
+                } else {
+                    throw new Error(data.error || "Failed to upgrade subscription");
+                }
+            }
+        } catch (error) {
+            console.error("Error upgrading subscription:", error);
+            toast({
+                description: error instanceof Error ? error.message : "Failed to upgrade subscription",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDowngrade = async (planId: string) => {
+        setIsLoading(true);
+        try {
+            const plan = plans.find(p => p._id === planId);
+            if (!plan) throw new Error("Plan not found");
+
+            const response = await fetch("/api/user/subscription/downgrade", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                toast({
+                    description: "Subscription will be downgraded at the end of the current period",
+                });
+                router.refresh();
+            } else {
+                throw new Error(data.error || "Failed to downgrade subscription");
+            }
+        } catch (error) {
+            console.error("Error downgrading subscription:", error);
+            toast({
+                description: error instanceof Error ? error.message : "Failed to downgrade subscription",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className='pt-[110px] px-4 sm:px-6 lg:px-8 flex flex-col items-center min-h-screen'>
+            <h1 className='lg:text-[72px] text-[32px] md:text-[52px] font-bold text-center bg-gradient-to-r from-[#FFFFFF] to-[#FFFFFF99] bg-clip-text text-transparent leading-tight'>
+                Tailored plan<br /> for all business size
+            </h1>
+            <h5 className='text-[14px] sm:text-[16px] text-center text-[#AEB0B9] mt-6 sm:mt-10 max-w-2xl'>
+                We're a force of over 100 talents! A dynamic team of skilled individuals <br className="hidden sm:block" /> and tech pioneers, constantly pushing boundaries.
+            </h5>
+            <YearlyPlanTab isYearly={isYearly} setIsYearly={setIsYearly} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-12 mb-20 w-full max-w-7xl justify-items-center">
+                {plans.filter((plan) => plan.isYearlyPlan === isYearly || plan.type == 'free').map((plan) => (
+                    <PlanCard
+                        key={plan._id}
+                        plan={plan}
+                        isYearly={isYearly}
+                        currentPlan={user?.currentPlan || null}
+                        planEndDate={user?.planEndDate || null}
+                        onUpgrade={handleUpgrade}
+                        onDowngrade={handleDowngrade}
+                        isLoading={isLoading}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+const YearlyPlanTab = ({ isYearly, setIsYearly }: { isYearly: boolean, setIsYearly: (isYearly: boolean) => void }) => {
+    return (
+        <div className='rounded-[56px] border border-[#FFFFFF1F] p-[6px] gap-2 bg-[#FFFFFF1F] mt-14 flex items-center max-md:text-[12px]'>
+            <div
+                className={
+                    `rounded-[56px] py-2 px-3 gap-2 text-white cursor-pointer border whitespace-nowrap
+                    ${isYearly ? "border-[#FFFFFF1F] bg-[#FFFFFF52]" : "border-transparent"}`
+                }
+                onClick={() => setIsYearly(true)}
+            >
+                Bill yearly <span className='bg-[#020202] rounded-[20px] border border-[#FFFFFF1F] px-[11px] py-[1px]'>+ Bonus 10%</span>
+            </div>
+            <div
+                className={`rounded-[56px] py-2 px-3 gap-2 text-white cursor-pointer border whitespace-nowrap
+                    ${!isYearly ? "border-[#FFFFFF1F] bg-[#FFFFFF52]" : "border-transparent"}`}
+                onClick={() => setIsYearly(false)}
+            >
+                Monthly Plan
+            </div>
+        </div>
+    );
+}
+
+const PlanCard = ({
+    plan,
+    isYearly,
+    currentPlan,
+    planEndDate,
+    onUpgrade,
+    onDowngrade,
+    isLoading
+}: {
+    plan: ISubscriptionPlan,
+    isYearly: boolean,
+    currentPlan: ISubscriptionPlan | null,
+    planEndDate: Date | null,
+    onUpgrade: (planId: string) => void,
+    onDowngrade: (planId: string) => void,
+    isLoading: boolean
+}) => {
+    const isCurrentPlan = (currentPlan?._id === plan._id && planEndDate && planEndDate >= new Date()) || (!currentPlan && plan.price === 0);
+    const canUpgrade = currentPlan && plan.price > currentPlan.price || (!currentPlan && plan.price > 0);
+    const canDowngrade = currentPlan && plan.price < currentPlan.price && planEndDate && planEndDate < new Date();
+
+    return (
+        <div className='bg-[rgba(255,255,255,0.12)] p-[1px] bg-no-repeat rounded-[20px] bg-[linear-gradient(-195deg,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0)_20%)] w-full md:w-[330px] max-w-[330px]'>
+            <div className="bg-[#020202] rounded-[20px] p-4 sm:p-6 h-full relative border border-[#FFFFFF1F] flex flex-col">
+                {/* Plan name */}
+                <div className="absolute inset-0 bg-radial-white pointer-events-none rounded-[18px]"></div>
+                <div className="text-base sm:text-lg font-medium text-white mb-6 sm:mb-8">{plan.name}</div>
+
+                {/* Price section */}
+                <div className="flex items-baseline gap-1">
+                    <span className="text-[36px] sm:text-[48px] font-semibold text-[#AEB0B9]">
+                        <span className='text-[#FFFFFF]'>$</span>
+                        {plan.isYearlyPlan ? (plan.price / 12).toFixed(0) : plan.price}
+                    </span>
+                    <span className="text-[14px] sm:text-[16px] text-[#AEB0B9]">/ month</span>
+                </div>
+
+                <Divider className='my-2 sm:my-3' sx={{ borderColor: '#FFFFFF33', borderWidth: '1px', borderStyle: 'dashed' }} />
+                <div className='my-2 text-[14px] sm:text-[16px] text-[#AEB0B9]'>
+                    Totalling to ${plan.isYearlyPlan ? plan.price : (plan.price * 12).toFixed(0)} yearly
+                </div>
+                <Divider className='my-2 sm:my-3' sx={{ borderColor: '#FFFFFF33', borderWidth: '1px', borderStyle: 'dashed' }} />
+
+                <button
+                    className={`w-full mt-4 sm:mt-5 py-2 rounded-full text-base sm:text-lg font-medium border transition-all
+                        ${isCurrentPlan
+                            ? 'bg-[#FFFFFF14] text-white border-[#ffffff30]'
+                            : canUpgrade
+                                ? 'bg-gradient-to-b from-[#FFFFFF] to-[#898989] text-black hover:opacity-90'
+                                : canDowngrade
+                                    ? 'bg-[#FF4444] text-white hover:opacity-90'
+                                    : 'bg-[#FFFFFF14] text-white border-[#ffffff30] cursor-not-allowed'
+                        }`}
+                    onClick={() => {
+                        if (isCurrentPlan) return;
+                        if (canUpgrade) onUpgrade(plan._id);
+                        if (canDowngrade) onDowngrade(plan._id);
+                    }}
+                    disabled={isLoading || (!canUpgrade && !canDowngrade && !isCurrentPlan)}
+                >
+                    {isLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                    ) : isCurrentPlan ? (
+                        'Current Plan'
+                    ) : canUpgrade ? (
+                        'Upgrade Plan'
+                    ) : canDowngrade ? (
+                        'Downgrade Plan'
+                    ) : (
+                        'Not Available'
+                    )}
+                </button>
+
+                <div className="mt-4 sm:mt-6 rounded-[12px] border border-[#F2F2F51F] py-4 sm:py-5 px-3 sm:px-4 bg-[url('/image/plan-bg.png')] bg-center flex-auto">
+                    <div className="text-base sm:text-lg text-[#7A7A82] mb-4 sm:mb-6">Plan includes:</div>
+                    <div className="flex items-center gap-2 sm:gap-3 text-[14px] sm:text-base text-gray-400">
+                        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.75" y="1.25" width="12.5" height="12.5" rx="6.25" stroke="white" strokeWidth="1.5" />
+                            <path d="M4 7L4.98223 8.51112C5.31881 9.02894 6.03965 9.12089 6.49544 8.70417L10 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                        {formatNumber(plan.points)} points/month
+                    </div>
+                    {plan.bonusPoints > 0 && (
+                        <div className="flex items-center gap-2 sm:gap-3 text-[14px] sm:text-base text-gray-400 mt-4 sm:mt-5">
+                            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="0.75" y="1.25" width="12.5" height="12.5" rx="6.25" stroke="white" strokeWidth="1.5" />
+                                <path d="M4 7L4.98223 8.51112C5.31881 9.02894 6.03965 9.12089 6.49544 8.70417L10 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            +{formatNumber(plan.bonusPoints)} points/month
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};

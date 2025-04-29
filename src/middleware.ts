@@ -10,5 +10,11 @@ export const config = {
         "/explorer/:path*",
         "/roboChat/:path*",
         "/router/:path*",
+        "/subscription/:path*",
+        "/api/chat/:path*",
+        "/api/innovation/:path*",
+        "/api/intelligence/:path*",
+        "/api/marketing/:path*",
+        "/api/user/:path*",
     ]
 }

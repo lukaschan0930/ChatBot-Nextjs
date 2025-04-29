@@ -5,13 +5,17 @@ import {
     IResearchLog, 
     IFileWithUrl,
     IRoboChatHistory,
-    IRoboChatLog
+    IRoboChatLog,
+    IRouterChatHistory,
+    IRouterChatLog
 } from "./interface";
 
 const chatHistoryAtom = atom<ChatHistory[]>([]);
 const chatLogAtom = atom<ChatLog[]>([]);
 const roboChatHistoryAtom = atom<IRoboChatHistory[]>([]);
 const roboChatLogAtom = atom<IRoboChatLog[]>([]);
+const routerChatHistoryAtom = atom<IRouterChatHistory[]>([]);
+const routerChatLogAtom = atom<IRouterChatLog[]>([]);
 const sessionIdAtom = atom<string | null>(null);
 const isStartChatAtom = atom<boolean>(false);
 const isStreamingAtom = atom<boolean>(false);
@@ -27,6 +31,7 @@ const progressAtom = atom<number>(0);
 const isResearchAreaVisibleAtom = atom<boolean>(false);
 const activeChatIdAtom = atom<string>("");
 const fileAtom = atom<IFileWithUrl[]>([]);
+const routerModelAtom = atom<string>("");
 
 export {
     chatHistoryAtom,
@@ -47,5 +52,8 @@ export {
     activeChatIdAtom,
     fileAtom,
     roboChatHistoryAtom,
-    roboChatLogAtom
+    roboChatLogAtom,
+    routerModelAtom,
+    routerChatHistoryAtom,
+    routerChatLogAtom
 };

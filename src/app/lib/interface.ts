@@ -14,6 +14,9 @@ export interface User {
     nodeConnectedTime?: Date;
     nodeRewardHash?: string;
     isNodeAdded?: boolean;
+    currentPlan?: ISubscriptionPlan;
+    planStartDate?: Date;
+    planEndDate?: Date;
     // board: {
     //     score: number;
     //     rank: number;
@@ -140,6 +143,7 @@ export interface IUser {
     pointsUsed: number;
     pointResetDate: Date;
     currentplan?: string;
+    disableModel?: string[];
     jumpReward?: {
         jumpUserId?: string;
         jumpTransactionId?: string;
@@ -188,6 +192,26 @@ export interface IRoboChatLog {
     prompt?: string;
     createdAt?: Date;
     timestamp: number;
+}
+
+export interface IRouterChatHistory {
+    id: string;
+    title: string;
+    chats: IRouterChatLog[];
+    loading?: boolean;
+    createdAt?: Date;
+}
+
+export interface IRouterChatLog {
+    prompt: string;
+    model: string;
+    inputToken: number;
+    outputToken: number;
+    points: number;
+    response: string | null;
+    timestamp: string | null;
+    outputTime: number;
+    fileUrls: string[];
 }
 
 export interface IChangeLog {
@@ -286,11 +310,14 @@ export interface IAI {
     inputCost: number;
     outputCost: number;
     multiplier: number;
+    provider: string;
+    model: string;
 }
 
 export interface ISubscriptionPlan {
     _id: string;
     name: string;
+    type: string;
     price: number;
     description: string;
     features: string[];

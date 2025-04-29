@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, SchemaOptions } from 'mongoose';
 import Crypto from 'crypto';
 
 interface IUser extends Document {
@@ -32,9 +32,13 @@ interface IUser extends Document {
         isReward: boolean
     }
     pointsUsed: number;
-    pointResetDate: Date;
     currentplan: mongoose.Schema.Types.ObjectId;
     disableModel: mongoose.Schema.Types.ObjectId[];
+    planStartDate: Date;
+    planEndDate: Date;
+    subscriptionId: string;
+    subscriptionStatus: string;
+    stripeCustomerId: string;
 }
 
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp')
@@ -151,30 +155,54 @@ function userModel() {
                 default: false
             }
         },
-        pointsUsed: {
-            type: Number,
-            default: 0
-        },
-        pointResetDate: {
-            type: Date,
-            default: null
-        },
-        currentplan: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Plan',
-            default: null
-        },
         disableModel: {
             type: [mongoose.Schema.Types.ObjectId],
             ref: 'AI',
             default: []
         },
+        pointsUsed: {
+            type: Number,
+            default: 0
+        },
+        currentplan: {
+            type: Schema.Types.ObjectId,
+            ref: 'Plan',
+            default: null
+        },
+        planStartDate: {
+            type: Date,
+            default: null
+        },
+        planEndDate: {
+            type: Date,
+            default: null
+        },
+        subscriptionId: {
+            type: String,
+            default: null
+        },
+        stripeCustomerId: {
+            type: String,
+            default: null
+        },
         salt: {
             type: String
-        }
+        },
     }, {
         timestamps: true
     });
+
+    // Add virtual population
+    UserSchema.virtual('plan', {
+        ref: 'Plan',
+        localField: 'currentplan',
+        foreignField: '_id',
+        justOne: true
+    });
+
+    // Enable virtuals in toJSON and toObject
+    UserSchema.set('toJSON', { virtuals: true });
+    UserSchema.set('toObject', { virtuals: true });
 
     // Define the hashPassword method
     UserSchema.methods.hashPassword = function (password: string): string {
@@ -365,6 +393,13 @@ function routerChatModel() {
                 outputToken: {
                     type: Number
                 },
+                outputTime: {
+                    type: Number,
+                    default: 0
+                },
+                fileUrls: [{
+                    type: String,
+                }], 
                 points: {
                     type: Number,
                     required: true,
@@ -577,11 +612,11 @@ function planModel() {
         },
         priceId: {
             type: String,
-            default: ""
+            required: true
         },
         productId: {
             type: String,
-            default: ""
+            required: true
         },
         points: {
             type: Number,
@@ -594,10 +629,21 @@ function planModel() {
             default: 0
         },
         disableModel: {
-            type: [mongoose.Schema.Types.ObjectId],
+            type: [Schema.Types.ObjectId],
             ref: 'AI',
             default: []
+        },
+        isActive: {
+            type: Boolean,
+            default: true
+        },
+        order: {
+            type: Number,
+            required: true,
+            default: 0
         }
+    }, {
+        timestamps: true
     });
 
     return mongoose.models.Plan || mongoose.model('Plan', PlanSchema);
@@ -619,6 +665,14 @@ function aiModel() {
         },
         multiplier: {
             type: Number,
+            required: true
+        },
+        model: {
+            type: String,
+            required: true
+        },
+        provider: {
+            type: String,
             required: true
         }
     });

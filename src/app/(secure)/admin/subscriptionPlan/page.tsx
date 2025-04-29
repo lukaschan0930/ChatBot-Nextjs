@@ -114,6 +114,7 @@ const SubscriptionPlan = () => {
                         <thead>
                             <tr className="border-b border-secondaryBorder">
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Name</th>
+                                <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Type</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Price</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Points</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Annual Plan</th>
@@ -131,6 +132,9 @@ const SubscriptionPlan = () => {
                                             <span className="font-medium">{plan.name}</span>
                                             <span className="text-gray-600 text-xs lg:text-sm">{plan.description}</span>
                                         </div>
+                                    </td>
+                                    <td className="text-mainFont text-sm lg:text-base p-3">
+                                        {plan.type}
                                     </td>
                                     <td className="text-mainFont text-sm lg:text-base p-3">
                                         ${plan.price}
