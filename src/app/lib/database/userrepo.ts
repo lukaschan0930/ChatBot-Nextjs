@@ -23,6 +23,7 @@ export const UserRepo = {
     getFullUser,
     getFullUserWithChatPoints,
     updateWorkerPoints,
+    updateUserStripeInfo
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -70,7 +71,7 @@ async function authenticate(email: string, password: string) {
 }
 
 async function findByEmail(email: string) {
-    return db.User.findOne({ email });
+    return db.User.findOne({ email }).populate('currentplan');
 }
 
 async function create(user: IUser) {
@@ -147,4 +148,8 @@ async function getFullUserWithChatPoints() {
 
 async function updateWorkerPoints(email: string, workerPoints: number, nodeRewardHash: string) {
     return db.User.findOneAndUpdate({ email }, { workerPoints, nodeRewardHash, nodeConnectedTime: new Date() }, { upsert: true });
+}
+
+async function updateUserStripeInfo(email: string, stripeCustomerId: string) {
+    return db.User.findOneAndUpdate({ email }, { stripeCustomerId }, { upsert: true });
 }

@@ -15,6 +15,7 @@ import { useAdmin } from '@/app/context/AdminContext';
 const subscriptionPlanSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     description: z.string().min(1, 'Description is required'),
+    type: z.string().min(1, 'Type is required'),
     price: z.number().min(0, 'Price must be greater than or equal to 0'),
     points: z.number().min(0, 'Points must be greater than or equal to 0'),
     bonusPoints: z.number().min(0, 'Bonus points must be greater than or equal to 0'),
@@ -50,6 +51,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
         defaultValues: {
             name: '',
             description: '',
+            type: '',
             price: 0,
             points: 0,
             bonusPoints: 0,
@@ -71,6 +73,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                     reset({
                         name: data.name,
                         description: data.description,
+                        type: data.type,
                         price: data.price,
                         points: data.points,
                         bonusPoints: data.bonusPoints,
@@ -150,6 +153,18 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                                 />
                                 {errors.name && (
                                     <p className="text-sm text-red-500">{errors.name.message}</p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-5 w-full">
+                                <div className="text-mainFont text-[18px]">Type</div>
+                                <Input
+                                    {...register('type')}
+                                    placeholder="Enter type"
+                                    className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont"
+                                />
+                                {errors.type && (
+                                    <p className="text-sm text-red-500">{errors.type.message}</p>
                                 )}
                             </div>
 

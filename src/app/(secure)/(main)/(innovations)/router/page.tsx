@@ -1,15 +1,15 @@
 "use client"
 
-import ChatArea from "@/app/components/Chat/ChatArea";
-import InputBox from "@/app/components/InputBox";
+import RouterChatArea from "@/app/components/innovation/router/chatArea";
 import { useAtom } from "jotai";
 import { isStartChatAtom, isSidebarVisibleAtom } from "@/app/lib/store";
 import Image from "next/image";
 import ResearchArea from "@/app/components/Chat/ResearchArea";
-import { notFound } from "next/navigation";
+import RouterInputBox from "@/app/components/innovation/router/routerInputBox";
+// import { notFound } from "next/navigation";
 
-const ChatText = () => {
-  notFound();
+const Router = () => {
+  // notFound();
 
   const [isStartChat,] = useAtom(isStartChatAtom);
   const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
@@ -34,14 +34,14 @@ const ChatText = () => {
                   Every Day I&apos;m Theoretically Human
                 </span>
               </div>
-              <InputBox />
+              <RouterInputBox />
             </div>
           ) : (
             <>
-              <ChatArea />
+              <RouterChatArea />
             </>
           )}
-          {isStartChat && <InputBox />}
+          {isStartChat && <RouterInputBox />}
         </div>
       </div>
       <ResearchArea />
@@ -49,4 +49,4 @@ const ChatText = () => {
   );
 };
 
-export default ChatText;
+export default Router;

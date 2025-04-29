@@ -13,7 +13,9 @@ export default function AddEditModel() {
         name: '',
         inputCost: 0,
         outputCost: 0,
-        multiplier: 1
+        multiplier: 1,
+        provider: '',
+        model: ''
     });
     const { useFetch } = useAdmin();
     const fetch = useFetch();
@@ -124,6 +126,24 @@ export default function AddEditModel() {
                             step="0.1"
                             value={model.multiplier}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, multiplier: parseFloat(e.target.value) })}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-mainFont">Provider</label>
+                        <Input
+                            type="text"
+                            value={model.provider}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, provider: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-mainFont">Model</label>
+                        <Input
+                            type="text"
+                            value={model.model}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, model: e.target.value })}
                             required
                         />
                     </div>
