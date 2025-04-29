@@ -26,11 +26,33 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "User already on this plan" }, { status: 400 });
     }
 
-    await stripe.subscriptions.update(user.subscriptionId, {
-        items: [{ id: user.subscriptionId, price: plan.priceId }],
-        proration_behavior: 'always_invoice',
-        billing_cycle_anchor: 'now'
-    });
+    try {
+        // First retrieve the subscription to get the subscription item ID
+        const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+        const subscriptionItemId = subscription.items.data[0].id;
 
-    return NextResponse.json({ success: true }, { status: 200 });
+        // Update the subscription with the new price
+        await stripe.subscriptions.update(user.subscriptionId, {
+            items: [{
+                id: subscriptionItemId,
+                price: plan.priceId
+            }],
+            proration_behavior: 'always_invoice',
+            billing_cycle_anchor: 'now'
+        });
+
+        // Update user's current plan in database
+        await db.User.updateOne(
+            { _id: user._id },
+            { $set: { requestPlanId: planId } }
+        );
+
+        return NextResponse.json({ success: true }, { status: 200 });
+    } catch (error) {
+        console.error('Subscription update error:', error);
+        return NextResponse.json(
+            { error: "Failed to update subscription" },
+            { status: 500 }
+        );
+    }
 }

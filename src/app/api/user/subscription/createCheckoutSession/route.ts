@@ -4,6 +4,7 @@ import { UserRepo } from "@/app/lib/database/userrepo";
 import { PlanRepo } from "@/app/lib/database/planRepo";
 import { authOptions } from "@/app/lib/api/helper";
 import { getServerSession, NextAuthOptions } from "next-auth";
+import db from "@/app/lib/database/db";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as NextAuthOptions);
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
             planId: plan._id.toString(),
         },
     });
+    
+    await db.User.updateOne(
+        { _id: user._id },
+        { $set: { requestPlanId: planId } }
+    );
 
     return NextResponse.json({ success: true, url: stripeSession.url }, { status: 200 });
 }
