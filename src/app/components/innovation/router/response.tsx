@@ -166,6 +166,19 @@ const RouterResponse = (
             const buffer = "";
 
             try {
+                const processResponse = (response: string) => {
+                    const pointsMatch = response.match(/\[POINTS\](.*)/);
+                    const outputTimeMatch = response.match(/\[OUTPUT_TIME\](.*)/);
+    
+                    if (pointsMatch || outputTimeMatch) {
+                        const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim();
+                        const points = pointsMatch ? pointsMatch[1] : null;
+                        const outputTime = outputTimeMatch ? outputTimeMatch[1] : null;
+                        return { mainResponse, points, outputTime };
+                    }
+                    return { mainResponse: response, points: null, outputTime: null };
+                };
+
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
@@ -174,20 +187,21 @@ const RouterResponse = (
                     fullResponse += chunk;
 
                     // Calculate points based on response length
-                    const newPoints = Math.floor(fullResponse.length / 100) * 0.1; // 0.1 points per 100 characters
+                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
+                    // const newPoints = Math.floor(fullResponse.length / 100) * 0.1; // 0.1 points per 100 characters
 
                     setChatLog((prevChatLog) => {
                         const newLog = [...prevChatLog];
                         newLog[newLog.length - 1] = {
                             prompt,
-                            response: fullResponse,
+                            response: mainResponse,
                             timestamp: newLog[newLog.length - 1].timestamp,
-                            outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                            outputTime: outputTime ? Number(outputTime) : 0,
                             fileUrls: fileUrls,
                             model: model,
-                            inputToken: inputToken,
-                            outputToken: outputToken,
-                            points: newPoints
+                            inputToken: 0,
+                            outputToken: 0,
+                            points: points ? Number(points) : 0
                         };
                         return newLog;
                     });
@@ -197,16 +211,17 @@ const RouterResponse = (
                     // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
                     // fullResponse += content;
                     fullResponse += buffer;
+                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
                     setChatLog((prevChatLog) => {
                         const newLog = [...prevChatLog];
                         newLog[newLog.length - 1] = {
                             prompt,
-                            response: fullResponse,
+                            response: mainResponse,
                             timestamp: newLog[newLog.length - 1].timestamp,
                             inputToken: inputToken,
                             outputToken: outputToken,
-                            points: points,
-                            outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                            points: points ? Number(points) : 0,
+                            outputTime: outputTime ? Number(outputTime) : 0,
                             fileUrls: fileUrls,
                             model: model,
                         };
@@ -301,7 +316,7 @@ const RouterResponse = (
                     Time: {Number(outputTime.toFixed(5))}s
                 </div>
                 <div className="text-sm text-subFont">
-                    Points: {currentPoints}
+                    Points: {Number(currentPoints.toFixed(2))}
                 </div>
                 {/* <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} /> */}
             </div>

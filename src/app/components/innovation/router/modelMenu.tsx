@@ -8,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { useAtom } from "jotai";
-import { routerModelAtom } from "@/app/lib/store";
+import { routerModelAtom, routerModelsAtom } from "@/app/lib/store";
 import { IAI } from "@/app/lib/interface";
 import { useToast } from "@/app/hooks/use-toast";
 
@@ -16,7 +16,7 @@ const RouterModelMenu = () => {
     const [routerModel, setRouterModel] = useAtom(routerModelAtom);
     const [model, setModel] = useState<string>("");
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [routerModels, setRouterModels] = useState<IAI[]>([]);
+    const [routerModels, setRouterModels] = useAtom(routerModelsAtom);
     const { toast } = useToast();
 
     const handleItemClick = (itemId: string) => {
@@ -48,8 +48,9 @@ const RouterModelMenu = () => {
     }
 
     useEffect(() => {
-        fetchRouterModels();
-    }, []);
+        routerModels.length == 0 && fetchRouterModels();
+        !model && routerModels.length > 0 && setModel(routerModels[0].name)
+    }, [routerModels, model]);
 
     return (
         <DropdownMenu onOpenChange={setIsOpen}>

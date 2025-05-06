@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +16,8 @@ import InfoIcon from "@/app/assets/info";
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import React from "react";
 import { styled } from '@mui/material/styles';
+import { chatLogAtom, roboChatLogAtom, routerChatLogAtom } from "@/app/lib/store";
+import { useAtom } from "jotai";
 
 const MenuTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -47,10 +51,16 @@ const DropDownMenu = () => {
   const [itemId, setItemId] = useState<string>("");
   const [menuId, setMenuId] = useState<string>("");
   const [itemTitle, setItemTitle] = useState<string>("");
+  const [, setChatLog] = useAtom(chatLogAtom);
+  const [, setRoboChatLog] = useAtom(roboChatLogAtom);
+  const [, setRouterChatLog] = useAtom(routerChatLogAtom);
 
   const handleItemClick = (itemId: string) => {
     const item = MenuItems.filter((menu) => menu.id === menuId)[0].subItems.find((subItem) => subItem.id === itemId);
     if (item && !item.disable) {
+      setChatLog([]);
+      setRoboChatLog([]);
+      setRouterChatLog([]);
       setItemTitle(item.label);
       setItemId(item.id);
       setMenuId(menuId);

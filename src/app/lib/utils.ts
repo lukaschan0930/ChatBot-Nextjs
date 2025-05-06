@@ -235,3 +235,13 @@ export function toTitleCase(rawName: string): string {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(" ");
 }
+
+export const formatNumber = (num: number): string => {
+  if (num >= 1000000) {
+      return (num / 1000000).toFixed(0) + 'M';
+  }
+  if (num >= 1000) {
+      return (num / 1000).toFixed(0) + 'k';
+  }
+  return num.toString();
+};

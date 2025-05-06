@@ -14,10 +14,12 @@ export interface User {
     nodeConnectedTime?: Date;
     nodeRewardHash?: string;
     isNodeAdded?: boolean;
-    currentplan?: ISubscriptionPlan;
+    currentplan: ISubscriptionPlan;
     requestPlanId?: string;
     planStartDate?: Date;
     planEndDate?: Date;
+    pointsResetDate?: Date;
+    pointsUsed?: number;
     // board: {
     //     score: number;
     //     rank: number;

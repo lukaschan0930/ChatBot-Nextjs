@@ -25,7 +25,6 @@ const nextConfig = {
         RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
         CEREBRAS_API_KEY: process.env.CEREBRAS_API_KEY,
     },
-    serverExternalPackages: ["@codesandbox/sdk"],
     webpack: (config, options) => {
         if (options.nextRuntime === "edge") {
             if (!config.resolve.conditionNames) {

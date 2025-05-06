@@ -79,6 +79,7 @@ const AdminProfile = () => {
     };
 
     return (
+        user &&
         <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)] px-4 max-md:mt-10">
             <div className="border-2 border-secondaryBorder rounded-[8px] px-10 lg:px-[74px] py-10 lg:pt-[74px] lg:pb-[60px] max-w-[900px] w-full bg-[#FFFFFF05]">
                 <div className="flex flex-col gap-7">
@@ -95,7 +96,8 @@ const AdminProfile = () => {
                                 email: e.target.value,
                                 name: user?.name || "",
                                 avatar: user?.avatar || "",
-                                inviteCode: user?.inviteCode || ""
+                                inviteCode: user?.inviteCode || "",
+                                currentplan: user.currentplan
                             })}
                         />
                     </div>

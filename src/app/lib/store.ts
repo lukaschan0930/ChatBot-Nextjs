@@ -7,7 +7,8 @@ import {
     IRoboChatHistory,
     IRoboChatLog,
     IRouterChatHistory,
-    IRouterChatLog
+    IRouterChatLog,
+    IAI
 } from "./interface";
 
 const chatHistoryAtom = atom<ChatHistory[]>([]);
@@ -32,6 +33,7 @@ const isResearchAreaVisibleAtom = atom<boolean>(false);
 const activeChatIdAtom = atom<string>("");
 const fileAtom = atom<IFileWithUrl[]>([]);
 const routerModelAtom = atom<string>("");
+const routerModelsAtom = atom<IAI[]>([]);
 
 export {
     chatHistoryAtom,
@@ -55,5 +57,6 @@ export {
     roboChatLogAtom,
     routerModelAtom,
     routerChatHistoryAtom,
-    routerChatLogAtom
+    routerChatLogAtom,
+    routerModelsAtom
 };
