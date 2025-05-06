@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiCheck, FiEdit, FiTrash2, FiX, FiSearch, FiPlus } from "react-icons/fi";
 import { useAtom } from "jotai";
-import { IRouterChatHistory as ChatHistoryType, IFileWithUrl } from "@/app/lib/interface";
+import { IRouterChatHistory as ChatHistoryType, IFileWithUrl, IRouterChatLog } from "@/app/lib/interface";
 import { routerChatHistoryAtom, routerChatLogAtom, sessionIdAtom, isStartChatAtom, isSidebarVisibleAtom, fileAtom } from "@/app/lib/store";
 import CircularProgress from "@mui/material/CircularProgress";
 import moment from "moment";
@@ -97,6 +97,7 @@ const RouterHistory = () => {
                     const data = await chats.json();
                     if (data.success && data.data && data.data.length > 0) {
                         setRouterChatLog(data.data);
+                        setFiles([]);
                         setIsStartChat(true);
                     } else {
                         setIsStartChat(false);

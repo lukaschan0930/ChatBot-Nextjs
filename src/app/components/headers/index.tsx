@@ -12,7 +12,16 @@ import DocsIcon from "@/app/assets/docs";
 import ProfileIcon from "@/app/assets/profile";
 // import SunIcon from "@/app/assets/sun";
 import { useAtom } from "jotai";
-import { isSidebarVisibleAtom, chatLogAtom, sessionIdAtom, isStartChatAtom, fileAtom, roboActiveChatAtom, roboChatLogAtom } from "@/app/lib/store";
+import {
+  isSidebarVisibleAtom,
+  chatLogAtom,
+  sessionIdAtom,
+  isStartChatAtom,
+  fileAtom,
+  roboActiveChatAtom,
+  roboChatLogAtom,
+  routerChatLogAtom
+} from "@/app/lib/store";
 import HistoryIcon from "@/app/assets/history";
 import NewChatIcon from "@/app/assets/newChat";
 import { IFileWithUrl } from "@/app/lib/interface";
@@ -38,6 +47,7 @@ const Header = () => {
   const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
   const [, setRoboActiveChat] = useAtom(roboActiveChatAtom);
   const [, setRoboChatLog] = useAtom(roboChatLogAtom);
+  const [, setRouterChatLog] = useAtom(routerChatLogAtom);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -65,11 +75,14 @@ const Header = () => {
   return (
     <>
       <header className="absolute top-0 left-0 right-0 z-10 text-mainFont">
-        <div className="w-full bg-[#FFFFFF0D] py-[6px] text-center text-sm text-[#FFFFFF99] sm:hidden">
-          <span>
-            TESTNET
-          </span>
-        </div>
+        {
+          endPoint[1] !== "router" &&
+          <div className="w-full bg-[#FFFFFF0D] py-[6px] text-center text-sm text-[#FFFFFF99] sm:hidden">
+            <span>
+              TESTNET
+            </span>
+          </div>
+        }
         <div className="flex h-[72px] items-center max-sm:px-3 max-sm:pt-[11px] pr-2 md:pr-6 justify-between relative">
           <div className={`items-center pl-4 h-full hidden sm:flex`}>
             <div className={`mr-2`}>
@@ -121,13 +134,14 @@ const Header = () => {
                         setChatLog([]);
                         setRoboActiveChat(undefined);
                         setRoboChatLog([]);
-                        router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
+                        setRouterChatLog([]);
+                        router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : endPoint[1] == "router" ? "router" : "chatText"}`);
                       }}
                     >
                       <NewChatIcon />
                       <span className="text-sm">New Chat</span>
                     </ShadowBtn>
-                    <span className="text-sm text-[#FFFFFF99] ml-6">[ TESTNET ]</span>
+                    {endPoint[1] !== "router" && <span className="text-sm text-[#FFFFFF99] ml-6">[ TESTNET ]</span>}
                   </>
                 }
                 {
@@ -179,7 +193,8 @@ const Header = () => {
                       setChatLog([]);
                       setRoboActiveChat(undefined);
                       setRoboChatLog([]);
-                      router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : "chatText"}`);
+                      setRouterChatLog([]);
+                      router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : endPoint[1] == "router" ? "router" : "chatText"}`);
                     }}
                   >
                     <NewChatIcon />
@@ -216,29 +231,34 @@ const Header = () => {
               <>
                 <div className="items-center hidden gap-10 lg:flex">
                   <div className="flex items-center gap-3">
-                    <ShadowBtn
-                      className="rounded-md"
-                      mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
-                      onClick={() => router.push("/changeLog")}
-                    >
-                      <ChangeLog />
-                      <span className="text-[14px]">Changelog</span>
-                    </ShadowBtn>
-                    <ShadowBtn
-                      className="rounded-md"
-                      mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
-                      onClick={() => window.open("https://docs.edithx.ai", "_blank")}
-                    >
-                      <DocsIcon />
-                      <span className="text-[14px]">Docs</span>
-                    </ShadowBtn>
+                    {
+                      endPoint[1] !== "router" &&
+                      <>
+                        <ShadowBtn
+                          className="rounded-md"
+                          mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
+                          onClick={() => router.push("/changeLog")}
+                        >
+                          <ChangeLog />
+                          <span className="text-[14px]">Changelog</span>
+                        </ShadowBtn>
+                        <ShadowBtn
+                          className="rounded-md"
+                          mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[6px] px-[14px] flex items-center justify-center gap-2"
+                          onClick={() => window.open("https://docs.edithx.ai", "_blank")}
+                        >
+                          <DocsIcon />
+                          <span className="text-[14px]">Docs</span>
+                        </ShadowBtn>
+                      </>
+                    }
                     {/* <ShadowBtn
                       className="rounded-full"
                       mainClassName="rounded-full border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[7px] px-[7px] flex items-center justify-center gap-2"
                     >
                       <SunIcon />
                     </ShadowBtn> */}
-                    <ProfileDropDownMenu />
+                    <ProfileDropDownMenu endpoint={endPoint[1]} />
                   </div>
                 </div>
                 <div className="lg:hidden flex items-center gap-2">

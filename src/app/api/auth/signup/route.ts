@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
                     isReward: false
                 },
                 pointsUsed: 0,
-                pointResetDate: new Date(),
+                pointResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
             });
         }
         const token = await generateConfirmationToken(email, "email");

@@ -32,6 +32,7 @@ interface IUser extends Document {
         isReward: boolean
     }
     pointsUsed: number;
+    pointsResetDate: Date;
     currentplan: mongoose.Schema.Types.ObjectId;
     disableModel: mongoose.Schema.Types.ObjectId[];
     planStartDate: Date;
@@ -165,10 +166,14 @@ function userModel() {
             type: Number,
             default: 0
         },
+        pointsResetDate: {
+            type: Date,
+            default: null
+        },
         currentplan: {
             type: Schema.Types.ObjectId,
             ref: 'Plan',
-            default: null
+            default: "680f11c0d44970f933ae5e54"
         },
         requestPlanId: {
             type: Schema.Types.ObjectId,
@@ -405,7 +410,7 @@ function routerChatModel() {
                 },
                 fileUrls: [{
                     type: String,
-                }], 
+                }],
                 points: {
                     type: Number,
                     required: true,

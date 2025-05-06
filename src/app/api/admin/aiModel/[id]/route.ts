@@ -30,12 +30,12 @@ export async function PUT(
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
     try {
-        const { name, inputCost, outputCost, multiplier } = await request.json();
-        const model = await AiRepo.update(params.id, { name, inputCost, outputCost, multiplier });
-        if (!model) {
+        const { name, inputCost, outputCost, multiplier, provider, model } = await request.json();
+        const modelDB = await AiRepo.update(params.id, { name, inputCost, outputCost, multiplier, provider, model });
+        if (!modelDB) {
             return NextResponse.json({ message: "Model not found", status: false }, { status: 404 });
         }
-        return NextResponse.json({ data: model, message: "Model updated successfully", status: true });
+        return NextResponse.json({ data: modelDB, message: "Model updated successfully", status: true });
     } catch (error) {
         return NextResponse.json({ message: "Failed to update model", status: false }, { status: 500 });
     }

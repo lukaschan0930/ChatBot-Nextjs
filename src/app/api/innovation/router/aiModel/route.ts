@@ -3,7 +3,7 @@ import { AiRepo } from "@/app/lib/database/aiRepo";
 
 export async function GET(request: NextRequest) {
     try {
-        const aiModel = await AiRepo.findAll();
+        const aiModel = await AiRepo.findModelNameAll();
         return NextResponse.json({ status: true, data: aiModel });
     } catch (error) {
         console.error(error);

@@ -3,7 +3,7 @@
 import { ISubscriptionPlan } from '@/app/lib/interface';
 import { useState, useEffect } from 'react';
 import { useAdmin } from '@/app/context/AdminContext';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/components/ui/button';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '@/app/hooks/use-toast';
 import { useRouter } from 'next/navigation';

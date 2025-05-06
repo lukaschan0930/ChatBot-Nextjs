@@ -5,7 +5,12 @@ export const AiRepo = {
     findById,
     create,
     update,
-    deleteAI
+    deleteAI,
+    findModelNameAll
+}
+
+async function findModelNameAll() {
+    return await db.AI.find({}, { _id: 1, name: 1 });
 }
 
 async function findAll() {
@@ -16,11 +21,11 @@ async function findById(id: string) {
     return await db.AI.findById(id);
 }
 
-async function create(ai: { name: string, inputCost: number, outputCost: number, multiplier: number }) {
+async function create(ai: { name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string }) {
     return await db.AI.create(ai);
 }
 
-async function update(id: string, ai: { name: string, inputCost: number, outputCost: number, multiplier: number }) {
+async function update(id: string, ai: { name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string }) {
     return await db.AI.findByIdAndUpdate(id, ai, { new: true });
 }
 

@@ -9,6 +9,7 @@ import {
     routerModelAtom,
     routerChatHistoryAtom,
     routerChatLogAtom,
+    fileAtom
 } from "@/app/lib/store";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
@@ -90,7 +91,7 @@ const RouterInputBox = () => {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [files, setFiles] = useState<IFileWithUrl[]>([]);
+    const [files, setFiles] = useAtom(fileAtom);
     const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
     const timer = useRef<number>(0)
 
@@ -150,16 +151,6 @@ const RouterInputBox = () => {
         if (selectedFiles) {
             const filesArray = Array.from(selectedFiles);
 
-            // Validate that all files are images
-            const nonImageFiles = filesArray.filter(file => !file.type.startsWith('image/'));
-            if (nonImageFiles.length > 0) {
-                toast({
-                    variant: "destructive",
-                    title: 'Only image files are allowed.',
-                });
-                return;
-            }
-
             const totalSize = filesArray.reduce((acc, file) => acc + file.size, 0);
 
             if (totalSize > MAX_TOTAL_FILE_SIZE) {
@@ -172,7 +163,7 @@ const RouterInputBox = () => {
 
             const uploadFiles = filesArray.filter((file) => {
                 return !files.some(
-                    (prevFile) => prevFile.file.name === file.name && prevFile.file.size === file.size
+                    (prevFile) => prevFile.file?.name === file.name && prevFile.file?.size === file.size
                 );
             });
 
@@ -267,7 +258,7 @@ const RouterInputBox = () => {
                             response: "",
                             timestamp: Number(Date.now()).toString(),
                             outputTime: 0,
-                            fileUrls: []
+                            fileUrls: files.map((file) => file.url)
                         }
                     ]
                 });
@@ -287,7 +278,7 @@ const RouterInputBox = () => {
                     response: "",
                     timestamp: Number(Date.now()).toString(),
                     outputTime: 0,
-                    fileUrls: []
+                    fileUrls: files.map((file) => file.url)
                 });
                 return newRouterChatLog;
             });
@@ -299,7 +290,7 @@ const RouterInputBox = () => {
                     prompt: inputPrompt,
                     model: routerModel,
                     chatLog: routerChatLog.slice(-5),
-                    reGenerate: "false",
+                    reGenerate: false,
                     files: files.map((file) => file.url)
                 })
             });
@@ -313,13 +304,25 @@ const RouterInputBox = () => {
                 throw new Error('No response body');
             }
 
-            setFiles([]);
-
             const reader = res.body.getReader();
             const decoder = new TextDecoder("utf-8");
             let fullResponse = "";
             const buffer = "";
             const newChat = routerChatLog.length == 0 ? true : false;
+
+            // Process the response to separate token usage info
+            const processResponse = (response: string) => {
+                const pointsMatch = response.match(/\[POINTS\](.*)/);
+                const outputTimeMatch = response.match(/\[OUTPUT_TIME\](.*)/);
+
+                if (pointsMatch || outputTimeMatch) {
+                    const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim();
+                    const points = pointsMatch ? pointsMatch[1] : null;
+                    const outputTime = outputTimeMatch ? outputTimeMatch[1] : null;
+                    return { mainResponse, points, outputTime };
+                }
+                return { mainResponse: response, points: null, outputTime: null };
+            };
 
             try {
                 // Process each streamed chunk
@@ -329,9 +332,9 @@ const RouterInputBox = () => {
 
                     // Decode the incoming chunk and add it to our buffer.
                     const chunk = decoder.decode(value, { stream: true });
-                    // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
-                    // fullResponse += content;
                     fullResponse += chunk;
+
+                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
 
                     setRouterChatLog((prevRouterChatLog) => {
                         const newLog = prevRouterChatLog && prevRouterChatLog.length > 0 ? [...prevRouterChatLog] : [];
@@ -341,11 +344,11 @@ const RouterInputBox = () => {
                                 model: routerModel,
                                 inputToken: 0,
                                 outputToken: 0,
-                                points: 0,
-                                response: fullResponse,
+                                points: points ? Number(points) : 0,
+                                response: mainResponse,
                                 timestamp: Number(Date.now()).toString(),
-                                outputTime: 0,
-                                fileUrls: []
+                                outputTime: outputTime ? Number(outputTime) : 0,
+                                fileUrls: files.map((file) => file.url)
                             };
                         } else {
                             newLog.push({
@@ -353,11 +356,11 @@ const RouterInputBox = () => {
                                 model: routerModel,
                                 inputToken: 0,
                                 outputToken: 0,
-                                points: 0,
-                                response: fullResponse,
+                                points: points ? Number(points) : 0,
+                                response: mainResponse,
                                 timestamp: Number(Date.now()).toString(),
-                                outputTime: 0,
-                                fileUrls: []
+                                outputTime: outputTime ? Number(outputTime) : 0,
+                                fileUrls: files.map((file) => file.url)
                             });
                         }
                         return newLog;
@@ -365,8 +368,8 @@ const RouterInputBox = () => {
                 }
 
                 if (buffer.trim() !== "") {
-                    // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
                     fullResponse += buffer;
+                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
                     setRouterChatLog((prevRouterChatLog) => {
                         const newLog = prevRouterChatLog && prevRouterChatLog.length > 0 ? [...prevRouterChatLog] : [];
                         if (newLog.length > 0) {
@@ -375,11 +378,11 @@ const RouterInputBox = () => {
                                 model: routerModel,
                                 inputToken: 0,
                                 outputToken: 0,
-                                points: 0,
-                                response: fullResponse,
+                                points: points ? Number(points) : 0,
+                                response: mainResponse,
                                 timestamp: Number(Date.now()).toString(),
-                                outputTime: 0,
-                                fileUrls: []
+                                outputTime: outputTime ? Number(outputTime) : 0,
+                                fileUrls: files.map((file) => file.url)
                             };
                         } else {
                             newLog.push({
@@ -387,11 +390,11 @@ const RouterInputBox = () => {
                                 model: routerModel,
                                 inputToken: 0,
                                 outputToken: 0,
-                                points: 0,
-                                response: fullResponse,
+                                points: points ? Number(points) : 0,
+                                response: mainResponse,
                                 timestamp: Number(Date.now()).toString(),
-                                outputTime: 0,
-                                fileUrls: []
+                                outputTime: outputTime ? Number(outputTime) : 0,
+                                fileUrls: files.map((file) => file.url)
                             });
                         }
                         return newLog;
@@ -400,9 +403,6 @@ const RouterInputBox = () => {
             } finally {
                 // Always release the reader's lock.
                 reader.releaseLock();
-                // if (newChat) {
-                //   fetchHistory();
-                // }
             }
         } catch (error) {
             console.error('Error creating chat:', error);
@@ -421,7 +421,7 @@ const RouterInputBox = () => {
     return (
         <div
             className={`${isStartChat ? "w-full" : ""
-                } bg-box-bg mt-[10px] w-full lg:w-[500px] xl:w-[700px] border rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
+                } bg-box-bg mt-[10px] w-full lg:w-[700px] xl:w-[700px] border rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
         >
             <div className="flex flex-col py-2">
                 <div className="flex w-full justify-between items-center px-4 py-2">
@@ -454,7 +454,7 @@ const RouterInputBox = () => {
             </div>
             <div className="border-t border-[#25252799] p-4 flex gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
                 <div className="flex items-center gap-3">
-                    {/* {
+                    {
                         isFileUploading ? (
                             <ShadowBtn
                                 className="rounded-full"
@@ -482,10 +482,10 @@ const RouterInputBox = () => {
                                     <PlusIcon />
                                 </ShadowBtn>
                             )
-                    } */}
+                    }
                     <input
                         type="file"
-                        accept="image/*"
+                        accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
                         style={{ display: 'none' }}
                         onChange={handleFileChange}
                         ref={fileInputRef}

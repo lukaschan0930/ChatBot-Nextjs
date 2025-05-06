@@ -8,17 +8,7 @@ import { toast } from '@/app/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useSearchParams } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-
-const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-        return (num / 1000000).toFixed(0) + 'M';
-    }
-    if (num >= 1000) {
-        return (num / 1000).toFixed(0) + 'k';
-    }
-    return num.toString();
-};
+import { formatNumber } from '@/app/lib/utils';
 
 export default function Page() {
     return (

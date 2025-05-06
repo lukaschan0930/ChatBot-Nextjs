@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
                 user.currentplan = plan._id;
                 user.planStartDate = new Date(subscription.current_period_start * 1000);
                 user.planEndDate = new Date(subscription.current_period_end * 1000);
-                user.monthlyPoints = plan.points;
                 user.pointsUsed = 0;
+                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
                 user.requestPlanId = null;
                 await user.save();
                 break;
@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
                         user.pointsUsed = 0;
                         user.subscriptionId = subscription.id;
                         user.requestPlanId = null;
+                        user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
                     }
                 }
 
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
                 user.monthlyPoints = 0;
                 user.pointsUsed = 0;
                 user.requestPlanId = null;
+                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
                 await user.save();
                 break;
             }
@@ -166,6 +168,7 @@ export async function POST(request: NextRequest) {
                 user.currentplan = planId;
                 user.subscriptionId = subscriptionId;
                 user.pointsUsed = 0;
+                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
                 user.requestPlanId = null;
                 await user.save();
 
