@@ -639,7 +639,7 @@ function planModel() {
             required: true,
             default: 0
         },
-        disableModel: {
+        activeModels: {
             type: [Schema.Types.ObjectId],
             ref: 'AI',
             default: []

@@ -330,5 +330,5 @@ export interface ISubscriptionPlan {
     productId: string;
     points: number;
     bonusPoints: number;
-    disableModel: string[];
+    activeModels: string[];
 }
