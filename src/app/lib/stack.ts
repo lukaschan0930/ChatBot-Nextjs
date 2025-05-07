@@ -18,7 +18,7 @@ export const MenuItems = [
       {
         id: "router",
         label: "ROUTER",
-        disable: false,
+        disable: true,
         tooltip: ""
       }
     ],

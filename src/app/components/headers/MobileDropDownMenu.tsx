@@ -173,13 +173,13 @@ const MobileDropDownMenu = () => {
           Setting
           <FiSettings className="!w-5 !h-5" />
         </DropdownMenuItem>
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] max-sm:hidden flex items-center justify-between h-10 py-3 text-base transition-all duration-300 text-mainFont hover:"
           onClick={() => router.push("/subscription")}
         >
           Subscription
           <FiCreditCard className="!w-5 !h-5" />
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => router.push("/changeLog")}
@@ -194,13 +194,13 @@ const MobileDropDownMenu = () => {
           <DocsIcon />
           Docs
         </DropdownMenuItem>
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => router.push("/subscription")}
         >
           <FiCreditCard className="!w-5 !h-5" />
           Subscription
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] flex items-center justify-start text-red-500 h-10 py-3 text-base transition-all duration-300"
           onClick={handleLogout}

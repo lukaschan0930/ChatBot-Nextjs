@@ -19,10 +19,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-    const isAdmin = await checkAdmin(request);
-    if (!isAdmin) {
-        return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
-    }
+    // const isAdmin = await checkAdmin(request);
+    // if (!isAdmin) {
+    //     return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
+    // }
     try {
         const logs = await ChangeLogRepo.findAll();
         return NextResponse.json({ data: logs, message: "Change Log Fetched", status: true });
