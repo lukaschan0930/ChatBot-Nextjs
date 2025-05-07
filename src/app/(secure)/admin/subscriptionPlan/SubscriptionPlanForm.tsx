@@ -11,6 +11,7 @@ import { toast } from '@/app/hooks/use-toast';
 import { Loader2, Plus, Trash2, CreditCard, Gift, Calendar, Tag, Package, CheckCircle2 } from 'lucide-react';
 import { CircularProgress } from '@mui/material';
 import { useAdmin } from '@/app/context/AdminContext';
+import { IAI } from '@/app/lib/interface';
 
 const subscriptionPlanSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -23,7 +24,7 @@ const subscriptionPlanSchema = z.object({
     priceId: z.string().min(0, 'Stripe Price ID is required'),
     productId: z.string().min(0, 'Stripe Product ID is required'),
     features: z.array(z.string()),
-    disableModel: z.array(z.string())
+    activeModels: z.array(z.string())
 });
 
 type SubscriptionPlanFormData = z.infer<typeof subscriptionPlanSchema>;
@@ -36,6 +37,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [features, setFeatures] = useState<string[]>([]);
+    const [availableModels, setAvailableModels] = useState<IAI[]>([]);
     const [newFeature, setNewFeature] = useState('');
     const { useFetch } = useAdmin();
     const fetch = useFetch();
@@ -45,6 +47,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
         handleSubmit,
         setValue,
         reset,
+        watch,
         formState: { errors },
     } = useForm<SubscriptionPlanFormData>({
         resolver: zodResolver(subscriptionPlanSchema),
@@ -59,7 +62,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
             priceId: '',
             productId: '',
             features: [],
-            disableModel: []
+            activeModels: []
         },
     });
 
@@ -81,7 +84,7 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                         priceId: data.priceId,
                         productId: data.productId,
                         features: data.features,
-                        disableModel: data.disableModel
+                        activeModels: data.activeModels
                     });
                     setFeatures(data.features);
                 } catch (error) {
@@ -95,6 +98,23 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
             fetchSubscriptionPlan();
         }
     }, [id, reset]);
+
+    useEffect(() => {
+        const fetchAvailableModels = async () => {
+            try {
+                const response = await fetch.get('/api/admin/aiModel');
+                if (!response.status) throw new Error('Failed to fetch available models');
+                setAvailableModels(response.data);
+            } catch (error) {
+                console.error('Error fetching available models:', error);
+                toast({
+                    description: 'Failed to load available models',
+                    variant: 'destructive'
+                });
+            }
+        };
+        fetchAvailableModels();
+    }, []);
 
     const onSubmit = async (data: SubscriptionPlanFormData) => {
         setIsLoading(true);
@@ -298,6 +318,31 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
                                 >
                                     <Plus className="h-4 w-4" />
                                 </Button>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-5 w-full">
+                            <div className="text-mainFont text-[18px]">Model Setting</div>
+                            <div className="grid grid-cols-2 gap-5">
+                                {
+                                    availableModels && availableModels.length > 0 &&
+                                    availableModels.map((model) => (
+                                        <div key={model._id} className="flex items-center gap-2">
+                                            <span className="text-mainFont">{model.name}</span>
+                                            <input
+                                                type="checkbox"
+                                                checked={watch('activeModels')?.includes(model._id)}
+                                                onChange={(e) => {
+                                                    const currentModels = watch('activeModels') || [];
+                                                    const newModels = e.target.checked
+                                                        ? [...currentModels, model._id]
+                                                        : currentModels.filter(id => id !== model._id);
+                                                    setValue('activeModels', newModels);
+                                                }}
+                                            />
+                                        </div>
+                                    ))
+                                }
                             </div>
                         </div>
 

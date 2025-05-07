@@ -16,7 +16,7 @@ export async function GET(
 
         return NextResponse.json({
             success: true,
-            data: plan
+            data: plan,
         });
     } catch (error) {
         console.error('Error fetching subscription plan:', error);

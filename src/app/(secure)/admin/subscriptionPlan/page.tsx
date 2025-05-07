@@ -1,6 +1,6 @@
 'use client'
 
-import { ISubscriptionPlan } from '@/app/lib/interface';
+import { ISubscriptionPlan, IAI } from '@/app/lib/interface';
 import { useState, useEffect } from 'react';
 import { useAdmin } from '@/app/context/AdminContext';
 import { Button } from '@/app/components/ui/button';
@@ -13,6 +13,7 @@ import { FaSearch } from 'react-icons/fa';
 const SubscriptionPlan = () => {
     const [loading, setLoading] = useState(false);
     const [subscriptionPlans, setSubscriptionPlans] = useState<ISubscriptionPlan[]>([]);
+    const [availableModels, setAvailableModels] = useState<IAI[]>([]);
     const { useFetch } = useAdmin();
     const fetch = useFetch();
     const router = useRouter();
@@ -27,7 +28,8 @@ const SubscriptionPlan = () => {
         try {
             const response = await fetch.get('/api/admin/subscription-plans');
             if (response.success) {
-                setSubscriptionPlans(response.data);
+                setSubscriptionPlans(response.data.plans);
+                setAvailableModels(response.data.availableModels);
             } else {
                 toast({
                     description: response.message,
@@ -120,7 +122,7 @@ const SubscriptionPlan = () => {
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Annual Plan</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Price ID</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Product ID</th>
-                                <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Disabled Models</th>
+                                <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Active Models</th>
                                 <th className="text-mainFont text-base lg:text-lg font-bold p-3 text-left">Actions</th>
                             </tr>
                         </thead>
@@ -158,7 +160,7 @@ const SubscriptionPlan = () => {
                                         {plan.productId}
                                     </td>
                                     <td className="text-mainFont text-sm lg:text-base p-3">
-                                        {plan.disableModel.length} models
+                                        {availableModels.length}/{plan.activeModels.length} models
                                     </td>
                                     <td className="flex gap-2 p-3">
                                         <Button

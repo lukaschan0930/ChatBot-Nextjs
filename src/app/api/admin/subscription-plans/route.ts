@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlanRepo } from '@/app/lib/database/planRepo';
+import { AiRepo } from '@/app/lib/database/aiRepo';
 import { checkAdmin } from '@/app/lib/api/helper';
 
 export async function GET(request: NextRequest) {
@@ -9,9 +10,13 @@ export async function GET(request: NextRequest) {
     }
     try {
         const plans = await PlanRepo.findAll();
+        const availableModels = await AiRepo.findAll();
         return NextResponse.json({
             success: true,
-            data: plans
+            data: {
+                plans,
+                availableModels
+            }
         });
     } catch (error) {
         console.error('Error fetching subscription plans:', error);
