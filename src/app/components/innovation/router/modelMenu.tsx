@@ -50,7 +50,7 @@ const RouterModelMenu = () => {
     useEffect(() => {
         routerModels.length == 0 && fetchRouterModels();
         !model && routerModels.length > 0 && setModel(routerModels[0].name)
-    }, [routerModels, model]);
+    }, []);
 
     return (
         <DropdownMenu onOpenChange={setIsOpen}>
