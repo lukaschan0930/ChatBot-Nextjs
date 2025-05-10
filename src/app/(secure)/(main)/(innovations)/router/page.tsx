@@ -6,10 +6,10 @@ import { isStartChatAtom, isSidebarVisibleAtom } from "@/app/lib/store";
 import Image from "next/image";
 import ResearchArea from "@/app/components/Chat/ResearchArea";
 import RouterInputBox from "@/app/components/innovation/router/routerInputBox";
-import { notFound } from "next/navigation";
+// import { notFound } from "next/navigation";
 
 const Router = () => {
-  notFound();
+  // notFound();
 
   const [isStartChat,] = useAtom(isStartChatAtom);
   const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
