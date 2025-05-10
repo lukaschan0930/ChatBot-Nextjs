@@ -32,7 +32,7 @@ type MenuItem = {
   }[];
 };
 
-const MobileDropDownMenu = () => {
+const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -72,7 +72,7 @@ const MobileDropDownMenu = () => {
               </>
           }
         </ShadowBtn>
-        <div className="p-0 transition-all duration-200 items-center flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] pr-5 max-md:hidden">
+        <div className={`p-0 transition-all duration-200 items-center flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] max-md:hidden ${endpoint != "router" && 'pr-5'}`}>
           {
             user?.avatar ? (
               <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
@@ -81,7 +81,7 @@ const MobileDropDownMenu = () => {
             )
           }
 
-          <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>
+          {endpoint != "router" && <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -173,13 +173,13 @@ const MobileDropDownMenu = () => {
           Setting
           <FiSettings className="!w-5 !h-5" />
         </DropdownMenuItem>
-        {/* <DropdownMenuItem
+        <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] max-sm:hidden flex items-center justify-between h-10 py-3 text-base transition-all duration-300 text-mainFont hover:"
           onClick={() => router.push("/subscription")}
         >
           Subscription
           <FiCreditCard className="!w-5 !h-5" />
-        </DropdownMenuItem> */}
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => router.push("/changeLog")}
@@ -194,13 +194,13 @@ const MobileDropDownMenu = () => {
           <DocsIcon />
           Docs
         </DropdownMenuItem>
-        {/* <DropdownMenuItem
+        <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
           onClick={() => router.push("/subscription")}
         >
           <FiCreditCard className="!w-5 !h-5" />
           Subscription
-        </DropdownMenuItem> */}
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] flex items-center justify-start text-red-500 h-10 py-3 text-base transition-all duration-300"
           onClick={handleLogout}

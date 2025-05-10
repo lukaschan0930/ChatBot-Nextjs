@@ -262,7 +262,7 @@ const Header = () => {
                   </div>
                 </div>
                 <div className="lg:hidden flex items-center gap-2">
-                  <MobileDropDownMenu />
+                  <MobileDropDownMenu endpoint={endPoint[1]} />
                 </div>
               </>
             ) : (

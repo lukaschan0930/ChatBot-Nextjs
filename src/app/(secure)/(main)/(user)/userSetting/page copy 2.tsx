@@ -174,11 +174,11 @@ const UserSetting = () => {
     useEffect(() => {
         setAvatar(user?.avatar || '');
         setName(user?.name || '');
-        if (user) {
-            const usedPoints = user.pointsUsed ?? 0;
-            const availablePoints = user.currentplan.points + user.currentplan.bonusPoints;
-            setPercent((usedPoints / availablePoints) * circumference);
-        }
+        // if (user) {
+        //     const usedPoints = user.pointsUsed ?? 0;
+        //     const availablePoints = user.currentplan.points + user.currentplan.bonusPoints;
+        //     setPercent((usedPoints / availablePoints) * circumference);
+        // }
     }, [user])
 
     return (
@@ -225,9 +225,9 @@ const UserSetting = () => {
                         </div>
                         <div className="text-[16px] text-mainFont mt-4">{name}</div>
                         <div className="flex gap-3 flex-col md:flex-row">
-                            <div className="w-full md:w-1/2 flex flex-col gap-3 mt-9 md:pr-14">
-                                <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full">
-                                    <div className="bg-[#292929] px-6 md:px-2 py-2 border-r border-[#FFFFFF14] text-[#808080] !w-[120px] md:!w-[90px] text-center">Username</div>
+                            <div className="w-full flex flex-col gap-3 mt-9 md:pr-14">
+                                <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full w-[300px]">
+                                    <div className="bg-[#292929] px-6 py-2 border-r border-[#FFFFFF14] text-[#808080] !w-[120px] text-center">Username</div>
                                     <input
                                         className="px-3 py-2 text-white bg-[#FFFFFF05] w-full"
                                         placeholder={`${user?.name}`}
@@ -236,9 +236,9 @@ const UserSetting = () => {
                                         onChange={(e) => setName(e.target.value)}
                                     />
                                 </div>
-                                <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full">
-                                    <div className="bg-[#292929] px-6 md:px-1 py-2 border-r border-[#FFFFFF14] text-[#808080] text-nowrap !w-[120px] md:!w-[90px] text-center">Invite Code</div>
-                                    <div className="relative max-md:flex-auto">
+                                <div className="flex items-start bg-[#FFFFFF05] border border-[#FFFFFF14] text-[14px] rounded-md max-md:w-full w-[300px]">
+                                    <div className="bg-[#292929] px-6 py-2 border-r border-[#FFFFFF14] text-[#808080] text-nowrap !w-[120px] text-center">Invite Code</div>
+                                    <div className="relative w-full">
                                         <input
                                             type="text"
                                             className="px-3 py-2 text-white bg-[#FFFFFF05] w-full"
@@ -263,77 +263,79 @@ const UserSetting = () => {
                                     </WalletMultiButton>
                                 </div>
                             </div>
-                            <Divider orientation="vertical" sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
-                            <Divider sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
-                            <div className="md:w-1/2 w-full md:pl-8">
-                                <div className="flex w-full justify-between">
-                                    <div className="flex flex-col">
-                                        <div className="text-[12px] text-[#808080]">Current Plan</div>
-                                        <div className="text-[14px] text-white">{user?.currentplan?.name}</div>
-                                        <div className="mt-3 text-[12px] text-[#808080]">Point Left</div>
-                                        <div className="text-[14px] text-white">{formatNumber(user?.pointsUsed ?? 0)}/{formatNumber(user?.currentplan?.points ?? 0)}</div>
-                                    </div>
-                                    <div className="">
-                                        <div className="relative w-[85px] h-[85px]">
-                                            <svg
-                                                className="absolute transform"
-                                                width="85"
-                                                height="85"
-                                                viewBox="0 0 100 100"
-                                            >
-                                                {/* Define a Drop Shadow Filter */}
-                                                <defs>
-                                                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                                                        <feDropShadow
-                                                            dx="0"
-                                                            dy="0"
-                                                            stdDeviation="6"
-                                                            floodColor="#FFFFFF" /* Shadow color (semi-transparent black) */
-                                                        />
-                                                    </filter>
-                                                </defs>
-                                                {/* Background Circle */}
-                                                <circle
-                                                    cx="50"
-                                                    cy="50"
-                                                    r={radius}
-                                                    fill="none"
-                                                    stroke="#FFFFFF36"
-                                                    strokeWidth={stroke}
-                                                    strokeLinecap="round"
-                                                />
-                                                {/* Foreground Circle (Animated with Shadow) */}
-                                                <circle
-                                                    cx="50"
-                                                    cy="50"
-                                                    r={radius}
-                                                    fill="none"
-                                                    stroke="#FFFFFF"
-                                                    strokeWidth={stroke}
-                                                    strokeLinecap="round"
-                                                    strokeDasharray={circumference}
-                                                    strokeDashoffset={circumference - (percent)}
-                                                    filter="url(#shadow)" /* Apply shadow filter */
-                                                    className="transition-all duration-500 ease-out"
-                                                />
-                                            </svg>
-                                            <div className="absolute text-xs font-bold text-[#FFFFFF] transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                                                {((percent / circumference) * 100).toFixed(0)}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-6">
-                                    <div className="text-[12px] text-[#808080]">Resets on</div>
-                                    <div className="text-[14px] text-white">{user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'} <span className="text-[#808080]">({user?.pointsResetDate ? differenceInDays(user?.pointsResetDate, new Date()) : 'N/A'} days left)</span></div>
-                                </div>
-                                <button
-                                    onClick={() => router.push('/subscription')}
-                                    className="mt-4 w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
-                                >
-                                    Increase Limited Points
-                                </button>
-                            </div>
+                            {
+                            // <Divider orientation="vertical" sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
+                            // <Divider sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
+                                // <div className="md:w-1/2 w-full md:pl-8">
+                                //     <div className="flex w-full justify-between">
+                                //         <div className="flex flex-col">
+                                //             <div className="text-[12px] text-[#808080]">Current Plan</div>
+                                //             <div className="text-[14px] text-white">{user?.currentplan?.name}</div>
+                                //             <div className="mt-3 text-[12px] text-[#808080]">Point Left</div>
+                                //             <div className="text-[14px] text-white">{formatNumber(user?.pointsUsed ?? 0)}/{formatNumber(user?.currentplan?.points ?? 0)}</div>
+                                //         </div>
+                                //         <div className="">
+                                //             <div className="relative w-[85px] h-[85px]">
+                                //                 <svg
+                                //                     className="absolute transform"
+                                //                     width="85"
+                                //                     height="85"
+                                //                     viewBox="0 0 100 100"
+                                //                 >
+                                //                     {/* Define a Drop Shadow Filter */}
+                                //                     <defs>
+                                //                         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                //                             <feDropShadow
+                                //                                 dx="0"
+                                //                                 dy="0"
+                                //                                 stdDeviation="6"
+                                //                                 floodColor="#FFFFFF" /* Shadow color (semi-transparent black) */
+                                //                             />
+                                //                         </filter>
+                                //                     </defs>
+                                //                     {/* Background Circle */}
+                                //                     <circle
+                                //                         cx="50"
+                                //                         cy="50"
+                                //                         r={radius}
+                                //                         fill="none"
+                                //                         stroke="#FFFFFF36"
+                                //                         strokeWidth={stroke}
+                                //                         strokeLinecap="round"
+                                //                     />
+                                //                     {/* Foreground Circle (Animated with Shadow) */}
+                                //                     <circle
+                                //                         cx="50"
+                                //                         cy="50"
+                                //                         r={radius}
+                                //                         fill="none"
+                                //                         stroke="#FFFFFF"
+                                //                         strokeWidth={stroke}
+                                //                         strokeLinecap="round"
+                                //                         strokeDasharray={circumference}
+                                //                         strokeDashoffset={circumference - (percent)}
+                                //                         filter="url(#shadow)" /* Apply shadow filter */
+                                //                         className="transition-all duration-500 ease-out"
+                                //                     />
+                                //                 </svg>
+                                //                 <div className="absolute text-xs font-bold text-[#FFFFFF] transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                                //                     {((percent / circumference) * 100).toFixed(0)}%
+                                //                 </div>
+                                //             </div>
+                                //         </div>
+                                //     </div>
+                                //     <div className="mt-6">
+                                //         <div className="text-[12px] text-[#808080]">Resets on</div>
+                                //         <div className="text-[14px] text-white">{user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'} <span className="text-[#808080]">({user?.pointsResetDate ? differenceInDays(user?.pointsResetDate, new Date()) : 'N/A'} days left)</span></div>
+                                //     </div>
+                                //     <button
+                                //         onClick={() => router.push('/subscription')}
+                                //         className="mt-4 w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
+                                //     >
+                                //         Increase Limited Points
+                                //     </button>
+                                // </div>
+                            }
                         </div>
                     </div>
                 </div>

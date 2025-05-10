@@ -67,10 +67,10 @@ const ProfileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
           <FiSettings className="!w-5 !h-5" />
           Setting
         </DropdownMenuItem>
-        {/* <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
           <FiCreditCard className="!w-5 !h-5" />
           Subscription
-        </DropdownMenuItem> */}
+        </DropdownMenuItem>
         <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleLogout}>
           <FiLogOut className="!w-5 !h-5" />
           Log Out
