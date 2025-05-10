@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"node resetPoints.js\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"node resetPoints.js\"",
     "lint": "next lint"
   },
   "dependencies": {
