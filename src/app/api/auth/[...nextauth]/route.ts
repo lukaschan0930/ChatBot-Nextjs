@@ -179,6 +179,7 @@ const authOptions: NextAuthOptions = {
                         },
                         pointsUsed: 0,
                         pointResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                        currentplan: "680f11c0d44970f933ae5e54",
                     });
 
                     const magicLink = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;

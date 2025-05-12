@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
                 },
                 pointsUsed: 0,
                 pointResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                currentplan: "680f11c0d44970f933ae5e54",
             });
         }
         const token = await generateConfirmationToken(email, "email");

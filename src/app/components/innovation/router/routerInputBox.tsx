@@ -410,6 +410,35 @@ const RouterInputBox = () => {
                 reader.releaseLock();
             }
         } catch (error) {
+            setRouterChatLog((prevChatLog) => {
+                const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
+                if (newLog.length > 0) {
+                    newLog[newLog.length - 1] = {
+                        prompt: inputPrompt,
+                        model: routerModel,
+                        response: "Failed to get response from server.",
+                        timestamp: newLog[newLog.length - 1].timestamp,
+                        inputToken: 0,
+                        outputToken: 0,
+                        outputTime: 0,
+                        points: 0,
+                        fileUrls: []
+                    };
+                } else {
+                    newLog.push({
+                        prompt: inputPrompt,
+                        model: routerModel,
+                        response: "Failed to get response from server.",
+                        timestamp: Date.now().toString(),
+                        inputToken: 0,
+                        outputToken: 0,
+                        outputTime: 0,
+                        points: 0,
+                        fileUrls: []
+                    });
+                }
+                return newLog;
+            });
             console.error('Error creating chat:', error);
             toast({
                 variant: "destructive",
@@ -420,7 +449,6 @@ const RouterInputBox = () => {
             setInputPrompt("");
             setMessageOver(false);
             fetchHistory();
-            setIsStartChat(false)
         }
     }
 
