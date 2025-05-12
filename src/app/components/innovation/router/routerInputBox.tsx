@@ -12,7 +12,7 @@ import {
     fileAtom
 } from "@/app/lib/store";
 import { generateSessionId } from "@/app/lib/utils";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { IFileWithUrl } from "@/app/lib/interface";
 // import { styled } from '@mui/material/styles';
 // import Switch from '@mui/material/Switch';
@@ -106,6 +106,21 @@ const RouterInputBox = () => {
             )}px`;
         }
     };
+
+    const fetchUserData = async () => {
+        try {
+            const res = await fetch(`/api/user/profile`);
+            const data = await res.json();
+            if (data.success) {
+                setUser(data.user);
+            } else {
+                signOut();
+            }
+        } catch (err) {
+            console.error("Error fetching user data:", err);
+            signOut();
+        }
+    }
 
     const fetchHistory = async () => {
         try {
@@ -445,6 +460,7 @@ const RouterInputBox = () => {
                 title: error instanceof Error ? error.message : "Unknown error",
             });
         } finally {
+            await fetchUserData();
             setIsStreaming(false);
             setInputPrompt("");
             setMessageOver(false);

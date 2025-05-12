@@ -31,7 +31,7 @@ const RouterModelMenu = () => {
             if (data.status) {
                 setRouterModels(data.data);
                 setModel(data.data[0].name);
-                setRouterModel(data.data[0]._id);
+                !routerModel && setRouterModel(data.data[0]._id);
             } else {
                 toast({
                     description: data.message,
