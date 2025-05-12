@@ -53,6 +53,10 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify(requestBody),
         });
 
+        if (response.status == 429) {
+            return new NextResponse("Your exceed your current token", { status: 429 });
+        }
+
         if (!response.ok) {
             throw new Error('Failed to fetch from FastAPI');
         }
