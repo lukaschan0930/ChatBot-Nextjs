@@ -74,7 +74,7 @@ const SubscriptionPage = () => {
             const plan = plans.find(p => p._id === planId);
             if (!plan) throw new Error("Plan not found");
 
-            if (!user?.currentplan) {
+            if (!user?.currentplan || user.currentplan.type == 'free') {
                 const response = await fetch("/api/user/subscription/createCheckoutSession", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
