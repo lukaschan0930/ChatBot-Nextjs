@@ -197,10 +197,34 @@ const User = (function userModel() {
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp', {
     useNewUrlParser: true,
     useUnifiedTopology: true
+}).then(() => {
+    console.log('Successfully connected to MongoDB');
+}).catch((error) => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
 });
 
-// Schedule the job to run every day at midnight
-cron.schedule('0 * * * *', async () => {
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+});
+
+process.on('SIGINT', async () => {
+    try {
+        await mongoose.connection.close();
+        console.log('MongoDB connection closed through app termination');
+        process.exit(0);
+    } catch (err) {
+        console.error('Error during MongoDB disconnection:', err);
+        process.exit(1);
+    }
+});
+
+cron.schedule('0 0 0 * *', async () => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -216,15 +240,25 @@ cron.schedule('0 * * * *', async () => {
                 },
                 {
                     pointsResetDate: null
+                },
+                {
+                    pointsResetDate: undefined
                 }
             ]
         });
 
+        console.log(`Found ${usersToReset.length} users to reset points`);
+
         // Reset pointsUsed to 0 for all matching users
         for (const user of usersToReset) {
-            user.pointsUsed = 0;
-            user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-            await user.save();
+            try {
+                user.pointsUsed = 0;
+                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+                await user.save();
+                console.log(`Successfully reset points for user: ${user.email}`);
+            } catch (userError) {
+                console.error(`Error resetting points for user ${user.email}:`, userError);
+            }
         }
 
         console.log(`Reset pointsUsed for ${usersToReset.length} users`);

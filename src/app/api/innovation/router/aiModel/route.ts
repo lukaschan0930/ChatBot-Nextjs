@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { AiRepo } from "@/app/lib/database/aiRepo";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const aiModel = await AiRepo.findModelNameAll();
         return NextResponse.json({ status: true, data: aiModel });
