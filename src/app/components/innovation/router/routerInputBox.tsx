@@ -420,6 +420,7 @@ const RouterInputBox = () => {
             setInputPrompt("");
             setMessageOver(false);
             fetchHistory();
+            setIsStartChat(false)
         }
     }
 

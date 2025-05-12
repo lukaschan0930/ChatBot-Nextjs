@@ -224,7 +224,7 @@ process.on('SIGINT', async () => {
     }
 });
 
-cron.schedule('0 0 0 * *', async () => {
+cron.schedule('0 0 * * *', async () => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
