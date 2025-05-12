@@ -13,37 +13,38 @@ export async function POST(request: NextRequest) {
     }
     const { sessionId, prompt, model, chatLog, reGenerate, files } = await request.json();
 
-    const ai = await AiRepo.findById(model);
-    if (!ai) {
-        return new NextResponse("AI not found", { status: 404 });
-    }
-
-    const email = session?.user?.email;
-    const user = await UserRepo.findByEmail(email as string) as User;
-    const availablePoints = Number(user.currentplan.points) + Number(user.currentplan.bonusPoints);
-    const usedPoints = user.pointsUsed ?? 0;
-    if (user.currentplan.type != "free" && user.planEndDate && user.planEndDate < new Date()) {
-        return new NextResponse("Your Plan is outDate", { status: 429 })
-    }
-
-    if (availablePoints < usedPoints) {
-        return new NextResponse("Your exceed your current token", { status: 429 });
-    }
-
-    const requestBody = {
-        prompt,
-        sessionId,
-        chatHistory: chatLog.map((item: IRouterChatLog) => ({
-            prompt: item.prompt,
-            response: item.response,
-        })),
-        files,
-        email: session?.user?.email as string,
-        reGenerate,
-        model
-    }
-
     try {
+        const ai = await AiRepo.findById(model);
+        if (!ai) {
+            return new NextResponse("AI not found", { status: 404 });
+        }
+
+        const email = session?.user?.email;
+        const user = await UserRepo.findByEmail(email as string) as User;
+        console.log(user.currentplan);
+        const availablePoints = Number(user.currentplan.points) + Number(user.currentplan.bonusPoints);
+        const usedPoints = user.pointsUsed ?? 0;
+        if (user.currentplan.type != "free" && user.planEndDate && user.planEndDate < new Date()) {
+            return new NextResponse("Your Plan is outDate", { status: 429 })
+        }
+
+        if (availablePoints < usedPoints) {
+            return new NextResponse("Your exceed your current token", { status: 429 });
+        }
+
+        const requestBody = {
+            prompt,
+            sessionId,
+            chatHistory: chatLog.map((item: IRouterChatLog) => ({
+                prompt: item.prompt,
+                response: item.response,
+            })),
+            files,
+            email: session?.user?.email as string,
+            reGenerate,
+            model
+        }
+
         const response = await fetch(`${process.env.FASTAPI_URL}/api/chat/stream`, {
             method: 'POST',
             headers: {
