@@ -30,8 +30,12 @@ const RouterModelMenu = () => {
             const data = await res.json();
             if (data.status) {
                 setRouterModels(data.data);
-                setModel(data.data[0].name);
-                !routerModel && setRouterModel(data.data[0]._id);
+                if (!routerModel) {
+                    setModel(data.data[0].name);
+                    !routerModel && setRouterModel(data.data[0]._id);
+                } else {
+                    setModel(routerModels.find((item) => item._id === routerModel)?.name || "");
+                }
             } else {
                 toast({
                     description: data.message,
