@@ -312,6 +312,19 @@ const RouterInputBox = () => {
             });
 
             if (res.status == 429) {
+                const errorData = await res.json();
+                if (errorData.details) {
+                    toast({
+                        variant: "destructive",
+                        title: "Insufficient Points",
+                        description: `You need ${errorData.details.estimated_points} points for this request, but only have ${errorData.details.available_points - errorData.details.points_used} points remaining.`,
+                    });
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: "Rate limit exceeded",
+                    });
+                }
                 throw new Error('Rate limit exceeded');
             }
 
@@ -332,8 +345,13 @@ const RouterInputBox = () => {
 
             // Process the response to separate token usage info
             const processResponse = (response: string) => {
+                const errorMatch = response.match(/\[ERROR\](.*)/);
                 const pointsMatch = response.match(/\[POINTS\](.*)/);
                 const outputTimeMatch = response.match(/\[OUTPUT_TIME\](.*)/);
+
+                if (errorMatch) {
+                    return { mainResponse: response, points: null, outputTime: null, error: errorMatch[1] };
+                }
 
                 if (pointsMatch || outputTimeMatch) {
                     const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim();
@@ -353,8 +371,19 @@ const RouterInputBox = () => {
                     // Decode the incoming chunk and add it to our buffer.
                     const chunk = decoder.decode(value, { stream: true });
                     fullResponse += chunk;
+                    
+                    // Add debug logging
+                    console.log('Current chunk:', chunk);
+                    console.log('Accumulated fullResponse:', fullResponse);
 
-                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
+                    const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+                    if (error) {
+                        toast({
+                            variant: "destructive",
+                            title: "Rate limit exceeded",
+                        });
+                        throw new Error('Rate limit exceeded');
+                    }
 
                     setRouterChatLog((prevRouterChatLog) => {
                         const newLog = prevRouterChatLog && prevRouterChatLog.length > 0 ? [...prevRouterChatLog] : [];

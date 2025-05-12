@@ -115,6 +115,20 @@ const RouterResponse = (
         sendMessage(model, 0);
     };
 
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch("/api/innovation/router/history");
+            const data = await res.json();
+            if (data.success) {
+                setChatHistory(data.data);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    };
+
     const sendMessage = async (model: string, time: number) => {
         try {
             setIsStreaming(true);
@@ -174,7 +188,12 @@ const RouterResponse = (
                 const processResponse = (response: string) => {
                     const pointsMatch = response.match(/\[POINTS\](.*)/);
                     const outputTimeMatch = response.match(/\[OUTPUT_TIME\](.*)/);
-    
+                    const errorMatch = response.match(/\[ERROR\](.*)/);
+
+                    if (errorMatch) {
+                        return { mainResponse: response, points: null, outputTime: null, error: errorMatch[1] };
+                    }
+
                     if (pointsMatch || outputTimeMatch) {
                         const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim();
                         const points = pointsMatch ? pointsMatch[1] : null;
@@ -192,8 +211,14 @@ const RouterResponse = (
                     fullResponse += chunk;
 
                     // Calculate points based on response length
-                    const { mainResponse, points, outputTime } = processResponse(fullResponse);
-                    // const newPoints = Math.floor(fullResponse.length / 100) * 0.1; // 0.1 points per 100 characters
+                    const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+                    if (error) {
+                        toast({
+                            variant: "destructive",
+                            title: "Rate limit exceeded",
+                        });
+                        throw new Error('Rate limit exceeded');
+                    }
 
                     setChatLog((prevChatLog) => {
                         const newLog = [...prevChatLog];
@@ -261,6 +286,7 @@ const RouterResponse = (
             });
         } finally {
             setIsStreaming(false);
+            fetchHistory();
         }
     };
 

@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
 
         const email = session?.user?.email;
         const user = await UserRepo.findByEmail(email as string) as User;
-        console.log(user.currentplan);
         const availablePoints = Number(user.currentplan.points) + Number(user.currentplan.bonusPoints);
         const usedPoints = user.pointsUsed ?? 0;
         if (user.currentplan.type != "free" && user.planEndDate && user.planEndDate < new Date()) {
@@ -53,13 +52,27 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify(requestBody),
         });
 
-        if (response.status == 429) {
-            return new NextResponse("Your exceed your current token", { status: 429 });
-        }
-
         if (!response.ok) {
+            const errorData = await response.json();
+            console.log("errorData", errorData);
+            if (response.status === 429) {
+                return new NextResponse(JSON.stringify({
+                    error: true,
+                    status: 429,
+                    message: "Insufficient points available",
+                    details: errorData.details || {}
+                }), { 
+                    status: 429,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+
             throw new Error('Failed to fetch from FastAPI');
         }
+
+        console.log("response", response.body);
 
         return new NextResponse(response.body, {
             headers: {
