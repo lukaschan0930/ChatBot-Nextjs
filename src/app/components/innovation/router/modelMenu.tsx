@@ -30,6 +30,7 @@ const RouterModelMenu = () => {
             const data = await res.json();
             if (data.status) {
                 setRouterModels(data.data);
+                console.log("routermodel", routerModel);
                 if (!routerModel) {
                     setModel(data.data[0].name);
                     !routerModel && setRouterModel(data.data[0]._id);
@@ -60,7 +61,7 @@ const RouterModelMenu = () => {
         <DropdownMenu onOpenChange={setIsOpen}>
             <DropdownMenuTrigger className={`bg-btn-shadow rounded-lg p-[1px] border-0 focus:outline-none text-center`}>
                 <p className="bg-[#292929] border-0 px-2 py-2 rounded-lg flex items-center justify-between gap-2 w-[190px]">
-                    <p className="text-mainFont text-sm capitalize">{model}</p>
+                    <p className="text-mainFont text-sm capitalize">{routerModels.find((item) => item._id === routerModel)?.name}</p>
                     <FaChevronDown
                         className={`!w-4 !h-4 ${isOpen ? "rotate-180" : ""
                             } transition-all duration-150`}
