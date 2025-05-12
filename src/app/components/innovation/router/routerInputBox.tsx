@@ -21,6 +21,7 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import ChatFileMenu from "@/app/components/Chat/ChatFileMenu";
 import { useAuth } from "@/app/context/AuthContext";
 import RouterModelMenu from "./modelMenu";
+import { rest } from "lodash-es";
 
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
@@ -297,6 +298,10 @@ const RouterInputBox = () => {
 
             if (res.status == 429) {
                 throw new Error('Rate limit exceeded');
+            }
+
+            if (res.status != 200) {
+                throw new Error("Server error");
             }
 
             if (!res.body) {

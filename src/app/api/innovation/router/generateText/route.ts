@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/api/chat/stream', {
+        const response = await fetch(`${process.env.FASTAPI_URL}/api/chat/stream`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

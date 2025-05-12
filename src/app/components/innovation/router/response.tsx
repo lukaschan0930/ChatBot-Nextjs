@@ -152,6 +152,11 @@ const RouterResponse = (
                     files: fileUrls
                 }),
             });
+
+            if (res.status == 429) {
+                throw new Error('Rate limit exceeded');
+            }
+
             if (res.status != 200) {
                 throw new Error("Failed to get response from server.");
             }
@@ -250,7 +255,9 @@ const RouterResponse = (
             console.error("Error refreshing generate:", error);
             toast({
                 variant: "destructive",
-                title: 'Failed to get response from server.',
+                title: error instanceof Error
+                        ? error.message
+                        : "Failed to get response from server.",
             });
         } finally {
             setIsStreaming(false);

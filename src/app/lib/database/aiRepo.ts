@@ -10,7 +10,7 @@ export const AiRepo = {
 }
 
 async function findModelNameAll() {
-    return await db.AI.find({}, { _id: 1, name: 1 });
+    return await db.AI.find({}, { name: 1, _id: 1 });
 }
 
 async function findAll() {
