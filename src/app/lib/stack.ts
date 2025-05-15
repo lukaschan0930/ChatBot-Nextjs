@@ -15,12 +15,12 @@ export const MenuItems = [
         disable: true,
         tooltip: ""
       },
-      {
-        id: "router",
-        label: "ROUTER",
-        disable: false,
-        tooltip: ""
-      }
+      // {
+      //   id: "router",
+      //   label: "ROUTER",
+      //   disable: false,
+      //   tooltip: ""
+      // }
     ],
   },
   {
