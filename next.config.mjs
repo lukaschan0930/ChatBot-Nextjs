@@ -16,8 +16,15 @@ const nextConfig = {
         ];
     },
     images: {
+        domains: ['edith.nyc3.cdn.digitaloceanspaces.com'],
         remotePatterns: [
             { hostname: "pbs.twimg.com" },
+            { 
+                protocol: 'https',
+                hostname: "edith.nyc3.cdn.digitaloceanspaces.com",
+                port: '',
+                pathname: '/images/**',
+            },
         ],
     },
     env: {

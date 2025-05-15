@@ -7,9 +7,7 @@ import {
   isStartChatAtom,
   researchStepAtom,
   activeChatIdAtom,
-  fileAtom
-} from "@/app/lib/store";
-import {
+  fileAtom,
   chatLogAtom,
   sessionIdAtom,
   isStreamingAtom,
@@ -17,9 +15,11 @@ import {
   chatTypeAtom,
   progressAtom,
   isResearchAreaVisibleAtom,
-  chatModeAtom
+  chatModeAtom,
+  routerModelAtom,
+  modelTypeAtom
 } from "@/app/lib/store";
-import { generateSessionId, processChunkedString } from "@/app/lib/utils";
+import { generateSessionId, processResponse } from "@/app/lib/utils";
 import { signOut, useSession } from "next-auth/react";
 import { IResearchLog, IFileWithUrl } from "@/app/lib/interface";
 import { styled } from '@mui/material/styles';
@@ -96,7 +96,8 @@ const InputBox = () => {
   const [isFileMenuOpen, setIsFileMenuOpen] = useState<boolean>(false);
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
   const [chatMode, setChatMode] = useAtom(chatModeAtom);
-
+  const [routerModel,] = useAtom(routerModelAtom);
+  const [modelType, ] = useAtom(modelTypeAtom);
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
@@ -144,6 +145,14 @@ const InputBox = () => {
       setSessionId(generateSessionId(session?.user?.email as string, Date.now().toString()));
     }
   }, [sessionId]);
+
+  useEffect(() => {
+    if (modelType == "image") {
+      setChatType(0);
+    } else if (modelType == "audio") {
+      setChatType(0);
+    }
+  }, [modelType]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newPrompt = e.target.value;
@@ -245,6 +254,14 @@ const InputBox = () => {
       return;
     }
 
+    if (!routerModel) {
+      toast({
+        variant: "destructive",
+        title: 'Please select a model',
+      });
+      return;
+    }
+
     setIsStreaming(true);
     setIsStartChat(true);
     let requestSessionId = sessionId;
@@ -270,8 +287,9 @@ const InputBox = () => {
               chatType: chatType,
               inputToken: 0,
               outputToken: 0,
-              datasource: false,
-              fileUrls: []
+              fileUrls: [],
+              model: routerModel,
+              points: 0
             }
           ],
         });
@@ -292,6 +310,7 @@ const InputBox = () => {
       setInputPrompt("");
 
       if (chatType === 0 || files.length > 0) {
+        setIsResearchAreaVisible(false);
         await sendMessage(inputPrompt, [], requestSessionId);
       } else {
         setProgress(0);
@@ -323,8 +342,9 @@ const InputBox = () => {
       setIsResearchAreaVisible(false);
     }
 
+    const newChatType = modelType == "image" ? 3 : modelType == "audio" ? 4 : chatMode == 1 ? 2 : learnings.length > 0 ? 1 : 0;
+
     try {
-      const datasource = files.length > 0;
       if (learnings.length == 0) {
         setChatLog((prevChatLog) => {
           const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
@@ -332,13 +352,13 @@ const InputBox = () => {
             prompt,
             response: "",
             timestamp: Date.now().toString(),
-            chatType: chatType,
+            chatType: newChatType,
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
-            datasource: datasource,
-            fileUrls: files.map((file) => file.url)
+            fileUrls: files.map((file) => file.url),
+            model: routerModel,
+            points: 0
           });
           console.log("Updated chatLog:", newLog);
           return newLog;
@@ -352,11 +372,13 @@ const InputBox = () => {
       formData.append("reGenerate", "false");
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
-      formData.append("datasource", datasource ? "true" : "false");
       formData.append("fileUrls", JSON.stringify(files.map((file) => file.url)));
+      formData.append("model", routerModel);
+      formData.append("chatMode", chatMode.toString());
+      formData.append("modelType", modelType);
 
-      if (chatMode === 1) {
-        const res = await fetch("/api/chat/generateTextFaster", {
+      if (chatMode === 1 || modelType == "image" || modelType == "audio") {
+        const res = await fetch("/api/chat/generateText", {
           method: "POST",
           body: formData,
         });
@@ -366,23 +388,27 @@ const InputBox = () => {
         if (res.status == 500) {
           throw new Error('Error generating text');
         }
+
         const data = await res.json();
-        if (data.success) {
-          setChatLog((prevChatLog) => {
-            const newLog = [...prevChatLog];
-            newLog[newLog.length - 1].response = data.content;
-            newLog[newLog.length - 1].inputToken = data.inputToken;
-            newLog[newLog.length - 1].outputToken = data.outputToken;
-            newLog[newLog.length - 1].inputTime = data.inputTime;
-            newLog[newLog.length - 1].outputTime = data.outputTime;
-            newLog[newLog.length - 1].chatType = chatType;
-            newLog[newLog.length - 1].datasource = datasource;
-            newLog[newLog.length - 1].fileUrls = files.map((file) => file.url);
-            return newLog;
+        const { mainResponse, points, outputTime, error } = processResponse(data.content);
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Rate limit exceeded",
           });
-        } else {
-          throw new Error('Error generating text');
+          throw new Error('Rate limit exceeded');
         }
+        setChatLog((prevChatLog) => {
+          const newLog = [...prevChatLog];
+          newLog[newLog.length - 1].response = mainResponse;
+          newLog[newLog.length - 1].inputToken = data.inputToken;
+          newLog[newLog.length - 1].outputToken = data.outputToken;
+          newLog[newLog.length - 1].outputTime = outputTime ? Number(outputTime) : 0;
+          newLog[newLog.length - 1].chatType = newChatType;
+          newLog[newLog.length - 1].fileUrls = files.map((file) => file.url);
+          newLog[newLog.length - 1].points = points ? Number(points) : 0;
+          return newLog;
+        });
       } else {
         const res = await fetch("/api/chat/generateText", {
           method: "POST",
@@ -417,33 +443,42 @@ const InputBox = () => {
             // fullResponse += content;
             fullResponse += chunk;
 
+            const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: "Rate limit exceeded",
+              });
+              throw new Error('Rate limit exceeded');
+            }
+
             setChatLog((prevChatLog) => {
               const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
               if (newLog.length > 0) {
                 newLog[newLog.length - 1] = {
                   prompt,
-                  response: fullResponse,
+                  response: mainResponse,
                   timestamp: newLog[newLog.length - 1].timestamp,
                   inputToken: 0,
                   outputToken: 0,
-                  inputTime: 0,
-                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
-                  chatType: chatType,
-                  datasource: datasource,
-                  fileUrls: files.map((file) => file.url)
+                  chatType: newChatType,
+                  fileUrls: files.map((file) => file.url),
+                  model: routerModel,
+                  points: points ? Number(points) : 0,
+                  outputTime: outputTime ? Number(outputTime) : 0
                 };
               } else {
                 newLog.push({
                   prompt,
-                  response: fullResponse,
+                  response: mainResponse,
                   timestamp: Date.now().toString(),
                   inputToken: 0,
                   outputToken: 0,
-                  inputTime: 0,
-                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
-                  chatType: chatType,
-                  datasource: datasource,
-                  fileUrls: files.map((file) => file.url)
+                  chatType: newChatType,
+                  fileUrls: files.map((file) => file.url),
+                  model: routerModel,
+                  points: points ? Number(points) : 0,
+                  outputTime: outputTime ? Number(outputTime) : 0
                 });
               }
               return newLog;
@@ -453,33 +488,41 @@ const InputBox = () => {
           if (buffer.trim() !== "") {
             // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
             fullResponse += buffer;
+            const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: "Rate limit exceeded",
+              });
+              throw new Error('Rate limit exceeded');
+            }
             setChatLog((prevChatLog) => {
               const newLog = prevChatLog && prevChatLog.length > 0 ? [...prevChatLog] : [];
               if (newLog.length > 0) {
                 newLog[newLog.length - 1] = {
                   prompt,
-                  response: fullResponse,
+                  response: mainResponse,
                   timestamp: newLog[newLog.length - 1].timestamp,
                   inputToken: 0,
                   outputToken: 0,
-                  inputTime: 0,
-                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
-                  chatType: chatType,
-                  datasource: datasource,
-                  fileUrls: files.map((file) => file.url)
+                  chatType: newChatType,
+                  fileUrls: files.map((file) => file.url),
+                  model: routerModel,
+                  points: points ? Number(points) : 0,
+                  outputTime: outputTime ? Number(outputTime) : 0
                 };
               } else {
                 newLog.push({
                   prompt,
-                  response: fullResponse,
+                  response: mainResponse,
                   timestamp: Date.now().toString(),
                   inputToken: 0,
                   outputToken: 0,
-                  inputTime: 0,
-                  outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
-                  chatType: chatType,
-                  datasource: datasource,
-                  fileUrls: files.map((file) => file.url)
+                  chatType: newChatType,
+                  fileUrls: files.map((file) => file.url),
+                  model: routerModel,
+                  points: points ? Number(points) : 0,
+                  outputTime: outputTime ? Number(outputTime) : 0
                 });
               }
               return newLog;
@@ -505,11 +548,11 @@ const InputBox = () => {
             timestamp: newLog[newLog.length - 1].timestamp,
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
-            chatType: chatType,
-            datasource: false,
-            fileUrls: []
+            chatType: newChatType,
+            fileUrls: [],
+            model: routerModel,
+            points: 0
           };
         } else {
           newLog.push({
@@ -518,11 +561,11 @@ const InputBox = () => {
             timestamp: Date.now().toString(),
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
-            chatType: chatType,
-            datasource: false,
-            fileUrls: []
+            chatType: newChatType,
+            fileUrls: [],
+            model: routerModel,
+            points: 0
           });
         }
         return newLog;
@@ -550,10 +593,10 @@ const InputBox = () => {
           chatType: chatType,
           inputToken: 0,
           outputToken: 0,
-          inputTime: 0,
           outputTime: 0,
-          datasource: false,
-          fileUrls: []
+          fileUrls: [],
+          model: routerModel,
+          points: 0
         });
         return newLog;
       });
@@ -575,11 +618,11 @@ const InputBox = () => {
               timestamp: newLog[newLog.length - 1].timestamp,
               inputToken: 0,
               outputToken: 0,
-              inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: false,
-              fileUrls: []
+              fileUrls: [],
+              model: routerModel,
+              points: 0
             };
           } else {
             newLog.push({
@@ -588,11 +631,11 @@ const InputBox = () => {
               timestamp: Date.now().toString(),
               inputToken: 0,
               outputToken: 0,
-              inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: false,
-              fileUrls: []
+              fileUrls: [],
+              model: routerModel,
+              points: 0
             });
           }
           return newLog;
@@ -604,14 +647,14 @@ const InputBox = () => {
         return;
       }
       const data = await res.json();
-      const steps = JSON.parse(data.steps);
-      const totalProgress = steps.steps.length * 2;
+      const topics = JSON.parse(data.topics).topics;
+      const totalProgress = topics.length * 2;
       const newResearchLog = [];
       setProgress(10);
 
-      for (const step of steps.steps) {
+      for (const topic of topics) {
         newResearchLog.push({
-          title: step,
+          title: topic,
           researchSteps: [],
           sources: [],
           learnings: []
@@ -644,11 +687,11 @@ const InputBox = () => {
             timestamp: newLog[newLog.length - 1].timestamp,
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false,
-            fileUrls: []
+            fileUrls: [],
+            model: newLog[newLog.length - 1].model,
+            points: newLog[newLog.length - 1].points
           };
         } else {
           newLog.push({
@@ -657,11 +700,11 @@ const InputBox = () => {
             timestamp: Date.now().toString(),
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: false,
-            fileUrls: []
+            fileUrls: [],
+            model: routerModel,
+            points: 0
           });
         }
         return newLog;
@@ -862,7 +905,7 @@ const InputBox = () => {
             <AntSwitch
               inputProps={{ 'aria-label': 'Pro Search' }}
               onChange={(e) => setChatType(e.target.checked ? 1 : 0)}
-              disabled={files.length > 0 || chatMode == 1}
+              disabled={files.length > 0 || chatMode == 1 || modelType == "image" || modelType == "audio"}
               checked={chatType == 1}
             />
           </ShadowBtn>

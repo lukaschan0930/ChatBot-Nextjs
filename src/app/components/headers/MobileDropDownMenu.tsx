@@ -72,7 +72,7 @@ const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
               </>
           }
         </ShadowBtn>
-        <div className={`p-0 transition-all duration-200 items-center flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] max-md:hidden ${endpoint != "router" && 'pr-5'}`}>
+        <div className={`p-0 transition-all duration-200 items-center flex gap-2 bg-[#29292966] ease-in border border-[#2C2B30] rounded-full hover:scale-105 focus:outline-none !h-[35px] max-md:hidden`}>
           {
             user?.avatar ? (
               <Image src={user?.avatar} alt="avatar" className="h-[35px] w-[35px] rounded-full" width={35} height={35} />
@@ -81,7 +81,7 @@ const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
             )
           }
 
-          {endpoint != "router" && <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>}
+          {/* {endpoint != "router" && <p className="font-semibold text-sm text-[#FFFFFF]">Points: {user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}</p>} */}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -161,9 +161,9 @@ const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
             <div className="text-mainFont text-base mt-1">
               {user?.name}
             </div>
-            <div className="text-mainFont text-base">
+            {/* <div className="text-mainFont text-base">
               <span className="text-[#FFFFFF99]">Points: </span>{user?.chatPoints ? user?.chatPoints.toFixed(2) : 0.00}
-            </div>
+            </div> */}
           </div>
         </div>
         <DropdownMenuItem

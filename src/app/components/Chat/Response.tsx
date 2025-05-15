@@ -16,8 +16,9 @@ import {
   chatHistoryAtom,
   chatModeAtom
 } from "@/app/lib/store";
-import { processChunkedString } from "@/app/lib/utils";
+import { processResponse } from "@/app/lib/utils";
 import { IResearchLog } from "@/app/lib/interface";
+import Image from "next/image";
 
 interface MessagePart {
   type: "text" | "code";
@@ -33,12 +34,11 @@ const Response = (
     last,
     inputToken = 0,
     outputToken = 0,
-    inputTime = 0,
     outputTime = 0,
-    totalTime = 0,
     chatType,
-    datasource,
-    fileUrls
+    fileUrls,
+    model,
+    points
   }:
     {
       response: string,
@@ -46,12 +46,11 @@ const Response = (
       last: boolean,
       inputToken?: number,
       outputToken?: number,
-      inputTime?: number,
       outputTime?: number,
-      totalTime?: number,
       chatType: number,
-      datasource: boolean,
-      fileUrls: string[]
+      fileUrls: string[],
+      model: string,
+      points: number
     }
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
@@ -128,10 +127,11 @@ const Response = (
       return newChatHistory;
     });
     timer.current = Date.now();
-    if (chatType == 0) {
-      sendMessage([], 0);
-    } else {
+    if (chatType == 1) {
       generateResearch();
+    } else {
+      setIsResearchAreaVisible(false);
+      sendMessage([], 0);
     }
   };
 
@@ -146,20 +146,20 @@ const Response = (
       setChatLog((prevChatLog) => {
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
-        const datasource = chatLog[chatLog.length - 1].datasource;
         const fileUrls = chatLog[chatLog.length - 1].fileUrls;
+        const model = chatLog[chatLog.length - 1].model;
+        const points = chatLog[chatLog.length - 1].points;
         newLog[newLog.length - 1] = {
           prompt,
           response: "",
           timestamp: Date.now().toString(),
           inputToken: 0,
           outputToken: 0,
-          inputTime: 0,
           outputTime: 0,
-          totalTime: 0,
           chatType: chatType,
-          datasource: datasource,
-          fileUrls: fileUrls
+          fileUrls: fileUrls,
+          model: model,
+          points: points
         };
         return newLog;
       });
@@ -181,11 +181,11 @@ const Response = (
               timestamp: newLog[newLog.length - 1].timestamp,
               inputToken: 0,
               outputToken: 0,
-              inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: datasource,
-              fileUrls: fileUrls
+              fileUrls: fileUrls,
+              model: model,
+              points: points
             };
           } else {
             newLog.push({
@@ -194,11 +194,11 @@ const Response = (
               timestamp: Date.now().toString(),
               inputToken: 0,
               outputToken: 0,
-              inputTime: 0,
               outputTime: 0,
               chatType: chatType,
-              datasource: datasource,
-              fileUrls: fileUrls
+              fileUrls: fileUrls,
+              model: model,
+              points: points
             });
           }
           return newLog;
@@ -250,11 +250,11 @@ const Response = (
             timestamp: newLog[newLog.length - 1].timestamp,
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: datasource,
-            fileUrls: fileUrls
+            fileUrls: fileUrls,
+            model: model,
+            points: points
           };
         } else {
           newLog.push({
@@ -263,11 +263,11 @@ const Response = (
             timestamp: Date.now().toString(),
             inputToken: 0,
             outputToken: 0,
-            inputTime: 0,
             outputTime: 0,
             chatType: chatType,
-            datasource: datasource,
-            fileUrls: fileUrls
+            fileUrls: fileUrls,
+            model: model,
+            points: points
           });
         }
         return newLog;
@@ -388,7 +388,6 @@ const Response = (
       setChatLog((prevChatLog) => {
         const newLog = [...prevChatLog];
         const chatType = chatLog[chatLog.length - 1].chatType;
-        const datasource = chatLog[chatLog.length - 1].datasource;
         const fileUrls = chatLog[chatLog.length - 1].fileUrls;
         newLog[newLog.length - 1] = {
           prompt,
@@ -396,12 +395,12 @@ const Response = (
           timestamp: Date.now().toString(),
           inputToken: 0,
           outputToken: 0,
-          inputTime: 0,
-          outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+          outputTime: 0,
           totalTime: 0,
           chatType: chatType,
-          datasource: datasource,
-          fileUrls: fileUrls
+          fileUrls: fileUrls,
+          model: model,
+          points: points
         };
         return newLog;
       });
@@ -413,9 +412,12 @@ const Response = (
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
       formData.append("fileUrls", JSON.stringify(fileUrls));
+      formData.append("model", model);
+      formData.append("chatMode", chatType == 2 ? "1" : "0");
+      formData.append("modelType", chatType == 3 ? "image" : chatType == 4 ? "audio" : "text");
 
-      if (chatMode == 1) {
-        const res = await fetch("/api/chat/generateTextFaster", {
+      if (chatType >= 2) {
+        const res = await fetch("/api/chat/generateText", {
           method: "POST",
           body: formData,
         });
@@ -429,20 +431,28 @@ const Response = (
         }
 
         const data = await res.json();
+        const { mainResponse, points, outputTime, error } = processResponse(data.content);
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Rate limit exceeded",
+          });
+          throw new Error('Rate limit exceeded');
+        }
         setChatLog((prevChatLog) => {
           const newLog = [...prevChatLog];
           newLog[newLog.length - 1] = {
             prompt,
-            response: data.content,
+            response: mainResponse,
             timestamp: newLog[newLog.length - 1].timestamp,
             inputToken: data.inputToken,
             outputToken: data.outputToken,
-            inputTime: data.inputTime,
-            outputTime: data.outputTime,
+            outputTime: outputTime ? Number(outputTime) : 0,
             totalTime: data.totalTime,
             chatType: chatLog[chatLog.length - 1].chatType,
-            datasource: chatLog[chatLog.length - 1].datasource,
-            fileUrls: chatLog[chatLog.length - 1].fileUrls
+            fileUrls: chatLog[chatLog.length - 1].fileUrls,
+            model: chatLog[chatLog.length - 1].model,
+            points: points ? Number(points) : 0
           };
           return newLog;
         });
@@ -474,21 +484,29 @@ const Response = (
             // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(chunk);
             // fullResponse += content;
             fullResponse += chunk;
+            const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: "Rate limit exceeded",
+              });
+              throw new Error('Rate limit exceeded');
+            }
 
             setChatLog((prevChatLog) => {
               const newLog = [...prevChatLog];
               newLog[newLog.length - 1] = {
                 prompt,
-                response: fullResponse,
+                response: mainResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
                 inputToken: 0,
                 outputToken: 0,
-                inputTime: 0,
-                outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                outputTime: outputTime ? Number(outputTime) : 0,
                 totalTime: 0,
                 chatType: chatLog[chatLog.length - 1].chatType,
-                datasource: chatLog[chatLog.length - 1].datasource,
-                fileUrls: chatLog[chatLog.length - 1].fileUrls
+                fileUrls: chatLog[chatLog.length - 1].fileUrls,
+                model: chatLog[chatLog.length - 1].model,
+                points: points ? Number(points) : 0
               };
               return newLog;
             });
@@ -498,20 +516,29 @@ const Response = (
             // const { content, inputToken, outputToken, inputTime, outputTime } = await processChunkedString(buffer);
             // fullResponse += content;
             fullResponse += buffer;
+            const { mainResponse, points, outputTime, error } = processResponse(fullResponse);
+            if (error) {
+              toast({
+                variant: "destructive",
+                title: "Rate limit exceeded",
+              });
+              throw new Error('Rate limit exceeded');
+            }
+
             setChatLog((prevChatLog) => {
               const newLog = [...prevChatLog];
               newLog[newLog.length - 1] = {
                 prompt,
-                response: fullResponse,
+                response: mainResponse,
                 timestamp: newLog[newLog.length - 1].timestamp,
                 inputToken: 0,
                 outputToken: 0,
-                inputTime: 0,
-                outputTime: Math.round((Date.now() - timer.current) / 10) / 100,
+                outputTime: outputTime ? Number(outputTime) : 0,
                 totalTime: 0,
                 chatType: newLog[newLog.length - 1].chatType,
-                datasource: chatLog[chatLog.length - 1].datasource,
-                fileUrls: chatLog[chatLog.length - 1].fileUrls
+                fileUrls: chatLog[chatLog.length - 1].fileUrls,
+                model: chatLog[chatLog.length - 1].model,
+                points: points ? Number(points) : 0
               };
               return newLog;
             });
@@ -529,12 +556,12 @@ const Response = (
           timestamp: newLog[newLog.length - 1].timestamp,
           inputToken: 0,
           outputToken: 0,
-          inputTime: 0,
           outputTime: 0,
           totalTime: 0,
           chatType: newLog[newLog.length - 1].chatType,
-          datasource: newLog[newLog.length - 1].datasource,
-          fileUrls: newLog[newLog.length - 1].fileUrls
+          fileUrls: newLog[newLog.length - 1].fileUrls,
+          model: newLog[newLog.length - 1].model,
+          points: newLog[newLog.length - 1].points
         };
         return newLog;
       });
@@ -551,33 +578,39 @@ const Response = (
   return (
     <div className="flex flex-col text-mainFont w-full">
       <div className="overflow-x-auto text-justify break-words mb-3 w-full">
-        {splitResponse(response).map((part, index) => (
-          <React.Fragment key={index}>
-            {part.type === "text" && (
-              <div className="break-words answer-markdown" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
-            )}
-            {part.type === "code" && (
-              <div className="relative">
-                <button
-                  onClick={() => navigator.clipboard.writeText(part.content)}
-                  className="absolute p-2 transition-transform duration-200 bg-transparent border-none rounded-lg top-4 right-4 hover:text-white hover:outline-none hover:border-none hover:scale-125 focus:outline-none hover:bg-gray-900"
-                >
-                  <FiCopy size={20} />
-                </button>
-                <CodeBlock
-                  code={part.content}
-                  language={part.language || "Text"}
-                >
-                  <CodeBlock.Code className="flex flex-col lg:p-10 p-6 my-6 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap break-all">
-                    <CodeBlock.LineContent>
-                      <CodeBlock.Token />
-                    </CodeBlock.LineContent>
-                  </CodeBlock.Code>
-                </CodeBlock>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
+        {
+          chatType == 3 ?
+            <Image src={response} alt="image" width={500} height={500} /> :
+            chatType == 4 ?
+              <audio src={response} controls /> :
+              splitResponse(response).map((part, index) => (
+                <React.Fragment key={index}>
+                  {part.type === "text" && (
+                    <div className="break-words answer-markdown" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
+                  )}
+                  {part.type === "code" && (
+                    <div className="relative">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(part.content)}
+                        className="absolute p-2 transition-transform duration-200 bg-transparent border-none rounded-lg top-4 right-4 hover:text-white hover:outline-none hover:border-none hover:scale-125 focus:outline-none hover:bg-gray-900"
+                      >
+                        <FiCopy size={20} />
+                      </button>
+                      <CodeBlock
+                        code={part.content}
+                        language={part.language || "Text"}
+                      >
+                        <CodeBlock.Code className="flex flex-col lg:p-10 p-6 my-6 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap break-all">
+                          <CodeBlock.LineContent>
+                            <CodeBlock.Token />
+                          </CodeBlock.LineContent>
+                        </CodeBlock.Code>
+                      </CodeBlock>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))
+        }
       </div>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
@@ -605,6 +638,9 @@ const Response = (
         </div>
         <div className="text-sm text-subFont">
           Time: {Number(outputTime.toFixed(5))}s
+        </div>
+        <div className="text-sm text-subFont">
+          Points: {Number(points.toFixed(2))}
         </div>
         {/* <AnalysisMenu inputToken={inputToken} outputToken={outputToken} inputTime={inputTime} outputTime={outputTime} totalTime={totalTime} /> */}
       </div>

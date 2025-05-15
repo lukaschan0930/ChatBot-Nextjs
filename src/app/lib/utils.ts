@@ -245,3 +245,21 @@ export const formatNumber = (num: number): string => {
   }
   return num.toString();
 };
+
+export const processResponse = (response: string) => {
+  const errorMatch = response.match(/\[ERROR\](.*)/);
+  const pointsMatch = response.match(/\[POINTS\](.*)/);
+  const outputTimeMatch = response.match(/\[OUTPUT_TIME\](.*)/);
+
+  if (errorMatch) {
+      return { mainResponse: response, points: null, outputTime: null, error: errorMatch[1] };
+  }
+
+  if (pointsMatch || outputTimeMatch) {
+      const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim();
+      const points = pointsMatch ? pointsMatch[1] : null;
+      const outputTime = outputTimeMatch ? outputTimeMatch[1] : null;
+      return { mainResponse, points, outputTime };
+  }
+  return { mainResponse: response, points: null, outputTime: null };
+};

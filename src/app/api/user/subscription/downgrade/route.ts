@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const subscriptionItemId = subscription.items.data[0].id;
     await stripe.subscriptions.update(user.subscriptionId, {
         items: [{ id: subscriptionItemId, price: plan.priceId }],
-        proration_behavior: 'always_invoice',
+        proration_behavior: 'none',
         billing_cycle_anchor: 'now'
     });
 

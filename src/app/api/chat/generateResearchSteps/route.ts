@@ -56,15 +56,15 @@ export async function POST(request: NextRequest) {
                 {
                     role: "user",
                     content: `
-                please generate less than 5 steps to conduct deep research on the following prompt: ${prompt}
-                the steps should focus on gathering, analyzing, and synthesizing information from various sources.
-                only return the steps, no other text with valid json
+                please generate less than 5 topics to conduct deep research on the following prompt: ${prompt}
+                the topics should focus on gathering, analyzing, and synthesizing information from various sources.
+                only return the topics, no other text with valid json
                 the json should be in the following format:
                 {
-                    "steps": [
-                        "step 1",
-                        "step 2",
-                        "step 3"
+                    "topics": [
+                        "topic 1",
+                        "topic 2",
+                        "topic 3"
                     ]
                 }
                 `
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         });
 
         const choices = data.choices as IChatCompletionChoice[];
-        return NextResponse.json({ steps: choices[0].message?.content });
+        return NextResponse.json({ topics: choices[0].message?.content });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

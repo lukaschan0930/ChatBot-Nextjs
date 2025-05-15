@@ -168,12 +168,12 @@ export interface ChatLog {
     timestamp: string | null;
     inputToken?: number;
     outputToken?: number;
-    inputTime?: number;
     outputTime?: number;
     totalTime?: number;
     chatType: number;
-    datasource: boolean;
     fileUrls: string[];
+    model: string;
+    points: number;
 }
 
 export interface IRoboChatHistory {
@@ -237,6 +237,7 @@ export interface ITaskList {
 
 export interface IChatCompletionChoice {
     message?: { content?: string | null };
+    usage?: { prompt_tokens: number, completion_tokens: number, total_tokens: number };
 }
 
 export interface IResearchLog {
@@ -316,6 +317,7 @@ export interface IAI {
     multiplier: number;
     provider: string;
     model: string;
+    type: string;
 }
 
 export interface ISubscriptionPlan {

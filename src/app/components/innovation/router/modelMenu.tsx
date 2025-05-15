@@ -13,9 +13,9 @@ import { IAI } from "@/app/lib/interface";
 import { useToast } from "@/app/hooks/use-toast";
 
 const RouterModelMenu = () => {
-    const [routerModel, setRouterModel] = useAtom(routerModelAtom);
     const [model, setModel] = useState<string>("");
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [routerModel, setRouterModel] = useAtom(routerModelAtom);
     const [routerModels, setRouterModels] = useAtom(routerModelsAtom);
     const { toast } = useToast();
 

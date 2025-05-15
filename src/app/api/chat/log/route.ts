@@ -15,12 +15,12 @@ export async function GET(req: NextRequest) {
         return Response.json({ success: false, message: "Session ID is required" }, { status: 400 });
     }
     try {
-        const chats = await ChatRepo.findHistoryByEmail(session.user?.email as string);
-        if (!chats || !chats.session) {
+        const chats: any = await ChatRepo.findLogByEmail(session.user?.email as string, sessionId);
+        if (!chats || !chats[0].session) {
             return Response.json({ success: false, message: "No chats found" }, { status: 404 });
         }
-        const chat = chats.session.find((chat: ChatHistory) => chat.id === sessionId);
-        return Response.json({ success: true, data: chat?.chats });
+        
+        return Response.json({ success: true, data: chats[0].session[0].chats });
     } catch (error) {
         console.error(error);
         return Response.json({ success: false, message: "Failed to fetch chats" }, { status: 500 });

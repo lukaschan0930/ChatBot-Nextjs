@@ -33,6 +33,7 @@ const isResearchAreaVisibleAtom = atom<boolean>(false);
 const activeChatIdAtom = atom<string>("");
 const fileAtom = atom<IFileWithUrl[]>([]);
 const routerModelAtom = atom<string>("");
+const modelTypeAtom = atom<string>("text");
 const routerModelsAtom = atom<IAI[]>([]);
 
 export {
@@ -58,5 +59,6 @@ export {
     routerModelAtom,
     routerChatHistoryAtom,
     routerChatLogAtom,
-    routerModelsAtom
+    routerModelsAtom,
+    modelTypeAtom
 };
