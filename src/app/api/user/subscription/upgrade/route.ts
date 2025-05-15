@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
                 id: subscriptionItemId,
                 price: plan.priceId
             }],
-            proration_behavior: 'always_invoice',
+            proration_behavior: 'none',
             billing_cycle_anchor: 'now'
         });
 

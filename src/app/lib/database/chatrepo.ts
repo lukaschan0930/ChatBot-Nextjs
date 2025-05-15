@@ -6,11 +6,31 @@ export const ChatRepo = {
     updateHistory,
     create,
     getFullHistory,
-    getFullHistroyWithSessions
+    getFullHistroyWithSessions,
+    findLogByEmail
 }
 
 async function findHistoryByEmail(email: string) {
-    return db.Chat.findOne({ email });
+    return db.Chat.findOne({ email }, { session: { title: 1, id: 1, chats: { timestamp: 1 } }, _id: 1, email: 1 });
+}
+
+async function findLogByEmail(email: string, sessionId: string) {
+    return db.Chat.aggregate([
+        { $match: { email } },
+        {
+            $project: {
+                email: 1,
+                _id: 1,
+                session: {
+                    $filter: {
+                        input: "$session",
+                        as: "session",
+                        cond: { $eq: ["$$session.id", sessionId] }
+                    }
+                }
+            }
+        }
+    ]);
 }
 
 async function updateHistory(email: string, chatHistory: { session: ChatHistory[] }) {

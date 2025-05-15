@@ -95,12 +95,11 @@ const ChatArea = () => {
                   last={chatLog.length - 1 === id}
                   inputToken={chat.inputToken}
                   outputToken={chat.outputToken}
-                  inputTime={chat.inputTime}
                   outputTime={chat.outputTime}
-                  totalTime={chat.totalTime}
                   chatType={chat.chatType}
-                  datasource={chat.datasource}
                   fileUrls={chat.fileUrls}
+                  model={chat.model}
+                  points={chat.points}
                 />
               }
             </div>

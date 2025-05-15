@@ -1,6 +1,7 @@
 'use client'
 import { usePathname, useRouter } from "next/navigation";
 import DropDownMenu from "@/app/components/headers/DropDownMenu";
+import DropDownModelMenu from "@/app/components/headers/DropDownModelMenu";
 import MobileDropDownMenu from "@/app/components/headers/MobileDropDownMenu";
 import { useEffect, useRef, useState } from "react";
 import ProfileDropDownMenu from "@/app/components/headers/ProfileDropDownMenu";
@@ -75,14 +76,14 @@ const Header = () => {
   return (
     <>
       <header className="absolute top-0 left-0 right-0 z-10 text-mainFont">
-        {
+        {/* {
           endPoint[1] !== "router" &&
           <div className="w-full bg-[#FFFFFF0D] py-[6px] text-center text-sm text-[#FFFFFF99] sm:hidden">
             <span>
               TESTNET
             </span>
           </div>
-        }
+        } */}
         <div className="flex h-[72px] items-center max-sm:px-3 max-sm:pt-[11px] pr-2 md:pr-6 justify-between relative">
           <div className={`items-center pl-4 h-full hidden sm:flex`}>
             <div className={`mr-2`}>
@@ -141,9 +142,11 @@ const Header = () => {
                       <NewChatIcon />
                       <span className="text-sm">New Chat</span>
                     </ShadowBtn>
-                    {endPoint[1] !== "router" && <span className="text-sm text-[#FFFFFF99] ml-6">[ TESTNET ]</span>}
                   </>
                 }
+                <div className="ml-8">
+                  <DropDownModelMenu />
+                </div>
                 {
                   endPoint[1] === "workers" && endPoint[2] == "marketing" && endPoint[3] === "twitter" &&
                   <>
@@ -277,6 +280,12 @@ const Header = () => {
             )
           }
         </div>
+        {
+          endPoint[1] !== "admin" &&
+          <div className="sm:hidden">
+            <DropDownModelMenu />
+          </div>
+        }
       </header>
     </>
   );

@@ -183,3 +183,18 @@ export const getRandomNumberBasedonUTCTime = (min: number, max: number) => {
   const result = min + hash;
   return Math.min(result, max);
 };
+
+export const ModelType = [
+  {
+    id: "text",
+    label: "Text Generation",
+  },
+  {
+    id: "image",
+    label: "Image Generation",
+  },
+  {
+    id: "audio",
+    label: "Audio Generation",
+  }
+]

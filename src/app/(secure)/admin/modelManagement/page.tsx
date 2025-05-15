@@ -17,6 +17,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "@mui/material";
 import { FaSearch } from "react-icons/fa";
+import { ModelType } from "@/app/lib/stack";
 
 export default function ModelManagement() {
     const [models, setModels] = useState<IAI[]>([]);
@@ -101,6 +102,7 @@ export default function ModelManagement() {
                             <TableHead className="min-w-[100px]">Multiplier</TableHead>
                             <TableHead className="min-w-[100px]">Provider</TableHead>
                             <TableHead className="min-w-[100px]">Model</TableHead>
+                            <TableHead className="min-w-[100px]">Type</TableHead>
                             <TableHead className="min-w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -113,6 +115,7 @@ export default function ModelManagement() {
                                 <TableCell className="text-mainFont">{model.multiplier}x</TableCell>
                                 <TableCell className="text-mainFont">{model.provider}</TableCell>
                                 <TableCell className="text-mainFont">{model.model}</TableCell>
+                                <TableCell className="text-mainFont">{ModelType.find((item) => item.id === model.type)?.label}</TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
                                         <Button

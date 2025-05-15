@@ -393,8 +393,8 @@ const RouterInputBox = () => {
                                 model: routerModel,
                                 inputToken: 0,
                                 outputToken: 0,
-                                points: points ? Number(points) : 0,
                                 response: mainResponse,
+                                points: points ? Number(points) : 0,
                                 timestamp: Number(Date.now()).toString(),
                                 outputTime: outputTime ? Number(outputTime) : 0,
                                 fileUrls: files.map((file) => file.url)

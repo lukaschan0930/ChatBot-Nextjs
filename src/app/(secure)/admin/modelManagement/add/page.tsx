@@ -7,6 +7,8 @@ import { toast } from "@/app/hooks/use-toast";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Select, MenuItem } from "@mui/material";
+import { ModelType } from "@/app/lib/stack";
 
 export default function AddEditModel() {
     const [model, setModel] = useState<Partial<IAI>>({
@@ -15,7 +17,8 @@ export default function AddEditModel() {
         outputCost: 0,
         multiplier: 1,
         provider: '',
-        model: ''
+        model: '',
+        type: ''
     });
     const { useFetch } = useAdmin();
     const fetch = useFetch();
@@ -146,6 +149,28 @@ export default function AddEditModel() {
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, model: e.target.value })}
                             required
                         />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-mainFont">Type</label>
+                        <Select
+                            value={model.type}
+                            onChange={(e) => setModel({ ...model, type: e.target.value })}
+                            required
+                            sx={{
+                                width: "100%",
+                                backgroundColor: "white",
+                                borderRadius: "8px",
+                                border: "1px solid #E0E0E0",
+                                "& .MuiSvgIcon-root": {
+                                    color: "#E0E0E0"
+                                },
+                                padding: "0px 10px"
+                            }}
+                        >
+                            {ModelType.map((item) => (
+                                <MenuItem key={item.id} value={item.id}>{item.label}</MenuItem>
+                            ))}
+                        </Select>
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" disabled={loading}>{loading ? 'Saving...' : modelId ? 'Update' : 'Create'} Model</Button>

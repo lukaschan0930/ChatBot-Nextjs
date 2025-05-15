@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Unauthorized", status: false }, { status: 401 });
     }
     try {
-        const { name, inputCost, outputCost, multiplier, provider, model } = await request.json();
-        const modelDB = await AiRepo.create({ name, inputCost, outputCost, multiplier, provider, model });
+        const { name, inputCost, outputCost, multiplier, provider, model, type } = await request.json();
+        const modelDB = await AiRepo.create({ name, inputCost, outputCost, multiplier, provider, model, type });
         return NextResponse.json({ data: modelDB, message: "AI model created successfully", status: true });
     } catch (error) {
         return NextResponse.json({ message: "Failed to create AI model", status: false }, { status: 500 });

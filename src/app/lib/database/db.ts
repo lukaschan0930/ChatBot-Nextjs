@@ -59,7 +59,9 @@ const db = {
     RoboChat: roboChatModel(),
     RouterChat: routerChatModel(),
     Plan: planModel(),
-    AI: aiModel()
+    AI: aiModel(),
+    UsageStats: usageStateModel(),
+    PlanHistory: planHistoryModel()
 }
 
 function userModel() {
@@ -268,26 +270,25 @@ function chatModel() {
                 outputToken: {
                     type: Number
                 },
-                inputTime: {
-                    type: Number
-                },
                 outputTime: {
-                    type: Number,
-                },
-                totalTime: {
                     type: Number,
                 },
                 chatType: {
                     type: Number,
                     required: true
                 },
-                datasource: {
-                    type: Boolean,
-                    required: true
-                },
                 fileUrls: [{
                     type: String,
-                }]
+                }],
+                model: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'AI',
+                    required: true
+                },
+                points: {
+                    type: Number,
+                    required: true
+                }
             }]
         }],
 
@@ -306,7 +307,7 @@ function roboChatModel() {
     const RoboChatSchema = new Schema({
         email: {
             type: String,
-            required: true  
+            required: true
         },
         session: [{
             id: {
@@ -415,6 +416,14 @@ function routerChatModel() {
                     type: Number,
                     required: true,
                     default: 0
+                },
+                datasource: {
+                    type: Boolean,
+                    required: true
+                },
+                chatType: {
+                    type: Number,
+                    required: true
                 }
             }]
         }],
@@ -660,6 +669,32 @@ function planModel() {
     return mongoose.models.Plan || mongoose.model('Plan', PlanSchema);
 }
 
+function planHistoryModel() {
+    const PlanHistorySchema = new Schema({
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        planId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Plan',
+        },
+        price: {
+            type: Number,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now()
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.PlanHistory || mongoose.model('PlanHistory', PlanHistorySchema);
+}
+
 function aiModel() {
     const AiSchema = new Schema({
         name: {
@@ -685,10 +720,54 @@ function aiModel() {
         provider: {
             type: String,
             required: true
+        },
+        type: {
+            type: String,
+            required: true
         }
     });
 
     return mongoose.models.Ai || mongoose.model('Ai', AiSchema);
+}
+
+function usageStateModel() {
+    const UsageStatsSchema = new Schema({
+        date: {
+            type: Date,
+            required: true,
+            index: true
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true, 
+            index: true
+        },
+        modelId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'AI',
+            required: true,
+            index: true
+        },
+        planId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Plan',
+            required: true,
+            index: true
+        },
+        stats: {
+            tokenUsage: {
+                input: { type: Number, default: 0 },
+                output: { type: Number, default: 0 },
+                total: { type: Number, default: 0 }
+            },
+            pointsUsage: { type: Number, default: 0 },
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.UsageStats || mongoose.model('UsageStats', UsageStatsSchema);
 }
 
 export default db;

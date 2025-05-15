@@ -172,6 +172,12 @@ export async function POST(request: NextRequest) {
                 user.requestPlanId = null;
                 await user.save();
 
+                await db.PlanHistory.create({
+                    userId: user._id,
+                    planId: planId._id,
+                    price: planId.price,
+                });
+
                 console.log(`Subscription renewed for user: ${user.id}`);
                 break;
             }
