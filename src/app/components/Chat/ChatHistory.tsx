@@ -15,6 +15,9 @@ import HistoryIcon from "@/app/assets/history";
 import Image from "next/image";
 import { generateSessionId } from "@/app/lib/utils";
 import DoubleRightArrow from "@/app/assets/doubleRightArrow";
+import { useAuth } from "@/app/context/AuthContext";
+import { formatNumber } from "@/app/lib/utils";
+import { format } from "date-fns";
 
 const ChatHistory = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(false);
@@ -30,6 +33,16 @@ const ChatHistory = () => {
     const [, setFiles] = useAtom<IFileWithUrl[]>(fileAtom);
     const router = useRouter();
     const { data: session } = useSession();
+    const { user } = useAuth();
+    const [percent, setPercent] = useState<number>(0);
+
+    useEffect(() => {
+        if (user) {
+            const usedPoints = user.pointsUsed ?? 0;
+            const availablePoints = user.currentplan.points + user.currentplan.bonusPoints;
+            setPercent(Math.ceil((usedPoints / availablePoints) * 100));
+        }
+    }, [user])
 
     const deleteSession = async (id: string) => {
         await setChatHistory(chatHistory.filter((session) => session.id !== id));
@@ -360,7 +373,7 @@ const ChatHistory = () => {
                                                 className={`${session.id === sessionId ?
                                                     "text-mainFont p-[1px] bg-btn-shadow" :
                                                     "cursor-pointer"} 
-                                            rounded-lg hover:text-mainFont focus:text-mainFont p-[1px] hover:bg-btn-shadow focus:bg-btn-shadow cursor-pointer mb-[2px]`
+                                                    rounded-lg hover:text-mainFont focus:text-mainFont p-[1px] hover:bg-btn-shadow focus:bg-btn-shadow cursor-pointer mb-[2px]`
                                                 }
                                             >
                                                 <div
@@ -445,9 +458,41 @@ const ChatHistory = () => {
                                 )}
                             </div>
                             <div className="w-full px-2">
+                                <Divider sx={{ color: "#29292B", width: "100%", "&.MuiDivider-root": { borderColor: "#29292B" } }} />
+                            </div>
+                            <div className="mt-4 w-full px-2 flex flex-col gap-3">
+                                <div className="text-white text-sm">Point usage</div>
+                            </div>
+                            <div className="w-full px-2 mt-4">
+                                <div className="w-full bg-[#FFFFFF26] rounded-full py-1 relative">
+                                    <div className={`w-[${percent}%] bg-mainFont rounded-full h-full absolute top-0 left-0`}></div>
+                                </div>
+                            </div>
+                            <div className="mt-4 w-full px-2 flex justify-between text-white text-sm">
+                                <div>
+                                    {formatNumber(user?.pointsUsed ?? 0)} /
+                                    <span className="text-[#FFFFFF99]">
+                                        {formatNumber(Number(user?.currentplan.points) + Number(user?.currentplan.bonusPoints))}
+                                    </span>
+                                </div>
+                                <div className="text-[#FFFFFF99]">
+                                    Resets on {user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'}
+                                </div>
+                            </div>
+                            <div className="w-full px-2 mt-8 flex justify-between gap-2">
+                                <ShadowBtn
+                                    className="w-full mb-7 bg-radial-white"
+                                    mainClassName="py-2 md:py-3 px-[10px] text-black text-sm text-center bg-white"
+                                    onClick={() => {
+                                        router.push('/subscription')
+                                        setIsSidebarVisible(false);
+                                    }}
+                                >
+                                    Upgrade Plan
+                                </ShadowBtn>
                                 <ShadowBtn
                                     className="w-full mb-7"
-                                    mainClassName="py-2 px-[10px] text-white text-sm text-center"
+                                    mainClassName="py-2 md:py-3 px-[10px] text-white text-sm text-center"
                                     onClick={() => {
                                         router.push("/chatText/setting");
                                         setIsSidebarVisible(false);

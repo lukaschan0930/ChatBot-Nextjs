@@ -189,12 +189,12 @@ export const ModelType = [
     id: "text",
     label: "Text Generation",
   },
-  {
-    id: "image",
-    label: "Image Generation",
-  },
-  {
-    id: "audio",
-    label: "Audio Generation",
-  }
+  // {
+  //   id: "image",
+  //   label: "Image Generation",
+  // },
+  // {
+  //   id: "audio",
+  //   label: "Audio Generation",
+  // }
 ]
