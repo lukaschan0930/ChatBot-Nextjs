@@ -20,6 +20,7 @@ import { useAtom } from "jotai";
 import { ModelType } from "@/app/lib/stack";
 import { useToast } from "@/app/hooks/use-toast";
 import { IAI } from "@/app/lib/interface";
+import { FaChevronDown } from "react-icons/fa";
 
 // const MenuTooltip = styled(({ className, ...props }: TooltipProps) => (
 //   <Tooltip {...props} classes={{ popper: className }} />
@@ -104,9 +105,15 @@ const DropDownModelMenu = () => {
   return (
     <>
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-        <DropdownMenuTrigger className="flex justify-between items-center gap-3 bg-transparent hover:border-transparent h-2 text-mainFont text-[16px] focus:outline-none w-fit p-0">
-          <span className="flex-1 leading-none text-center">{itemTitle}</span>
-          <Image src="/image/UpDown.png" alt="arrow-down" width={9} height={14} />
+        <DropdownMenuTrigger className="flex justify-between items-center gap-3 bg-transparent hover:border-transparent text-mainFont text-[16px] focus:outline-none w-fit p-0">
+          <ShadowBtn
+            className="rounded-full"
+            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 h-[38px] px-4 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+          >
+            <span className="flex-1 leading-none text-center">{itemTitle}</span>
+            <FaChevronDown />
+            {/* <Image src="/image/UpDown.png" alt="arrow-down" width={9} height={14} /> */}
+          </ShadowBtn>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="bg-box-bg mt-[14px] border-box-border rounded-2xl flex flex-col"

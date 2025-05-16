@@ -27,9 +27,11 @@ import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
 import ChatFileMenu from "./Chat/ChatFileMenu";
+import ChatSpeedMenu from "./Chat/ChatSpeedMenu";
+import ChatProMenu from "./Chat/ChatProMenu";
 // import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
-
+import DropDownModelMenu from "./headers/DropDownModelMenu";
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
 
@@ -88,16 +90,16 @@ const InputBox = () => {
   const [isStreaming, setIsStreaming] = useAtom(isStreamingAtom);
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
-  const [chatType, setChatType] = useAtom(chatTypeAtom);
   const [, setProgress] = useAtom(progressAtom);
   const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
   const [, setActiveChatId] = useAtom(activeChatIdAtom);
   const [textareaWidth, setTextareaWidth] = useState<number>(0);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState<boolean>(false);
+  const [chatType, setChatType] = useAtom(chatTypeAtom);
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
   const [chatMode, setChatMode] = useAtom(chatModeAtom);
   const [routerModel,] = useAtom(routerModelAtom);
-  const [modelType, ] = useAtom(modelTypeAtom);
+  const [modelType,] = useAtom(modelTypeAtom);
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
@@ -858,8 +860,8 @@ const InputBox = () => {
           </button>
         </div>
       </div>
-      <div className="border-t border-[#25252799] p-4 flex gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
-        <div className="flex items-center gap-3">
+      <div className="border-t border-[#25252799] p-4 flex gap-1 md:gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
+        <div className="flex items-center gap-1 md:gap-3">
           {
             isFileUploading ? (
               <ShadowBtn
@@ -898,7 +900,7 @@ const InputBox = () => {
             multiple
           />
           <ShadowBtn
-            className="rounded-full"
+            className="rounded-full max-md:hidden"
             mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
           >
             Pro Search
@@ -909,27 +911,30 @@ const InputBox = () => {
               checked={chatType == 1}
             />
           </ShadowBtn>
+          <ChatProMenu />
           {/* <ShadowBtn
           className="rounded-full"
           mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
         >
           <VoiceIcon />
         </ShadowBtn> */}
+          <ShadowBtn
+            className="rounded-full max-md:hidden"
+            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px] max-md:hidden"
+          >
+            ⚡ Faster x30
+            <AntSwitch
+              inputProps={{ 'aria-label': 'Faster' }}
+              onChange={(e) => {
+                setChatType(prevType => e.target.checked ? 0 : prevType);
+                setChatMode(e.target.checked ? 1 : 0)
+              }}
+              checked={chatMode == 1}
+            />
+          </ShadowBtn>
+          <ChatSpeedMenu />
         </div>
-        <ShadowBtn
-          className="rounded-full"
-          mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
-        >
-          ⚡ Faster x30
-          <AntSwitch
-            inputProps={{ 'aria-label': 'Faster' }}
-            onChange={(e) => {
-              setChatType(prevType => e.target.checked ? 0 : prevType);
-              setChatMode(e.target.checked ? 1 : 0)
-            }}
-            checked={chatMode == 1}
-          />
-        </ShadowBtn>
+        <DropDownModelMenu />
       </div>
     </div >
   )
