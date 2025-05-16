@@ -19,6 +19,8 @@ import {
 import { processResponse } from "@/app/lib/utils";
 import { IResearchLog } from "@/app/lib/interface";
 import Image from "next/image";
+import { signOut } from "next-auth/react";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface MessagePart {
   type: "text" | "code";
@@ -55,6 +57,7 @@ const Response = (
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
+  const { setUser } = useAuth();
   const [, setIsStreaming] = useAtom(isStreamingAtom);
   const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
   const [, setActiveChatId] = useAtom(activeChatIdAtom);
@@ -572,8 +575,24 @@ const Response = (
       });
     } finally {
       setIsStreaming(false);
+      fetchUserData();
     }
   };
+
+  const fetchUserData = async () => {
+    try {
+      const res = await fetch(`/api/user/profile`);
+      const data = await res.json();
+      if (data.success) {
+        setUser(data.user);
+      } else {
+        signOut();
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      signOut();
+    }
+  }
 
   return (
     <div className="flex flex-col text-mainFont w-full">
