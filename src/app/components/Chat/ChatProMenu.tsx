@@ -87,8 +87,8 @@ const ChatProMenu = () => {
 
     return (
         <DropdownMenu onOpenChange={setIsOpen}>
-            <DropdownMenuTrigger className={`bg-btn-shadow rounded-full p-[1px] border-0 focus:outline-none text-center md:hidden`}>
-                <p className={`bg-[#292929] border-0 px-3 py-2 rounded-full flex items-center justify-center ${chatType == 1 ? "text-white" : "text-gray-500"}`}>
+            <DropdownMenuTrigger className={`bg-btn-shadow rounded-full p-[1px] border-0 focus:outline-none text-center sm:hidden`}>
+                <p className={`bg-[#292929] border-0 w-[38px] h-[38px] py-2 rounded-full flex items-center justify-center ${chatType == 1 ? "text-white" : "text-gray-500"}`}>
                     {chatType == 1 ? <ProEnableIcon /> : <ProDisableIcon />}
                 </p>
             </DropdownMenuTrigger>
