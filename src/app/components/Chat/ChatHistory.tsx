@@ -465,7 +465,7 @@ const ChatHistory = () => {
                             </div>
                             <div className="w-full px-2 mt-4">
                                 <div className="w-full bg-[#FFFFFF26] rounded-full py-1 relative">
-                                    <div className={`w-[${percent}%] bg-mainFont rounded-full h-full absolute top-0 left-0`}></div>
+                                    <div style={{ width: `${percent.toFixed(0)}%` }} className="bg-mainFont rounded-full h-full absolute top-0 left-0"></div>
                                 </div>
                             </div>
                             <div className="mt-4 w-full px-2 flex justify-between text-white text-sm">
