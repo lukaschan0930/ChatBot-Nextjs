@@ -829,7 +829,7 @@ const InputBox = () => {
   return (
     <div
       className={`${isStartChat ? "w-full" : ""
-        } bg-box-bg mt-[10px] w-full lg:max-w-[700px] border rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
+        } bg-box-bg mt-[10px] w-full lg:max-w-[700px] border rounded-[12px] md:rounded-[24px] border-[#25252799] flex flex-col shadow-input-box`}
     >
       <div className="flex flex-col py-2">
         <div className="flex w-full justify-between items-center px-4 py-2">
@@ -860,7 +860,7 @@ const InputBox = () => {
           </button>
         </div>
       </div>
-      <div className="border-t border-[#25252799] p-4 flex gap-1 md:gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
+      <div className="border-t border-[#25252799] py-4 px-2 md:px-4 flex gap-1 md:gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
         <div className="flex items-center gap-1 md:gap-3">
           {
             isFileUploading ? (
@@ -900,7 +900,7 @@ const InputBox = () => {
             multiple
           />
           <ShadowBtn
-            className="rounded-full max-md:hidden"
+            className="rounded-full max-sm:hidden"
             mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
           >
             Pro Search
@@ -919,8 +919,8 @@ const InputBox = () => {
           <VoiceIcon />
         </ShadowBtn> */}
           <ShadowBtn
-            className="rounded-full max-md:hidden"
-            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px] max-md:hidden"
+            className="rounded-full max-sm:hidden"
+            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
           >
             ⚡ Faster x30
             <AntSwitch
@@ -934,7 +934,9 @@ const InputBox = () => {
           </ShadowBtn>
           <ChatSpeedMenu />
         </div>
-        <DropDownModelMenu />
+        <div className="sm:hidden">
+          <DropDownModelMenu />
+        </div>
       </div>
     </div >
   )

@@ -107,8 +107,8 @@ const DropDownModelMenu = () => {
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
         <DropdownMenuTrigger className="flex justify-between items-center gap-3 bg-transparent hover:border-transparent text-mainFont text-[16px] focus:outline-none w-fit p-0">
           <ShadowBtn
-            className="rounded-full"
-            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 h-[38px] px-4 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
+            className="rounded-md"
+            mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 h-[38px] px-3 gap-0 rounded-md text-[12px] sm:text-sm flex items-center justify-center gap-[6px]"
           >
             <span className="flex-1 leading-none text-center">{itemTitle}</span>
             <FaChevronDown />
@@ -119,7 +119,7 @@ const DropDownModelMenu = () => {
           className="bg-box-bg mt-[14px] border-box-border rounded-2xl flex flex-col"
           align="center"
         >
-          <div className="p-3">
+          {/* <div className="p-3">
             <div className="flex items-center justify-between gap-1 rounded-xl bg-[#0B0B0D] p-2 w-full border border-[#25252799]">
               {
                 ModelType.map((menu) => (
@@ -140,19 +140,19 @@ const DropDownModelMenu = () => {
             borderWidth: "1px",
             borderStyle: "solid",
             width: "100%",
-          }} />
+          }} /> */}
           <div className="p-3 flex flex-col gap-3">
             {
               routerModels && routerModels.length > 0 && routerModels.filter((item) => item.type === menuId).map((subItem: IAI) => (
                 <ShadowBtn
                   key={subItem._id}
                   className={`w-full rounded-md`}
-                  mainClassName={`text-white flex flex-col items-center justify-center py-7 relative`}
+                  mainClassName={`text-white flex flex-col py-3 relative`}
                   onClick={() => handleItemClick(subItem._id)}
                 >
-                  <div className="flex items-center gap-2">
-                    <Image src="/image/logo-chat.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} />
-                    <span className="text-[16px] text-nowrap">{subItem.name}</span>
+                  <div className="flex gap-2 items-start">
+                    {/* <Image src="/image/logo-chat.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} /> */}
+                    <span className="text-[12px] sm:text-[16px] text-nowrap">{subItem.name}</span>
                   </div>
                 </ShadowBtn>
               ))
