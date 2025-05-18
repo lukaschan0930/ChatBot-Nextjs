@@ -116,7 +116,7 @@ const DropDownModelMenu = () => {
           </ShadowBtn>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="bg-box-bg mt-[14px] border-box-border rounded-2xl flex flex-col"
+          className="bg-box-bg border-box-border rounded-2xl flex flex-col"
           align="center"
         >
           {/* <div className="p-3">
@@ -141,20 +141,20 @@ const DropDownModelMenu = () => {
             borderStyle: "solid",
             width: "100%",
           }} /> */}
-          <div className="p-3 flex flex-col gap-3">
+          <div className="p-2 flex flex-col gap-1">
             {
               routerModels && routerModels.length > 0 && routerModels.filter((item) => item.type === menuId).map((subItem: IAI) => (
-                <ShadowBtn
-                  key={subItem._id}
-                  className={`w-full rounded-md`}
-                  mainClassName={`text-white flex flex-col py-3 relative`}
-                  onClick={() => handleItemClick(subItem._id)}
-                >
-                  <div className="flex gap-2 items-start">
+                // <ShadowBtn
+                //   key={subItem._id}
+                //   className={`w-full rounded-md`}
+                //   mainClassName={`text-white flex flex-col py-3 relative`}
+                //   onClick={() => handleItemClick(subItem._id)}
+                // >
+                  <div className="flex gap-2 items-start cursor-pointer hover:bg-[#ffffff80] focus:bg-[#ffffff80] px-3 py-2 rounded-md" onClick={() => handleItemClick(subItem._id)}>
                     {/* <Image src="/image/logo-chat.png" alt="edith-logo" className="h-[22px] w-auto" width={100} height={22} /> */}
-                    <span className="text-[12px] sm:text-[16px] text-nowrap">{subItem.name}</span>
+                    <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{subItem.name}</span>
                   </div>
-                </ShadowBtn>
+                // </ShadowBtn>
               ))
             }
           </div>

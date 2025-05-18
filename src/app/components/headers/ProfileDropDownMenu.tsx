@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
+import ChangeLog from "@/app/assets/changelog";
+import DocsIcon from "@/app/assets/docs";
 
 const ProfileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
   const router = useRouter();
@@ -72,6 +74,14 @@ const ProfileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
         <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
           <FiCreditCard className="!w-5 !h-5" />
           Subscription
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
+          <ChangeLog />
+          Change Log
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
+          <DocsIcon />
+          Docs
         </DropdownMenuItem>
         <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleLogout}>
           <FiLogOut className="!w-5 !h-5" />

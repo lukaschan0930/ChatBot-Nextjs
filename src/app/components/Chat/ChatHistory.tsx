@@ -170,14 +170,14 @@ const ChatHistory = () => {
             />
 
             {/* Drawer */}
-            <div className={`sm:m-1 border border-[#25252799] bg-[#0C0C0E] flex flex-col items-start h-full sm:h-[calc(100vh-8px)] sm:rounded-2xl fixed top-0 left-0 transition-all duration-500 ease-in-out transform ${isSidebarVisible
-                ? "w-[340px] max-sm:w-full px-2 opacity-100 translate-x-0"
-                : "w-[340px] max-sm:w-full px-0 opacity-0 -translate-x-full"
+            <div className={`sm:m-1 border border-[#25252799] bg-[#0C0C0E] flex flex-col items-start h-full sm:h-[calc(100vh-200px)] sm:rounded-2xl fixed top-0 left-0 sm:transform sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 transition-all duration-500 ease-in-out transform ${isSidebarVisible
+                ? "w-[650px] max-sm:w-full px-2 opacity-100 max-sm:translate-x-0 sm:scale-100"
+                : "w-[650px] max-sm:w-full px-0 opacity-0 max-sm:-translate-x-full sm:scale-0"
                 } z-20`}>
                 {
                     isSidebarVisible && (
                         <>
-                            <div className={`flex items-center px-3 pt-[10px] max-sm:hidden`}>
+                            <div className={`items-center px-3 pt-[10px] hidden`}>
                                 <div className={`py-[1px] mr-2`}>
                                     <Image
                                         src="/image/logo-chat.png"
@@ -203,7 +203,7 @@ const ChatHistory = () => {
                                 </ShadowBtn>
                             </div>
                             <div className="w-full px-2 mt-4 sm:mt-9 flex gap-3 items-center">
-                                <div className={`w-full sm:w-[220px] border border-[#454449] bg-[#292929] rounded-lg py-2 pl-8 pr-2 relative`}>
+                                <div className={`w-full border border-[#454449] bg-[#292929] rounded-lg py-2 pl-8 pr-2 relative`}>
                                     <input
                                         type="text"
                                         placeholder="Search ..."
@@ -379,10 +379,12 @@ const ChatHistory = () => {
                                                 <div
                                                     key={session.id}
                                                     onClick={() => {
-                                                        setSessionId(session.id);
-                                                        setIsSidebarVisible(false);
-                                                        setFiles([]);
-                                                        router.push("/chatText");
+                                                        if (!editingSessionId) {
+                                                            setSessionId(session.id);
+                                                            setIsSidebarVisible(false);
+                                                            setFiles([]);
+                                                            router.push("/chatText");   
+                                                        }
                                                     }}
                                                     className={
                                                         `${session.id === sessionId ?
@@ -457,49 +459,51 @@ const ChatHistory = () => {
                                         ))
                                 )}
                             </div>
-                            <div className="w-full px-2">
-                                <Divider sx={{ color: "#29292B", width: "100%", "&.MuiDivider-root": { borderColor: "#29292B" } }} />
-                            </div>
-                            <div className="mt-4 w-full px-2 flex flex-col gap-3">
-                                <div className="text-white text-sm">Point usage</div>
-                            </div>
-                            <div className="w-full px-2 mt-4">
-                                <div className="w-full bg-[#FFFFFF26] rounded-full py-1 relative">
-                                    <div style={{ width: `${percent.toFixed(0)}%` }} className="bg-mainFont rounded-full h-full absolute top-0 left-0"></div>
+                            <div className="sm:hidden w-full">
+                                <div className="w-full px-2">
+                                    <Divider sx={{ color: "#29292B", width: "100%", "&.MuiDivider-root": { borderColor: "#29292B" } }} />
                                 </div>
-                            </div>
-                            <div className="mt-4 w-full px-2 flex justify-between text-white text-sm">
-                                <div>
-                                    {formatNumber(user?.pointsUsed ?? 0)} /
-                                    <span className="text-[#FFFFFF99]">
-                                        {formatNumber(Number(user?.currentplan.points) + Number(user?.currentplan.bonusPoints))}
-                                    </span>
+                                <div className="mt-4 w-full px-2 flex flex-col gap-3">
+                                    <div className="text-white text-sm">Point usage</div>
                                 </div>
-                                <div className="text-[#FFFFFF99]">
-                                    Resets on {user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'}
+                                <div className="w-full px-2 mt-4">
+                                    <div className="w-full bg-[#FFFFFF26] rounded-full py-1 relative">
+                                        <div style={{ width: `${percent.toFixed(0)}%` }} className="bg-mainFont rounded-full h-full absolute top-0 left-0"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="w-full px-2 mt-8 flex justify-between gap-2">
-                                <ShadowBtn
-                                    className="w-full mb-7 bg-radial-white"
-                                    mainClassName="py-2 md:py-3 px-[10px] text-black text-sm text-center bg-white"
-                                    onClick={() => {
-                                        router.push('/subscription')
-                                        setIsSidebarVisible(false);
-                                    }}
-                                >
-                                    Upgrade Plan
-                                </ShadowBtn>
-                                <ShadowBtn
-                                    className="w-full mb-7"
-                                    mainClassName="py-2 md:py-3 px-[10px] text-white text-sm text-center"
-                                    onClick={() => {
-                                        router.push("/chatText/setting");
-                                        setIsSidebarVisible(false);
-                                    }}
-                                >
-                                    Settings
-                                </ShadowBtn>
+                                <div className="mt-4 w-full px-2 flex justify-between text-white text-sm">
+                                    <div>
+                                        {formatNumber(user?.pointsUsed ?? 0)} /
+                                        <span className="text-[#FFFFFF99]">
+                                            {formatNumber(Number(user?.currentplan.points) + Number(user?.currentplan.bonusPoints))}
+                                        </span>
+                                    </div>
+                                    <div className="text-[#FFFFFF99]">
+                                        Resets on {user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'}
+                                    </div>
+                                </div>
+                                <div className="w-full px-2 mt-8 flex justify-between gap-2">
+                                    <ShadowBtn
+                                        className="w-full mb-7 bg-radial-white"
+                                        mainClassName="py-2 md:py-3 px-[10px] text-black text-sm text-center bg-white"
+                                        onClick={() => {
+                                            router.push('/subscription')
+                                            setIsSidebarVisible(false);
+                                        }}
+                                    >
+                                        Upgrade Plan
+                                    </ShadowBtn>
+                                    <ShadowBtn
+                                        className="w-full mb-7"
+                                        mainClassName="py-2 md:py-3 px-[10px] text-white text-sm text-center"
+                                        onClick={() => {
+                                            router.push("/chatText/setting");
+                                            setIsSidebarVisible(false);
+                                        }}
+                                    >
+                                        Settings
+                                    </ShadowBtn>
+                                </div>
                             </div>
                         </>
                     )

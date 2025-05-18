@@ -32,6 +32,11 @@ import ChatProMenu from "./Chat/ChatProMenu";
 // import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
 import DropDownModelMenu from "./headers/DropDownModelMenu";
+import ChatSettingMenu from "./Chat/ChatSettingMenu";
+import { Divider } from "@mui/material";
+import { Cross, CrossIcon, X } from "lucide-react";
+import { ProDisableIcon } from "../assets/pro";
+import Lightning from "../assets/lightning";
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
 
@@ -848,7 +853,7 @@ const InputBox = () => {
             }}
           />
           <button
-            className={`${isStreaming || isFileUploading ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont`}
+            className={`${isStreaming || isFileUploading ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont sm:hidden`}
             onClick={(e) => handleClickSend(e)}
             disabled={isStreaming || isFileUploading}
           >
@@ -860,46 +865,49 @@ const InputBox = () => {
           </button>
         </div>
       </div>
-      <div className="border-t border-[#25252799] py-4 px-2 md:px-4 flex gap-1 md:gap-3 justify-between w-full bg-[url('/image/text-bg.png')]">
-        <div className="flex items-center gap-1 md:gap-3">
-          {
-            isFileUploading ? (
-              <ShadowBtn
-                className="rounded-full"
-                mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
-                disabled={true}
-              >
-                <FaSpinner className="w-auto h-full animate-spin text-black" />
-              </ShadowBtn>
-            ) :
-              files.length > 0 ? (
-                <ChatFileMenu
-                  files={files}
-                  handleClickPlusIcon={handleClickPlusIcon}
-                  handleRemoveFile={handleRemoveFile}
-                  setFiles={setFiles}
-                  isFileMenuOpen={isFileMenuOpen}
-                  setIsFileMenuOpen={setIsFileMenuOpen}
-                />
-              ) : (
+      <div className="py-2 px-3 md:px-4 flex gap-1 justify-between w-full">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {
+              isFileUploading ? (
                 <ShadowBtn
                   className="rounded-full"
-                  mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
-                  onClick={handleClickPlusIcon}
+                  mainClassName="border-[#2C2B30] border shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+                  disabled={true}
                 >
-                  <PlusIcon />
+                  <FaSpinner className="w-auto h-full animate-spin text-black" />
                 </ShadowBtn>
-              )
-          }
-          <input
-            type="file"
-            accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
-            style={{ display: 'none' }}
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            multiple
-          />
-          <ShadowBtn
+              ) :
+                files.length > 0 ? (
+                  <ChatFileMenu
+                    files={files}
+                    handleClickPlusIcon={handleClickPlusIcon}
+                    handleRemoveFile={handleRemoveFile}
+                    setFiles={setFiles}
+                    isFileMenuOpen={isFileMenuOpen}
+                    setIsFileMenuOpen={setIsFileMenuOpen}
+                  />
+                ) : (
+                  <ShadowBtn
+                    className="rounded-full bg-transparent hover:bg-btn-shadow"
+                    mainClassName="hover:border-[#2C2B30] hover:border bg-transparent hover:bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
+                    onClick={handleClickPlusIcon}
+                  >
+                    <PlusIcon />
+                  </ShadowBtn>
+                )
+            }
+            <input
+              type="file"
+              accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              multiple
+            />
+            <ChatSettingMenu files={files} />
+          </div>
+          {/* <ShadowBtn
             className="rounded-full max-sm:hidden"
             mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
           >
@@ -911,14 +919,14 @@ const InputBox = () => {
               checked={chatType == 1}
             />
           </ShadowBtn>
-          <ChatProMenu />
+          <ChatProMenu /> */}
           {/* <ShadowBtn
           className="rounded-full"
           mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google w-[38px] h-[38px] text-white py-2 px-2 gap-0 rounded-full flex flex-col items-center justify-center"
         >
           <VoiceIcon />
         </ShadowBtn> */}
-          <ShadowBtn
+          {/* <ShadowBtn
             className="rounded-full max-sm:hidden"
             mainClassName="border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 rounded-full text-sm flex items-center justify-center gap-[6px]"
           >
@@ -932,11 +940,69 @@ const InputBox = () => {
               checked={chatMode == 1}
             />
           </ShadowBtn>
-          <ChatSpeedMenu />
+          <ChatSpeedMenu /> */}
+          <Divider orientation="vertical" flexItem sx={{ height: "100%", width: "2px", backgroundColor: "#25252799" }} />
+          {
+            chatType == 1 && (
+              <>
+                <ShadowBtn
+                  className="rounded-md ml-2 max-sm:hidden"
+                  mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 text-sm flex items-center justify-center gap-[6px]"
+                >
+                  <ProDisableIcon />
+                  <span className="ml-2">Pro Search</span>
+                  <X className="w-4 h-4 ml-4" onClick={() => setChatType(0)} />
+                </ShadowBtn>
+                <ShadowBtn
+                  onClick={() => setChatType(0)}
+                  className="rounded-full ml-2 sm:hidden"
+                  mainClassName="rounded-full border-[#2C2B30] w-[38px] h-[38px] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 text-sm flex items-center justify-center gap-[6px]"
+                >
+                  <ProDisableIcon />
+                </ShadowBtn>
+              </>
+            )
+          }
+          {
+            chatMode == 1 && (
+              <>
+                <ShadowBtn
+                  className="rounded-md ml-2 max-sm:hidden"
+                  mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 text-sm flex items-center justify-center gap-[6px]"
+                >
+                  <div className="w-[15px] h-[15px] text-transparent">
+                    <Lightning />
+                  </div>
+                  <span>Faster x30</span>
+                  <X className="w-4 h-4 ml-4" onClick={() => setChatMode(0)} />
+                </ShadowBtn>
+                <ShadowBtn
+                  onClick={() => setChatMode(0)}
+                  className="rounded-full ml-2 sm:hidden"
+                  mainClassName="rounded-full border-[#2C2B30] w-[38px] h-[38px] border bg-[#292929] shadow-btn-google text-white py-2 px-2 gap-0 text-sm flex items-center justify-center gap-[6px]"
+                >
+                  <div className="text-transparent">
+                    <Lightning />
+                  </div>
+                </ShadowBtn>
+              </>
+            )
+          }
         </div>
         <div className="sm:hidden">
           <DropDownModelMenu />
         </div>
+        <button
+          className={`${isStreaming || isFileUploading ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont max-sm:hidden`}
+          onClick={(e) => handleClickSend(e)}
+          disabled={isStreaming || isFileUploading}
+        >
+          {isStreaming ? (
+            <FaSpinner className="w-auto h-full animate-spin text-black" />
+          ) : (
+            <FaArrowUp className="w-auto h-full text-black" />
+          )}
+        </button>
       </div>
     </div >
   )
