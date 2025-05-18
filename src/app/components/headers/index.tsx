@@ -102,7 +102,7 @@ const Header = () => {
               endPoint[1] !== "admin" &&
               <>
                 <DropDownMenu />
-                {
+                {/* {
                   (
                     endPoint[1] === "chatText" ||
                     endPoint[1] === "changeLog" ||
@@ -143,7 +143,7 @@ const Header = () => {
                       <span className="text-sm">New Chat</span>
                     </ShadowBtn>
                   </>
-                }
+                } */}
                 <div className="ml-3">
                   <DropDownModelMenu />
                 </div>
@@ -232,9 +232,9 @@ const Header = () => {
           {
             endPoint[1] !== "admin" ? (
               <>
-                <div className="items-center hidden gap-10 lg:flex">
-                  <div className="flex items-center gap-3">
-                    {
+                <div className="items-center hidden gap-10 sm:flex">
+                  <div className="flex items-center">
+                    {/* {
                       endPoint[1] !== "router" &&
                       <>
                         <ShadowBtn
@@ -254,17 +254,57 @@ const Header = () => {
                           <span className="text-[14px]">Docs</span>
                         </ShadowBtn>
                       </>
-                    }
+                    } */}
                     {/* <ShadowBtn
                       className="rounded-full"
                       mainClassName="rounded-full border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white py-[7px] px-[7px] flex items-center justify-center gap-2"
                     >
                       <SunIcon />
                     </ShadowBtn> */}
+                    {
+                      (
+                        endPoint[1] === "chatText" ||
+                        endPoint[1] === "changeLog" ||
+                        endPoint[1] === "userSetting" ||
+                        endPoint[1] === "roboChat" ||
+                        endPoint[1] === "router"
+                      ) &&
+                      <>
+                        <button
+                          className="bg-transparent border-none px-3 hover:bg-[#ffffff80] focus:bg-[#ffffff80] focus:outline-none rounded-md"
+                          onClick={() => {
+                            setIsStartChat(false);
+                            setSessionId(generateSessionId(
+                              session?.user?.email as string,
+                              Date.now().toString()
+                            ));
+                            setFiles([]);
+                            setIsSidebarVisible(false);
+                            setChatLog([]);
+                            setRoboActiveChat(undefined);
+                            setRoboChatLog([]);
+                            setRouterChatLog([]);
+                            router.push(`/${endPoint[1] == "roboChat" ? "roboChat" : endPoint[1] == "router" ? "router" : "chatText"}`);
+                          }}
+                        >
+                          <NewChatIcon />
+                          {/* <span className="text-sm">New Chat</span> */}
+                        </button>
+                        <button
+                          className="bg-transparent border-none px-3 mr-5 hover:bg-[#ffffff80] focus:bg-[#ffffff80] focus:outline-none rounded-md"
+                          onClick={() => {
+                            setIsSidebarVisible(!isSidebarVisible);
+                          }}
+                        >
+                          <HistoryIcon />
+                          {/* <span className="text-sm">History</span> */}
+                        </button>
+                      </>
+                    }
                     <ProfileDropDownMenu endpoint={endPoint[1]} />
                   </div>
                 </div>
-                <div className="lg:hidden flex items-center gap-2">
+                <div className="sm:hidden flex items-center gap-2">
                   <MobileDropDownMenu endpoint={endPoint[1]} />
                 </div>
               </>
