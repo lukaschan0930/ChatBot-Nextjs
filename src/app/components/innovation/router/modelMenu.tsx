@@ -69,7 +69,7 @@ const RouterModelMenu = () => {
                 </p>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="bg-[#0E0E10] mt-[10px] border-[#1C1C1E]"
+                className="bg-[#0E0E10] mt-[10px] border-[#1C1C1E] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                 align="start"
             >
                 {routerModels.map((item, index) => (

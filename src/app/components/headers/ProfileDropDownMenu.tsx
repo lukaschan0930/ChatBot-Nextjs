@@ -75,11 +75,11 @@ const ProfileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
           <FiCreditCard className="!w-5 !h-5" />
           Subscription
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={() => router.push("/changeLog")}>
           <ChangeLog />
           Change Log
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={handleSubscription}>
+        <DropdownMenuItem className="text-base hover:bg-[#ffffff80] focus:bg-[#ffffff80]" onClick={() => window.open("https://docs.edithx.ai", "_blank")}>
           <DocsIcon />
           Docs
         </DropdownMenuItem>

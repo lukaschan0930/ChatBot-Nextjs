@@ -29,6 +29,7 @@ import { IFileWithUrl } from "@/app/lib/interface";
 import { generateSessionId } from "@/app/lib/utils";
 import { useSession } from "next-auth/react";
 import { useAuth } from "@/app/context/AuthContext";
+import DialogModelMenu from "../Chat/DialogModelMenu";
 
 const Header = () => {
   const router = useRouter();
@@ -145,7 +146,7 @@ const Header = () => {
                   </>
                 } */}
                 <div className="ml-3">
-                  <DropDownModelMenu />
+                  <DialogModelMenu />
                 </div>
                 {
                   endPoint[1] === "workers" && endPoint[2] == "marketing" && endPoint[3] === "twitter" &&
