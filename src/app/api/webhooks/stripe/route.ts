@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
                 console.log(userId, planId);
-                const plan = await PlanRepo.findById(planId);
+                const priceId = subscription.items.data[0].price.id;
+                const plan = await PlanRepo.findByPriceId(priceId);
+
                 if (!plan) {
                     console.error("Plan not found for price ID:", subscription.items.data[0].price.id);
                     return NextResponse.json(
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 if (subscription.status === "active") {
-                    const plan = await PlanRepo.findById(subscription.items.data[0].price.id);
+                    const plan = await PlanRepo.findByPriceId(subscription.items.data[0].price.id);
                     if (plan) {
                         const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id);
                         await UserRepo.updateUserSubscription(
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest) {
                 const priceId = subscription.items.data[0].price.id;
 
                 // Get plan from price ID
-                const planId = await PlanRepo.findById(priceId);
+                const planId = await PlanRepo.findByPriceId(priceId);
 
                 if (!planId) {
                     console.error(`No plan found for price ID: ${priceId}`);
@@ -156,7 +158,7 @@ export async function POST(request: NextRequest) {
                     user._id, 
                     subscriptionId, 
                     subscription.status, 
-                    planId._id, 
+                    planId._id,
                     new Date(subscription.current_period_start * 1000), 
                     new Date(subscription.current_period_end * 1000), 
                     0, 

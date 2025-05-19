@@ -6,7 +6,8 @@ export const PlanRepo = {
     create,
     update,
     deletePlan,
-    createPlanHistory
+    createPlanHistory,
+    findByPriceId
 }
 
 async function findAll() {
@@ -60,6 +61,10 @@ async function update(id: string, plan: {
 
 async function deletePlan(id: string) {
     return await db.Plan.findByIdAndDelete(id);
+}
+
+async function findByPriceId(priceId: string) {
+    return await db.Plan.findOne({ priceId });
 }
 
 async function createPlanHistory(userId: string, planId: string, price: number) {
