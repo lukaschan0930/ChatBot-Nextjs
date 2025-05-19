@@ -242,7 +242,7 @@ const PlanCard = ({
                 <div className="flex items-baseline gap-1 mt-3 sm:mt-8">
                     <span className="text-[36px] sm:text-[48px] font-semibold text-[#AEB0B9]">
                         <span className='text-[#FFFFFF]'>$</span>
-                        {plan.isYearlyPlan ? (plan.price / 12).toFixed(0) : plan.price}
+                        {plan.isYearlyPlan ? (plan.price / 12).toFixed(2) : plan.price}
                     </span>
                     <span className="text-[14px] sm:text-[16px] text-[#AEB0B9]">/ month</span>
                 </div>
