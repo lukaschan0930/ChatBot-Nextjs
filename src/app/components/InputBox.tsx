@@ -391,7 +391,7 @@ const InputBox = () => {
           body: formData,
         });
         if (res.status == 429) {
-          throw new Error('Rate limit exceeded');
+          throw new Error('Insufficient Points');
         }
         if (res.status == 500) {
           throw new Error('Error generating text');
@@ -425,7 +425,7 @@ const InputBox = () => {
         setProgress(100);
 
         if (res.status == 429) {
-          throw new Error('Rate limit exceeded');
+          throw new Error('Insufficient Points');
         }
 
         if (!res.body) {
@@ -552,7 +552,7 @@ const InputBox = () => {
         if (newLog.length > 0) {
           newLog[newLog.length - 1] = {
             prompt,
-            response: "Failed to get response from server.",
+            response: error instanceof Error ? error.message : 'Failed to get response from server.',
             timestamp: newLog[newLog.length - 1].timestamp,
             inputToken: 0,
             outputToken: 0,
