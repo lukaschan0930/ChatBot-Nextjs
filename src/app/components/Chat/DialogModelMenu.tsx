@@ -145,7 +145,7 @@ const DialogModelMenu = () => {
 
 const ModelItem = (
     { item, handleItemClick, isActive }:
-    { item: IAI, handleItemClick: (itemId: string) => void, isActive: boolean }
+        { item: IAI, handleItemClick: (itemId: string) => void, isActive: boolean }
 ) => {
     return (
         <div
@@ -158,10 +158,19 @@ const ModelItem = (
             {
                 getModelIcon(item.provider)
             }
-            <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{item.name}</span>
+            <span className="text-[12px] sm:text-[16px] text-nowrap text-white flex flex-col">
+                {item.name}
+                {
+                    !isActive && (
+                        <div className="sm:hidden bg-[#FFFFFF0D] text-white text-xs p-[1px] rounded-md -mt-1">
+                            Not available on the free plan.
+                        </div>
+                    )
+                }
+            </span>
             {
                 !isActive && (
-                    <div className="absolute top-1/2 right-[18px] transform -translate-y-1/2 bg-[#FFFFFF0D] text-white text-xs px-3 py-1 rounded-md">
+                    <div className="max-sm:hidden absolute top-1/2 right-[18px] transform -translate-y-1/2 bg-[#FFFFFF0D] text-white text-xs px-3 py-1 rounded-md">
                         Not available on the free plan.
                     </div>
                 )
