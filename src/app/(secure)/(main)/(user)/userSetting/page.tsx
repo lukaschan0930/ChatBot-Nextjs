@@ -329,7 +329,7 @@ const UserSetting = () => {
                                 </div>
                                 <button
                                     onClick={() => router.push('/subscription')}
-                                    className="mt-4 w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
+                                    className="mt-4 w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:border-transparent transition-transform duration-300 ease-linear"
                                 >
                                     Increase Limited Points
                                 </button>
@@ -340,13 +340,13 @@ const UserSetting = () => {
                 <div className="flex justify-end gap-3 border-t border-[#25252799] p-3 w-full max-sm:justify-between">
                     <button
                         onClick={handleClickCancel}
-                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-transparent border border-[#FAFAFA]/80 focus:outline-none text-[14px] text-[#FAFAFA]/80 hover:scale-105 hover:border-[#FAFAFA]/80 transition-transform duration-300 ease-linear"
+                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-transparent border border-[#FAFAFA]/80 focus:outline-none text-[14px] text-[#FAFAFA]/80 hover:border-[#FAFAFA]/80 transition-transform duration-300 ease-linear"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleClickUpdate}
-                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:scale-105 hover:border-transparent transition-transform duration-300 ease-linear"
+                        className="sm:w-[78px] w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:border-transparent transition-transform duration-300 ease-linear"
                     >
                         {isLoading ? <Loading /> : "Update"}
                     </button>

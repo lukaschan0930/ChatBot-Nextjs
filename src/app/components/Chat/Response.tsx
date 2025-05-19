@@ -1,5 +1,5 @@
-import { FiCopy, FiRefreshCw } from "react-icons/fi";
-import React, { useRef } from "react";
+import { FiChevronDown, FiChevronUp, FiCopy, FiRefreshCw } from "react-icons/fi";
+import React, { useRef, useState } from "react";
 import { CodeBlock } from "react-code-block";
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
@@ -629,26 +629,7 @@ const Response = (
                   {part.type === "text" && (
                     <div className="break-words answer-markdown" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
                   )}
-                  {part.type === "code" && (
-                    <div className="relative">
-                      <button
-                        onClick={() => navigator.clipboard.writeText(part.content)}
-                        className="absolute p-2 transition-transform duration-200 bg-transparent border-none rounded-lg top-4 right-4 hover:text-white hover:outline-none hover:border-none hover:scale-125 focus:outline-none hover:bg-gray-900"
-                      >
-                        <FiCopy size={20} />
-                      </button>
-                      <CodeBlock
-                        code={part.content}
-                        language={part.language || "Text"}
-                      >
-                        <CodeBlock.Code className="flex flex-col lg:p-10 p-6 my-6 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap break-all">
-                          <CodeBlock.LineContent>
-                            <CodeBlock.Token />
-                          </CodeBlock.LineContent>
-                        </CodeBlock.Code>
-                      </CodeBlock>
-                    </div>
-                  )}
+                  {part.type === "code" && <CodeMessagePart part={part} />}
                 </React.Fragment>
               ))
         }
@@ -688,5 +669,47 @@ const Response = (
     </div>
   );
 };
+
+const CodeMessagePart = ({ part }: { part: MessagePart }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  return (
+    <div className="border-2 border-gray-900/70 rounded-md my-2 overflow-x-auto">
+      <div className="w-full flex justify-between items-center px-4 bg-gray-900/70">
+        <div className="text-sm text-subFont">{part.language}</div>
+        <div className="flex items-center gap-2">
+          <button
+            className="p-2 transition-transform duration-200 bg-transparent border-none rounded-lg top-4 right-4 hover:text-white hover:outline-none hover:border-none focus:outline-none hover:bg-gray-900"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            <FiChevronDown size={20} className={`duration-200 ${isCollapsed ? "rotate-180" : ""}`} />
+          </button>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(part.content);
+              toast({
+                title: "Copied to clipboard",
+                description: "You can now paste it into your favorite text editor",
+              });
+            }}
+            className="p-2 transition-transform duration-200 bg-transparent border-none rounded-lg top-4 right-4 hover:text-white hover:outline-none hover:border-none focus:outline-none hover:bg-gray-900"
+          >
+            <FiCopy size={20} />
+          </button>
+        </div>
+      </div>
+      <CodeBlock
+        code={isCollapsed ? part.content.split("\n").length - 1 + " lines..." : part.content}
+        language={part.language || "Text"}
+      >
+        <CodeBlock.Code className="flex flex-col lg:p-6 p-2 overflow-x-hidden transition-all duration-200 ease-in bg-gray-900/70 shadow-lg hover:overflow-x-auto scroll-smooth rounded-xl whitespace-pre-wrap break-all">
+          <CodeBlock.LineContent>
+            <CodeBlock.Token />
+          </CodeBlock.LineContent>
+        </CodeBlock.Code>
+      </CodeBlock>
+    </div>
+  )
+}
 
 export default Response;
