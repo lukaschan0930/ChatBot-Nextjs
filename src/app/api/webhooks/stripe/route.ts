@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
         switch (event.type) {
             case "checkout.session.completed": {
                 const session = event.data.object as Stripe.Checkout.Session;
-                const customerId = session.customer as string;
                 const userId = session.metadata?.userId as string;
                 const planId = session.metadata?.planId as string;
+                const customerId = session.customer as string;
 
                 if (!customerId || !userId || !planId) {
                     console.error("Missing required metadata in checkout session:", session);
@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
                 }
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                const customerId = session.customer as string;
                 console.log("checkout webhook metadata", userId, planId);
                 const priceId = subscription.items.data[0].price.id;
                 const plan = await PlanRepo.findByPriceId(priceId);
