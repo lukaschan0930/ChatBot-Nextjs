@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
                 }
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                console.log(userId, planId);
                 const plan = await PlanRepo.findById(planId);
                 if (!plan) {
                     console.error("Plan not found for price ID:", subscription.items.data[0].price.id);
