@@ -152,7 +152,7 @@ const SubscriptionPage = () => {
             <div
                 className={`fixed inset-0 bg-black backdrop-blur-sm transition-opacity duration-500 opacity-100 pointer-events-auto z-20`}
             />
-            <div className='fixed w-screen h-screen z-20 top-0 left-0 flex flex-col items-center'>
+            <div className='fixed w-screen h-screen overflow-auto z-20 top-0 left-0 flex flex-col items-center pb-4'>
                 <div className='absolute sm:top-[30px] sm:right-[30px] top-[10px] right-[10px] cursor-pointer' onClick={() => router.push('/chatText')}>
                     <X width={28} height={28} className='text-white' />
                 </div>
@@ -290,7 +290,7 @@ const PlanCard = ({
                     <div className='flex flex-col gap-2'>
                         {plan.features.map((feature) => (
                             <div className='flex items-start gap-2'>
-                                <div className='!w-[14px] !h-[15px]'>
+                                <div className='!w-[14px] !h-[15px] mt-1'>
                                     <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <rect x="0.75" y="1.25" width="12.5" height="12.5" rx="6.25" stroke="white" strokeWidth="1.5" />
                                         <path d="M4 7L4.98223 8.51112C5.31881 9.02894 6.03965 9.12089 6.49544 8.70417L10 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
