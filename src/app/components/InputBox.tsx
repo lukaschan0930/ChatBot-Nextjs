@@ -27,11 +27,12 @@ import Switch from '@mui/material/Switch';
 import PlusIcon from "../assets/plus";
 import ShadowBtn from "./ShadowBtn";
 import ChatFileMenu from "./Chat/ChatFileMenu";
-import ChatSpeedMenu from "./Chat/ChatSpeedMenu";
-import ChatProMenu from "./Chat/ChatProMenu";
+// import ChatSpeedMenu from "./Chat/ChatSpeedMenu";
+// import ChatProMenu from "./Chat/ChatProMenu";
 // import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
 import DropDownModelMenu from "./headers/DropDownModelMenu";
+import DialogModelMenu from "./Chat/DialogModelMenu";
 import ChatSettingMenu from "./Chat/ChatSettingMenu";
 import { Divider } from "@mui/material";
 import { Cross, CrossIcon, X } from "lucide-react";
@@ -990,7 +991,7 @@ const InputBox = () => {
           }
         </div>
         <div className="sm:hidden">
-          <DropDownModelMenu />
+          <DialogModelMenu />
         </div>
         <button
           className={`${isStreaming || isFileUploading ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center p-2 rounded-full border-secondaryBorder bg-input-box hover:border-tertiaryBorder focus:outline-none w-9 h-9 text-mainFont max-sm:hidden`}
