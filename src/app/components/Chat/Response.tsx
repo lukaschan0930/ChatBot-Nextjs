@@ -110,6 +110,15 @@ const Response = (
             startIndex: lineNumber + 1,
           };
         }
+      } else if (line.trim().startsWith("--------------------------------------------------")) {
+        // Treat this as a text block separator
+        parts.push(currentPart);
+        currentPart = {
+          type: "code",
+          content: "",
+          language: "Text",
+          startIndex: lineNumber + 1,
+        };
       } else {
         currentPart.content += line + "\n";
       }
