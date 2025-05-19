@@ -157,7 +157,7 @@ async function updateUserStripeInfo(email: string, stripeCustomerId: string) {
 }
 
 async function updateUserSubscription(
-    id: string, 
+    email: string,
     subscriptionId: string | null, 
     subscriptionStatus: string | null, 
     planId: string | null,
@@ -167,8 +167,7 @@ async function updateUserSubscription(
     pointsResetDate: Date | null,
     requestPlanId: string | null
 ) {
-    console.log("updateUserSubscription", id, subscriptionId, subscriptionStatus, planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId);
-    return db.User.findByIdAndUpdate(id, { subscriptionId, subscriptionStatus, currentplan: planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId }, { upsert: true });
+    return db.User.findOneAndUpdate({ email }, { subscriptionId, subscriptionStatus, currentplan: planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId }, { upsert: true });
 }
 
 async function getUserByStripeCustomerId(stripeCustomerId: string) {

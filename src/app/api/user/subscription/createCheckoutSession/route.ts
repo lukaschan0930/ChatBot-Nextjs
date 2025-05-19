@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
     
     await db.User.updateOne(
-        { _id: user._id },
+        { email: user.email },
         { $set: { requestPlanId: planId } }
     );
 

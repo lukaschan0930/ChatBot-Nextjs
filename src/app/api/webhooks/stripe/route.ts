@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
                 }
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const customerId = session.customer as string;
                 console.log("checkout webhook metadata", userId, planId);
                 const priceId = subscription.items.data[0].price.id;
                 const plan = await PlanRepo.findByPriceId(priceId);
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                const user = await UserRepo.findById(userId);
+                const user = await UserRepo.getUserByStripeCustomerId(customerId);
                 if (!user) {
                     console.error("User not found for ID:", userId);
                     return NextResponse.json(
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 const userSubscription = await UserRepo.updateUserSubscription(
-                    user._id,
+                    user.email,
                     subscriptionId,
                     subscription.status,
                     plan._id,
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
                     if (plan) {
                         const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id);
                         await UserRepo.updateUserSubscription(
-                            user._id,
+                            user.email,
                             subscription.id,
                             subscription.status,
                             plan._id,
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                await UserRepo.updateUserSubscription(user._id, null, null, null, null, null, 0, new Date(new Date().setMonth(new Date().getMonth() + 1)), null);
+                await UserRepo.updateUserSubscription(user.email, null, null, null, null, null, 0, new Date(new Date().setMonth(new Date().getMonth() + 1)), null);
                 break;
             }
 
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
                 }
 
                 await UserRepo.updateUserSubscription(
-                    user._id, 
+                    user.email, 
                     subscriptionId, 
                     subscription.status, 
                     planId._id,

@@ -226,7 +226,7 @@ const PlanCard = ({
     isLoading: boolean,
     requestPlanId: string | null
 }) => {
-    const isCurrentPlan = (currentplan?._id === plan._id && planEndDate && (plan.type == 'free' || new Date(planEndDate).getTime() >= new Date().getTime())) || (!currentplan && plan.price === 0);
+    const isCurrentPlan = (currentplan?._id === plan._id && (plan.type == 'free' || (planEndDate && new Date(planEndDate).getTime() >= new Date().getTime()))) || (!currentplan && plan.price === 0);
     const canUpgrade = currentplan && plan.price > currentplan.price || (!currentplan && plan.price > 0);
     const canDowngrade = currentplan && plan.price < currentplan.price && planEndDate && new Date(planEndDate).getTime() < new Date().getTime();
     const isRequestPlan = requestPlanId === plan._id;
