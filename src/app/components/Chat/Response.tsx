@@ -555,7 +555,7 @@ const Response = (
         const newLog = [...prevChatLog];
         newLog[newLog.length - 1] = {
           prompt: chatLog[chatLog.length - 1].prompt,
-          response: "Failed to get response from server.",
+          response: error instanceof Error ? error.message : 'Failed to get response from server.',
           timestamp: newLog[newLog.length - 1].timestamp,
           inputToken: 0,
           outputToken: 0,
