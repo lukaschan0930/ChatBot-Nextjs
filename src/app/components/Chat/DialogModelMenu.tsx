@@ -122,26 +122,28 @@ const DialogModelMenu = () => {
                     width: "100%",
                     margin: "16px 0"
                 }} />
-                {
-                    routerModels && routerModels.length > 0 && routerModels.filter((item) => item.type === menuId && item.name.toLowerCase().includes(search.toLowerCase())).map((subItem: IAI) => (
-                        // <ShadowBtn
-                        //   key={subItem._id}
-                        //   className={`w-full rounded-md`}
-                        //   mainClassName={`text-white flex flex-col py-3 relative`}
-                        //   onClick={() => handleItemClick(subItem._id)}
-                        // >
-                        <div className="flex gap-2 items-center cursor-pointer hover:bg-[#ffffff80] focus:bg-[#ffffff80] px-3 py-2 rounded-md" onClick={() => handleItemClick(subItem._id)}>
-                            {
-                                getModelIcon(subItem.provider)
-                            }
-                            <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{subItem.name}</span>
-                        </div>
-                        // </ShadowBtn>
-                    ))
-                }
+                <div className="w-full flex-auto overflow-y-auto">
+                    {
+                        routerModels && routerModels.length > 0 && routerModels.filter((item) => item.type === menuId && item.name.toLowerCase().includes(search.toLowerCase())).map((subItem: IAI) => (
+                            // <ShadowBtn
+                            //   key={subItem._id}
+                            //   className={`w-full rounded-md`}
+                            //   mainClassName={`text-white flex flex-col py-3 relative`}
+                            //   onClick={() => handleItemClick(subItem._id)}
+                            // >
+                            <div className="flex gap-2 items-center cursor-pointer hover:bg-[#ffffff80] focus:bg-[#ffffff80] px-3 py-2 rounded-md" onClick={() => handleItemClick(subItem._id)}>
+                                {
+                                    getModelIcon(subItem.provider)
+                                }
+                                <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{subItem.name}</span>
+                            </div>
+                            // </ShadowBtn>
+                        ))
+                    }
+                </div>
             </div>
         </div>
     );
-    };
+};
 
 export default DialogModelMenu;
