@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import db from "@/app/lib/database/db";
+import { PlanRepo } from "@/app/lib/database/planRepo";
+import { UserRepo } from "@/app/lib/database/userrepo";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2025-02-24.acacia",
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
                 }
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                const plan = await db.Plan.findOne({ priceId: subscription.items.data[0].price.id });
+                const plan = await PlanRepo.findById(planId);
                 if (!plan) {
                     console.error("Plan not found for price ID:", subscription.items.data[0].price.id);
                     return NextResponse.json(
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                const user = await db.User.findById(userId);
+                const user = await UserRepo.findById(userId);
                 if (!user) {
                     console.error("User not found for ID:", userId);
                     return NextResponse.json(
@@ -65,15 +66,7 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                user.subscriptionId = subscriptionId;
-                user.subscriptionStatus = subscription.status;
-                user.currentplan = plan._id;
-                user.planStartDate = new Date(subscription.current_period_start * 1000);
-                user.planEndDate = new Date(subscription.current_period_end * 1000);
-                user.pointsUsed = 0;
-                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-                user.requestPlanId = null;
-                await user.save();
+                await UserRepo.updateUserSubscription(user._id, subscriptionId, subscription.status, plan._id, user.planStartDate, user.planEndDate, user.pointsUsed, user.pointsResetDate, user.requestPlanId);
                 break;
             }
 
@@ -82,7 +75,7 @@ export async function POST(request: NextRequest) {
                 const customerId = subscription.customer as string;
 
                 // Find user by Stripe customer ID
-                const user = await db.User.findOne({ stripeCustomerId: customerId });
+                const user = await UserRepo.getUserByStripeCustomerId(customerId);
                 if (!user) {
                     console.error("User not found for customer:", customerId);
                     return NextResponse.json(
@@ -92,20 +85,23 @@ export async function POST(request: NextRequest) {
                 }
 
                 if (subscription.status === "active") {
-                    const plan = await db.Plan.findOne({ priceId: subscription.items.data[0].price.id });
+                    const plan = await PlanRepo.findById(subscription.items.data[0].price.id);
                     if (plan) {
-                        user.currentplan = plan._id;
                         const expandedSubscription = await stripe.subscriptions.retrieve(subscription.id);
-                        user.planStartDate = new Date(expandedSubscription.current_period_start * 1000);
-                        user.planEndDate = new Date(expandedSubscription.current_period_end * 1000);
-                        user.pointsUsed = 0;
-                        user.subscriptionId = subscription.id;
-                        user.requestPlanId = null;
-                        user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+                        await UserRepo.updateUserSubscription(
+                            user._id,
+                            subscription.id,
+                            subscription.status,
+                            plan._id,
+                            new Date(expandedSubscription.current_period_start * 1000),
+                            new Date(expandedSubscription.current_period_end * 1000),
+                            0,
+                            new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                            null
+                        )
                     }
                 }
 
-                await user.save();
                 break;
             }
 
@@ -114,7 +110,7 @@ export async function POST(request: NextRequest) {
                 const customerId = subscription.customer as string;
 
                 // Find user by Stripe customer ID
-                const user = await db.User.findOne({ stripeCustomerId: customerId });
+                const user = await UserRepo.getUserByStripeCustomerId(customerId);
                 if (!user) {
                     console.error("User not found for customer:", customerId);
                     return NextResponse.json(
@@ -123,15 +119,7 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                user.subscriptionId = null;
-                user.currentplan = null;
-                user.planStartDate = null;
-                user.planEndDate = null;
-                user.monthlyPoints = 0;
-                user.pointsUsed = 0;
-                user.requestPlanId = null;
-                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-                await user.save();
+                await UserRepo.updateUserSubscription(user._id, null, null, null, null, null, 0, new Date(new Date().setMonth(new Date().getMonth() + 1)), null);
                 break;
             }
 
@@ -144,7 +132,7 @@ export async function POST(request: NextRequest) {
                 if (!subscriptionId) break;
 
                 // Find user by Stripe customer ID
-                const user = await db.User.findOne({ stripeCustomerId: customerId });
+                const user = await UserRepo.getUserByStripeCustomerId(customerId);
 
                 if (!user) {
                     console.error(`No user found with Stripe customer ID: ${customerId}`);
@@ -156,29 +144,28 @@ export async function POST(request: NextRequest) {
                 const priceId = subscription.items.data[0].price.id;
 
                 // Get plan from price ID
-                const planId = await db.Plan.findOne({ priceId: priceId });
+                const planId = await PlanRepo.findById(priceId);
 
                 if (!planId) {
                     console.error(`No plan found for price ID: ${priceId}`);
                     break;
                 }
 
-                user.planStartDate = new Date(subscription.current_period_start * 1000);
-                user.planEndDate = new Date(subscription.current_period_end * 1000);
-                user.currentplan = planId;
-                user.subscriptionId = subscriptionId;
-                user.pointsUsed = 0;
-                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-                user.requestPlanId = null;
-                await user.save();
+                await UserRepo.updateUserSubscription(
+                    user._id, 
+                    subscriptionId, 
+                    subscription.status, 
+                    planId._id, 
+                    new Date(subscription.current_period_start * 1000), 
+                    new Date(subscription.current_period_end * 1000), 
+                    0, 
+                    new Date(new Date().setMonth(new Date().getMonth() + 1)), 
+                    null
+                );
 
-                await db.PlanHistory.create({
-                    userId: user._id,
-                    planId: planId._id,
-                    price: planId.price,
-                });
+                await PlanRepo.createPlanHistory(user._id, planId._id, planId.price);
 
-                console.log(`Subscription renewed for user: ${user.id}`);
+                console.log(`Subscription renewed for user: ${user._id}`);
                 break;
             }
         }

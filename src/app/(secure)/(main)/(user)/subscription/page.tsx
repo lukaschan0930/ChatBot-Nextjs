@@ -226,7 +226,7 @@ const PlanCard = ({
     isLoading: boolean,
     requestPlanId: string | null
 }) => {
-    const isCurrentPlan = (currentplan?._id === plan._id && planEndDate && new Date(planEndDate).getTime() >= new Date().getTime()) || (!currentplan && plan.price === 0);
+    const isCurrentPlan = (currentplan?._id === plan._id && planEndDate && (plan.type == 'free' || new Date(planEndDate).getTime() >= new Date().getTime())) || (!currentplan && plan.price === 0);
     const canUpgrade = currentplan && plan.price > currentplan.price || (!currentplan && plan.price > 0);
     const canDowngrade = currentplan && plan.price < currentplan.price && planEndDate && new Date(planEndDate).getTime() < new Date().getTime();
     const isRequestPlan = requestPlanId === plan._id;
@@ -249,7 +249,7 @@ const PlanCard = ({
 
                 <Divider className='mt-3' sx={{ borderColor: '#FFFFFF33', borderWidth: '1px', borderStyle: 'dashed' }} />
                 <div className='my-2 text-[14px] sm:text-[16px] text-[#AEB0B9]'>
-                    Totalling to ${plan.isYearlyPlan ? plan.price : (plan.price * 12).toFixed(0)} yearly
+                    Totalling to ${plan.isYearlyPlan ? plan.price : (plan.price * 12).toFixed(2)} yearly
                 </div>
                 <Divider sx={{ borderColor: '#FFFFFF33', borderWidth: '1px', borderStyle: 'dashed' }} />
 
