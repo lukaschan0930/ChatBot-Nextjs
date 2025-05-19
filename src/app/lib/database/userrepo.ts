@@ -23,7 +23,9 @@ export const UserRepo = {
     getFullUser,
     getFullUserWithChatPoints,
     updateWorkerPoints,
-    updateUserStripeInfo
+    updateUserStripeInfo,
+    updateUserSubscription,
+    getUserByStripeCustomerId
 }
 
 async function findByWalletWithoutUser(wallet: string, email: string) {
@@ -152,4 +154,22 @@ async function updateWorkerPoints(email: string, workerPoints: number, nodeRewar
 
 async function updateUserStripeInfo(email: string, stripeCustomerId: string) {
     return db.User.findOneAndUpdate({ email }, { stripeCustomerId }, { upsert: true });
+}
+
+async function updateUserSubscription(
+    id: string, 
+    subscriptionId: string | null, 
+    subscriptionStatus: string | null, 
+    planId: string | null,
+    planStartDate: Date | null,
+    planEndDate: Date | null,
+    pointsUsed: number,
+    pointsResetDate: Date | null,
+    requestPlanId: string | null
+) {
+    return db.User.findByIdAndUpdate(id, { subscriptionId, subscriptionStatus, currentplan: planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId }, { upsert: true });
+}
+
+async function getUserByStripeCustomerId(stripeCustomerId: string) {
+    return db.User.findOne({ stripeCustomerId });
 }
