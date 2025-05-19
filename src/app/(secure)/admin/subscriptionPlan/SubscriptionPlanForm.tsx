@@ -190,11 +190,12 @@ const SubscriptionPlanForm = ({ id }: SubscriptionPlanFormProps) => {
 
                             <div className="flex flex-col gap-5 w-full">
                                 <div className="text-mainFont text-[18px]">Price</div>
-                                <Input
+                                <input
                                     type="number"
+                                    step="any"
                                     {...register('price', { valueAsNumber: true })}
                                     placeholder="Enter price"
-                                    className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont"
+                                    className="px-4 py-3 border border-secondaryBorder rounded-[8px] focus:outline-none !text-mainFont w-full"
                                 />
                                 {errors.price && (
                                     <p className="text-sm text-red-500">{errors.price.message}</p>
