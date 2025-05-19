@@ -111,14 +111,27 @@ const Response = (
           };
         }
       } else if (line.trim().startsWith("--------------------------------------------------")) {
-        // Treat this as a text block separator
-        parts.push(currentPart);
-        currentPart = {
-          type: "code",
-          content: "",
-          language: "Text",
-          startIndex: lineNumber + 1,
-        };
+        // If the line starts with dashes, then it's a code block
+        if (!isInCodeBlock) {
+          // Beginning of a code block
+          isInCodeBlock = true;
+          parts.push(currentPart);
+          currentPart = {
+            type: "code",
+            content: "",
+            language: "Text",
+            startIndex: lineNumber,
+          };
+        } else {
+          // End of a code block
+          isInCodeBlock = false;
+          parts.push(currentPart);
+          currentPart = {
+            type: "text",
+            content: "",
+            startIndex: lineNumber + 1,
+          };
+        }
       } else {
         currentPart.content += line + "\n";
       }
