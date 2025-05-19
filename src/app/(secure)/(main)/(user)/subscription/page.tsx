@@ -289,7 +289,7 @@ const PlanCard = ({
                     <div className="text-[14px] text-[#7A7A82] mb-3">{plan.name} Plan includes:</div>
                     <div className='flex flex-col gap-2'>
                         {plan.features.map((feature) => (
-                            <div className='flex items-center gap-2'>
+                            <div className='flex items-start gap-2'>
                                 <div className='!w-[14px] !h-[15px]'>
                                     <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <rect x="0.75" y="1.25" width="12.5" height="12.5" rx="6.25" stroke="white" strokeWidth="1.5" />
