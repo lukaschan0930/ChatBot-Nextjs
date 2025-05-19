@@ -16,7 +16,7 @@ export async function GET() {
         return NextResponse.json({ status: false, message: "Unauthorized" });
     }
 
-    const plan = await PlanRepo.findById(user.currentplan);
+    const plan = await PlanRepo.findById(user.currentplan._id);
     if (!plan) {
         return NextResponse.json({ status: false, message: "Unauthorized" });
     }
