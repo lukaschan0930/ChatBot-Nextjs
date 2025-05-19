@@ -16,7 +16,6 @@ const nextConfig = {
         ];
     },
     images: {
-        domains: ['edith.nyc3.cdn.digitaloceanspaces.com'],
         remotePatterns: [
             { hostname: "pbs.twimg.com" },
             { 

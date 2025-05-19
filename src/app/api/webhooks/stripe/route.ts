@@ -69,7 +69,17 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                await UserRepo.updateUserSubscription(user._id, subscriptionId, subscription.status, plan._id, user.planStartDate, user.planEndDate, user.pointsUsed, user.pointsResetDate, user.requestPlanId);
+                await UserRepo.updateUserSubscription(
+                    user._id, 
+                    subscriptionId, 
+                    subscription.status, 
+                    plan._id, 
+                    new Date(subscription.current_period_start * 1000), 
+                    new Date(subscription.current_period_end * 1000), 
+                    0, 
+                    new Date(new Date().setMonth(new Date().getMonth() + 1)), 
+                    null
+                );
                 break;
             }
 
