@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
                 }
                 const subscriptionId = session.subscription as string;
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                console.log(userId, planId);
+                console.log("checkout webhook metadata", userId, planId);
                 const priceId = subscription.items.data[0].price.id;
                 const plan = await PlanRepo.findByPriceId(priceId);
 
@@ -69,17 +69,18 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                await UserRepo.updateUserSubscription(
-                    user._id, 
-                    subscriptionId, 
-                    subscription.status, 
-                    plan._id, 
-                    new Date(subscription.current_period_start * 1000), 
-                    new Date(subscription.current_period_end * 1000), 
-                    0, 
-                    new Date(new Date().setMonth(new Date().getMonth() + 1)), 
+                const userSubscription = await UserRepo.updateUserSubscription(
+                    user._id,
+                    subscriptionId,
+                    subscription.status,
+                    plan._id,
+                    new Date(subscription.current_period_start * 1000),
+                    new Date(subscription.current_period_end * 1000),
+                    0,
+                    new Date(new Date().setMonth(new Date().getMonth() + 1)),
                     null
                 );
+                console.log("userSubscription", userSubscription);
                 break;
             }
 

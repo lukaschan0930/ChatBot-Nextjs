@@ -167,6 +167,7 @@ async function updateUserSubscription(
     pointsResetDate: Date | null,
     requestPlanId: string | null
 ) {
+    console.log("updateUserSubscription", id, subscriptionId, subscriptionStatus, planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId);
     return db.User.findByIdAndUpdate(id, { subscriptionId, subscriptionStatus, currentplan: planId, planStartDate, planEndDate, pointsUsed, pointsResetDate, requestPlanId }, { upsert: true });
 }
 
