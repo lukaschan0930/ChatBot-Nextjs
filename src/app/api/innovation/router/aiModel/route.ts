@@ -3,7 +3,6 @@ import { AiRepo } from "@/app/lib/database/aiRepo";
 import { getServerSession, NextAuthOptions } from "next-auth";
 import { authOptions } from "@/app/lib/api/helper";
 import { UserRepo } from "@/app/lib/database/userrepo";
-import { PlanRepo } from "@/app/lib/database/planRepo";
 
 export async function GET() {
     const session = await getServerSession(authOptions as NextAuthOptions);
@@ -16,15 +15,9 @@ export async function GET() {
         return NextResponse.json({ status: false, message: "Unauthorized" });
     }
 
-    const plan = await PlanRepo.findById(user.currentplan._id);
-    if (!plan) {
-        return NextResponse.json({ status: false, message: "Unauthorized" });
-    }
-
     try {
         const aiModel = await AiRepo.findModelNameAll();
-        const availableModels = aiModel.filter((model) => plan.activeModels.includes(model._id));
-        return NextResponse.json({ status: true, data: availableModels });
+        return NextResponse.json({ status: true, data: aiModel });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ status: false, message: "Failed to fetch AI models" });

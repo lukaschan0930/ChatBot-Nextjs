@@ -13,6 +13,7 @@ import { FiSearch } from "react-icons/fi";
 import ClaudeModelIcon from "@/app/assets/models/ClaudeModelIcon";
 import OpenaiModelIcon from "@/app/assets/models/OpenaiModelIcon";
 import AtlasModelIcon from "@/app/assets/models/AtlasModelIcon";
+import { useAuth } from "@/app/context/AuthContext";
 import React from "react";
 
 const getModelIcon = (type: string) => {
@@ -38,6 +39,7 @@ const DialogModelMenu = () => {
     const [search, setSearch] = useState<string>("");
     const [, setModelType] = useAtom(modelTypeAtom);
     const { toast } = useToast();
+    const { user } = useAuth();
 
     const handleItemClick = (itemId: string) => {
         const item = routerModels.find((item) => item._id === itemId);
@@ -131,17 +133,39 @@ const DialogModelMenu = () => {
                             //   mainClassName={`text-white flex flex-col py-3 relative`}
                             //   onClick={() => handleItemClick(subItem._id)}
                             // >
-                            <div className="flex gap-2 items-center cursor-pointer hover:bg-[#ffffff80] focus:bg-[#ffffff80] px-3 py-2 rounded-md" onClick={() => handleItemClick(subItem._id)}>
-                                {
-                                    getModelIcon(subItem.provider)
-                                }
-                                <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{subItem.name}</span>
-                            </div>
+                            <ModelItem item={subItem} handleItemClick={handleItemClick} isActive={user?.currentplan?.activeModels?.includes(subItem._id) || false} />
                             // </ShadowBtn>
                         ))
                     }
                 </div>
             </div>
+        </div>
+    );
+};
+
+const ModelItem = (
+    { item, handleItemClick, isActive }:
+    { item: IAI, handleItemClick: (itemId: string) => void, isActive: boolean }
+) => {
+    return (
+        <div
+            className={
+                `border border-transparent flex gap-2 items-center cursor-pointer hover:border-[#2C2B3080] hover:bg-[#FFFFFF05] focus:border-[#2C2B3080] focus:bg-[#FFFFFF05] px-3 py-2 rounded-md relative
+                ${!isActive && "opacity-50"}`
+            }
+            onClick={() => isActive && handleItemClick(item._id)}
+        >
+            {
+                getModelIcon(item.provider)
+            }
+            <span className="text-[12px] sm:text-[16px] text-nowrap text-white">{item.name}</span>
+            {
+                !isActive && (
+                    <div className="absolute top-1/2 right-[18px] transform -translate-y-1/2 bg-[#FFFFFF0D] text-white text-xs px-3 py-1 rounded-md">
+                        Not available on the free plan.
+                    </div>
+                )
+            }
         </div>
     );
 };

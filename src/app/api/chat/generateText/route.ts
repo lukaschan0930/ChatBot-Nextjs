@@ -36,6 +36,11 @@ export async function POST(request: NextRequest) {
             return new NextResponse("Your exceed your current token", { status: 429 });
         }
 
+        const availableModels = user.currentplan.activeModels;
+        if (!availableModels.includes(model)) {
+            return new NextResponse("You don't have access to this model", { status: 429 });
+        }
+
         const chatType = modelType == "image" ? 3 : modelType == "audio" ? 4 : chatMode == 1 ? 2 : learnings.length > 0 ? 1 : 0; // Determine chatType based on learnings length
         const chatHistory = chatLog.map((item: ChatLog) => ({
             prompt: item.prompt,
