@@ -38,6 +38,7 @@ import { Divider } from "@mui/material";
 import { Cross, CrossIcon, X } from "lucide-react";
 import { ProDisableIcon } from "../assets/pro";
 import Lightning from "../assets/lightning";
+import { Credits } from "@/app/lib/stack";
 const TEXTAREA_MIN_HEIGHT = "36px";
 const TEXTAREA_MAX_HEIGHT = "100px";
 
@@ -110,7 +111,7 @@ const InputBox = () => {
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
   const { data: session } = useSession();
   const [, setChatHistory] = useAtom(chatHistoryAtom);
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -650,7 +651,7 @@ const InputBox = () => {
         });
         toast({
           variant: "destructive",
-          title: `You've already used your 5 free credits per month. Please try again after ${msg.availableInDays} days.`
+          title: `You've already used your ${user?.currentplan.price == 0 ? Credits.free : Credits.pro} credits per month. Please try again after ${msg.availableInDays} days.`
         });
         return;
       }

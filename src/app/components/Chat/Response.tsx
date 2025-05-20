@@ -21,6 +21,7 @@ import { IResearchLog } from "@/app/lib/interface";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { useAuth } from "@/app/context/AuthContext";
+import { Credits } from "@/app/lib/stack";
 
 interface MessagePart {
   type: "text" | "code";
@@ -57,7 +58,7 @@ const Response = (
 ) => {
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId,] = useAtom(sessionIdAtom);
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [, setIsStreaming] = useAtom(isStreamingAtom);
   const [, setIsResearchAreaVisible] = useAtom(isResearchAreaVisibleAtom);
   const [, setActiveChatId] = useAtom(activeChatIdAtom);
@@ -65,7 +66,6 @@ const Response = (
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
   const [, setChatHistory] = useAtom(chatHistoryAtom);
-  const [chatMode] = useAtom(chatModeAtom);
   const timer = useRef<number>(0);
   const md = new MarkdownIt({
     html: true,
@@ -202,7 +202,7 @@ const Response = (
           if (newLog.length > 0) {
             newLog[newLog.length - 1] = {
               prompt,
-              response: "Failed to get response from server.",
+              response: "Rate limit exceeded.",
               timestamp: newLog[newLog.length - 1].timestamp,
               inputToken: 0,
               outputToken: 0,
@@ -215,7 +215,7 @@ const Response = (
           } else {
             newLog.push({
               prompt,
-              response: "Failed to get response from server.",
+              response: "Rate limit exceeded.",
               timestamp: Date.now().toString(),
               inputToken: 0,
               outputToken: 0,
@@ -230,19 +230,20 @@ const Response = (
         });
         toast({
           variant: "destructive",
-          title: `You've already used your 5 free credits per month. Please try again after ${msg.availableInDays} days.`
+          title: `You've already used your ${user?.currentplan.price == 0 ? Credits.free : Credits.pro} credits per month. Please try again after ${msg.availableInDays} days.`
         });
         return;
       }
+
       const data = await res.json();
-      const steps = JSON.parse(data.steps);
-      const totalProgress = steps.steps.length * 2;
+      const topics = JSON.parse(data.topics).topics;
+      const totalProgress = topics.length * 2;
       const newResearchLog = [];
       setProgress(10);
 
-      for (const step of steps.steps) {
+      for (const topic of topics) {
         newResearchLog.push({
-          title: step,
+          title: topic,
           researchSteps: [],
           sources: [],
           learnings: []

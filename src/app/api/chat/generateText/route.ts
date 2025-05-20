@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         Not using words "Final Report:" or "Final Report" in the response title.`;
 
         const requestBody = {
-            prompt: chatType == 1 ? learningsPrompt : prompt,
+            prompt: prompt,
             sessionId,
             chatHistory,
             files: fileUrls,
@@ -68,7 +68,10 @@ export async function POST(request: NextRequest) {
             reGenerate,
             model,
             chatType,
+            learningPrompt: learningsPrompt
         }
+
+        console.log("chatType", chatType);
 
         if (chatType == 0 || chatType == 1) {
             const response = await fetch(`${process.env.FASTAPI_URL}/api/chat/stream`, {
@@ -79,6 +82,7 @@ export async function POST(request: NextRequest) {
                 body: JSON.stringify(requestBody),
             });
 
+            console.log("response", response);
             if (!response.ok) {
                 const errorData = await response.json();
                 if (response.status === 429) {

@@ -198,3 +198,8 @@ export const ModelType = [
   //   label: "Audio Generation",
   // }
 ]
+
+export const Credits = {
+  "free": 2,
+  "pro": 10
+}

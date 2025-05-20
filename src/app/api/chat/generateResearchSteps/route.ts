@@ -3,7 +3,9 @@ import { getServerSession, AuthOptions } from "next-auth";
 import { ChatLog, IChatCompletionChoice } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import db from "@/app/lib/database/db";
+import { UserRepo } from "@/app/lib/database/userrepo";
 import { openai } from '@/app/lib/api/openai/const';
+import { Credits } from "@/app/lib/stack";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions as AuthOptions);
@@ -12,34 +14,34 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const user = await UserRepo.findByEmail(session.user?.email as string);
+    const credits = user?.currentplan.price == 0 ? Credits.free : Credits.pro;
+    const endDate = new Date(user?.pointsResetDate as Date);
+    const oneMonthAgo = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     try {
         if (session.user?.email !== "yasiralsadoon@gmail.com") {
-            const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-
-            const recentChatType1Timestamps = await db.Chat.aggregate([
+            const recentChatType1Count = await db.Chat.aggregate([
                 { $match: { email: session?.user?.email as string } },
                 { $unwind: "$session" },
                 { $unwind: "$session.chats" },
                 {
                     $match: {
-                        "session.chats.chatType": 1
+                        "session.chats.chatType": 1,
+                        "session.chats.timestamp": { $gte: oneMonthAgo }
                     }
                 },
-                { $sort: { "session.chats.timestamp": -1 } },
-                { $limit: 5 },
-                { $project: { "session.chats.timestamp": 1 } }
+                { $group: { _id: null, count: { $sum: 1 } } }
             ]);
 
-            if (recentChatType1Timestamps.length === 5) {
-                const oldestTimestamp = recentChatType1Timestamps[4].session.chats.timestamp;
-                if (oldestTimestamp > oneMonthAgo) {
-                    const daysUntilAvailable = Math.ceil((oldestTimestamp + 30 * 24 * 60 * 60 * 1000 - Date.now()) / (24 * 60 * 60 * 1000));
-                    return NextResponse.json({
+            console.log(recentChatType1Count);
+
+            if (recentChatType1Count[0]?.count >= credits) {
+                const daysUntilAvailable = Math.round((endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+                return NextResponse.json({
                         error: "Monthly limit for chat type 1 reached.",
                         availableInDays: daysUntilAvailable
-                    }, { status: 429 });
-                }
+                }, { status: 429 });
             }
         }
 

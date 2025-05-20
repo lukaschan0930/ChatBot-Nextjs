@@ -288,6 +288,11 @@ function chatModel() {
                 points: {
                     type: Number,
                     required: true
+                },
+                count: {
+                    type: Number,
+                    required: true,
+                    default: 1
                 }
             }]
         }],
