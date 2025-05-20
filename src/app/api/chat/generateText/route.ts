@@ -4,6 +4,7 @@ import { AdminRepo } from "@/app/lib/database/adminRepo";
 import { ChatLog } from '@/app/lib/interface';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRepo } from "@/app/lib/database/userrepo";
+import { AiRepo } from "@/app/lib/database/aiRepo";
 import { User } from "@/app/lib/interface";
 
 export async function POST(request: NextRequest) {
@@ -18,6 +19,7 @@ export async function POST(request: NextRequest) {
     const model = formData.get('model') as string;
     const chatMode = Number(formData.get('chatMode'));
     const modelType = formData.get('modelType') as string;
+    const aiModel = await AiRepo.findById(model);
 
     if (!session) {
         return new NextResponse("Unauthorized", { status: 401 });
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
             return new NextResponse("Your Plan is outDate", { status: 429 })
         }
 
-        if (availablePoints < usedPoints) {
+        if (availablePoints < usedPoints && aiModel.model == "atlas-edith") {
             return new NextResponse("Your exceed your current token", { status: 429 });
         }
 
