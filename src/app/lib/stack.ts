@@ -201,5 +201,5 @@ export const ModelType = [
 
 export const Credits = {
   "free": 2,
-  "pro": 10
+  "pro": 20
 }
