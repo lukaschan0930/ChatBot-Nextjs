@@ -510,7 +510,7 @@ const InputBox = () => {
               if (newLog.length > 0) {
                 newLog[newLog.length - 1] = {
                   prompt,
-                  response: mainResponse,
+                  response: mainResponse ? mainResponse : " ",
                   timestamp: newLog[newLog.length - 1].timestamp,
                   inputToken: 0,
                   outputToken: 0,
@@ -523,7 +523,7 @@ const InputBox = () => {
               } else {
                 newLog.push({
                   prompt,
-                  response: mainResponse,
+                  response: mainResponse ? mainResponse : " ",
                   timestamp: Date.now().toString(),
                   inputToken: 0,
                   outputToken: 0,

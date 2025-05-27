@@ -12,7 +12,7 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import RoboCodeViewer from "@/app/components/innovation/robochat/RoboCodeViewer";
 
 const RoboChat = () => {
-    notFound();
+    // notFound();
     
     const [, setIsSidebarVisible] = useAtom(isSidebarVisibleAtom);
     const [isStartChat,] = useAtom(isStartChatAtom);

@@ -555,7 +555,7 @@ const Response = (
               const newLog = [...prevChatLog];
               newLog[newLog.length - 1] = {
                 prompt,
-                response: mainResponse,
+                response: mainResponse ? mainResponse : " ",
                 timestamp: newLog[newLog.length - 1].timestamp,
                 inputToken: 0,
                 outputToken: 0,

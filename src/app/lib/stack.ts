@@ -12,7 +12,7 @@ export const MenuItems = [
       {
         id: "roboChat",
         label: "ROBO",
-        disable: true,
+        disable: false,
         tooltip: ""
       },
       // {
