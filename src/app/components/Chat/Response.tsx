@@ -804,9 +804,9 @@ const ThinkMessagePart = memo(({ part, isThinking }: { part: MessagePart, isThin
 
   return (
     <div 
-      className="border-2 border-gray-900/70 rounded-md my-2 overflow-hidden transition-all duration-300 ease-in-out"
+      className="border-2 border-[#25252799] rounded-[12px] md:rounded-[24px] bg-box-bg my-2 overflow-hidden transition-all duration-300 ease-in-out"
     >
-      <div className="w-full flex justify-between items-center px-4 bg-gray-900/70 transition-colors duration-200">
+      <div className="w-full flex justify-between items-center px-4 transition-colors duration-200 py-2">
         <div className="text-sm text-subFont flex items-center gap-2">
           <span className="text-blue-400">💭</span>
           {isThinking ? "Thinking" + dotsRef.current : "Thinking Process"}
@@ -821,18 +821,6 @@ const ThinkMessagePart = memo(({ part, isThinking }: { part: MessagePart, isThin
               className={`duration-300 transform transition-transform ${isCollapsed ? "rotate-180" : ""}`} 
             />
           </button>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(part.content);
-              toast({
-                title: "Copied to clipboard",
-                description: "You can now paste it into your favorite text editor",
-              });
-            }}
-            className="p-2 bg-transparent border-none hover:border-none focus:border-none focus:outline-none"
-          >
-            <FiCopy size={20} />
-          </button>
         </div>
       </div>
       <div 
@@ -841,7 +829,7 @@ const ThinkMessagePart = memo(({ part, isThinking }: { part: MessagePart, isThin
           ${isCollapsed ? "max-h-[200px] opacity-80" : "max-h-[1000px] opacity-100"}
         `}
       >
-        <div className="p-4 bg-gray-800/50">
+        <div className="p-4">
           {isCollapsed ? (
             <div className="text-sm text-gray-400 italic">
               {isThinking ? previewText : "Click to expand for details"}
