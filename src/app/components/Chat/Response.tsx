@@ -78,13 +78,13 @@ const Response = memo((
   const splitResponse = useMemo(() => {
     let lineNumber: number = 0;
     const parts: MessagePart[] = [];
-    const thinkBlocks = response.split(/(<think>|<\/think>)/);
+    const thinkBlocks = response.split(/(<think>|<\/think>|◁think▷|◁\/think▷)/);
     let currentContent = "";
     let isInThink = false;
 
     // First process think blocks
     thinkBlocks.forEach((block) => {
-      if (block === "<think>") {
+      if (block === "<think>" || block === "◁think▷") {
         if (currentContent.trim()) {
           parts.push({
             type: "text",
@@ -96,7 +96,7 @@ const Response = memo((
         currentContent = "";
         isInThink = true;
         setIsThinking(true);
-      } else if (block === "</think>") {
+      } else if (block === "</think>" || block === "◁/think▷") {
         if (currentContent.trim()) {
           parts.push({
             type: "think",
