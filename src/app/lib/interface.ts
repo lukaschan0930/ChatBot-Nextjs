@@ -318,6 +318,7 @@ export interface IAI {
     provider: string;
     model: string;
     type: string;
+    iconType: string;
 }
 
 export interface ISubscriptionPlan {

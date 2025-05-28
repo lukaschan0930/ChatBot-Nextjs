@@ -13,8 +13,22 @@ import { FiSearch } from "react-icons/fi";
 import ClaudeModelIcon from "@/app/assets/models/ClaudeModelIcon";
 import OpenaiModelIcon from "@/app/assets/models/OpenaiModelIcon";
 import AtlasModelIcon from "@/app/assets/models/AtlasModelIcon";
+import DeepseekModelIcon from "@/app/assets/models/DeepseekModelIcon";
+import MistralModelIcon from "@/app/assets/models/MistralModelIcon";
+import GemmaModelIcon from "@/app/assets/models/GemmaModelIcon";
+import MetaModelIcon from "@/app/assets/models/MetaModelIcon";
+import NousModelIcon from "@/app/assets/models/NousModelIcon";
+import QwenModelIcon from "@/app/assets/models/QwenModelIcon";
+import TngModelIcon from "@/app/assets/models/TngModelIcon";
+import LlamaModelIcon from "@/app/assets/models/LlamaModelIcon";
+import ArliaiModelIcon from "@/app/assets/models/ArliaiModelIcon";
+import NvidiaModelIcon from "@/app/assets/models/NvidiaModelIcon";
+import OpengvlabModelIcon from "@/app/assets/models/OpengvlabModelIcon";
+import MoonshotModelIcon from "@/app/assets/models/MoonshotModelIcon";
+import GeminiModelIcon from "@/app/assets/models/GeminiModelIcon";
 import { useAuth } from "@/app/context/AuthContext";
 import React from "react";
+import QwerkyModelIcon from "@/app/assets/models/QwerkyModelIcon";
 
 const getModelIcon = (type: string) => {
     console.log(type);
@@ -25,6 +39,34 @@ const getModelIcon = (type: string) => {
             return <OpenaiModelIcon />;
         case "edith":
             return <AtlasModelIcon />;
+        case "deepseek":
+            return <DeepseekModelIcon />;
+        case "mistral":
+            return <MistralModelIcon />;
+        case "gemma":
+            return <GemmaModelIcon />;
+        case "meta":
+            return <MetaModelIcon />;
+        case "nous":
+            return <NousModelIcon />;
+        case "qwen":
+            return <QwenModelIcon />;
+        case "tng":
+            return <TngModelIcon />;
+        case "llama":
+            return <LlamaModelIcon />;
+        case "arliai":
+            return <ArliaiModelIcon />;
+        case "nvidia":
+            return <NvidiaModelIcon />;
+        case "opengvlab":
+            return <OpengvlabModelIcon />;
+        case "moonshot":
+            return <MoonshotModelIcon />;
+        case "gemini":
+            return <GeminiModelIcon />;
+        case "qwerky":
+            return <QwerkyModelIcon />;
         default:
             return null;
     }
@@ -156,7 +198,7 @@ const ModelItem = (
             onClick={() => isActive && handleItemClick(item._id)}
         >
             {
-                getModelIcon(item.provider)
+                getModelIcon(item.iconType)
             }
             <span className="text-[12px] sm:text-[16px] text-nowrap text-white flex flex-col">
                 {item.name}

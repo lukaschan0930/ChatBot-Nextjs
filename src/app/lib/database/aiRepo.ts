@@ -10,7 +10,7 @@ export const AiRepo = {
 }
 
 async function findModelNameAll() {
-    return await db.AI.find({}, { name: 1, _id: 1, type: 1, provider: 1 });
+    return await db.AI.find({}, { name: 1, _id: 1, type: 1, provider: 1, iconType: 1 });
 }
 
 async function findAll() {
@@ -22,12 +22,12 @@ async function findById(id: string) {
 }
 
 async function create(ai: {
-    name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string, type: string
+    name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string, type: string, iconType: string
 }) {
     return await db.AI.create(ai);
 }
 
-async function update(id: string, ai: { name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string, type: string }) {
+async function update(id: string, ai: { name: string, inputCost: number, outputCost: number, multiplier: number, provider: string, model: string, type: string, iconType: string }) {
     return await db.AI.findByIdAndUpdate(id, ai, { new: true });
 }
 

@@ -18,7 +18,8 @@ export default function AddEditModel() {
         multiplier: 1,
         provider: '',
         model: '',
-        type: ''
+        type: '',
+        iconType: ''
     });
     const { useFetch } = useAdmin();
     const fetch = useFetch();
@@ -98,6 +99,7 @@ export default function AddEditModel() {
                         <Input
                             type="text"
                             value={model.name}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, name: e.target.value })}
                             required
                         />
@@ -108,6 +110,7 @@ export default function AddEditModel() {
                             type="number"
                             step="0.0001"
                             value={model.inputCost}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, inputCost: parseFloat(e.target.value) })}
                             required
                         />
@@ -118,6 +121,7 @@ export default function AddEditModel() {
                             type="number"
                             step="0.0001"
                             value={model.outputCost}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, outputCost: parseFloat(e.target.value) })}
                             required
                         />
@@ -128,6 +132,7 @@ export default function AddEditModel() {
                             type="number"
                             step="0.1"
                             value={model.multiplier}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, multiplier: parseFloat(e.target.value) })}
                             required
                         />
@@ -137,7 +142,18 @@ export default function AddEditModel() {
                         <Input
                             type="text"
                             value={model.provider}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, provider: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-mainFont">Icon Type</label>
+                        <Input
+                            type="text"
+                            value={model.iconType}
+                            className="text-black"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, iconType: e.target.value })}
                             required
                         />
                     </div>
@@ -146,6 +162,7 @@ export default function AddEditModel() {
                         <Input
                             type="text"
                             value={model.model}
+                            className="text-black"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel({ ...model, model: e.target.value })}
                             required
                         />
@@ -174,7 +191,7 @@ export default function AddEditModel() {
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" disabled={loading}>{loading ? 'Saving...' : modelId ? 'Update' : 'Create'} Model</Button>
-                        <Button variant="outline" onClick={() => router.push('/admin/modelManagement')} disabled={loading}>Cancel</Button>
+                        <Button className="text-black" type="button" variant="outline" onClick={() => router.push('/admin/modelManagement')} disabled={loading}>Cancel</Button>
                     </div>
                 </form>
             </div>
