@@ -191,31 +191,32 @@ const ModelItem = (
     return (
         <div
             className={
-                `border border-transparent flex gap-2 items-center cursor-pointer hover:border-[#2C2B3080] hover:bg-[#FFFFFF05] focus:border-[#2C2B3080] focus:bg-[#FFFFFF05] px-3 py-2 rounded-md relative
-                ${!isActive && "opacity-50"}`
+                `border border-transparent flex gap-2 items-center cursor-pointer hover:border-[#2C2B3080] hover:bg-[#FFFFFF05] focus:border-[#2C2B3080] focus:bg-[#FFFFFF05] px-3 py-2 rounded-md relative`
             }
             onClick={() => isActive && handleItemClick(item._id)}
         >
             {
                 getModelIcon(item.iconType)
             }
-            <span className="text-[12px] sm:text-[16px] text-nowrap text-white flex flex-col">
-                {item.name}
+            <span className={`text-[14px] text-nowrap text-white flex flex-col gap-[2px]`}>
+                <div className={`${!isActive && "opacity-50"} h-[20px] flex items-center`}>
+                    {item.name}
+                </div>
                 {
                     !isActive && (
-                        <div className="sm:hidden bg-[#FFFFFF0D] text-white text-xs p-[1px] rounded-md -mt-1">
+                        <div className="bg-[#FFFFFF0D] text-[#ffffff5e] text-xs p-[2px] rounded-md w-fit h-[20px]">
                             Not available on the free plan.
                         </div>
                     )
                 }
             </span>
-            {
+            {/* {
                 !isActive && (
                     <div className="max-sm:hidden absolute top-1/2 right-[18px] transform -translate-y-1/2 bg-[#FFFFFF0D] text-white text-xs px-3 py-1 rounded-md">
                         Not available on the free plan.
                     </div>
                 )
-            }
+            } */}
         </div>
     );
 };
