@@ -1,5 +1,5 @@
 import { FiChevronDown, FiChevronUp, FiCopy, FiRefreshCw } from "react-icons/fi";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect, useMemo, memo } from "react";
 import { CodeBlock } from "react-code-block";
 import MarkdownIt from 'markdown-it'
 import { toast } from "@/app/hooks/use-toast";
@@ -24,13 +24,19 @@ import { useAuth } from "@/app/context/AuthContext";
 import { Credits } from "@/app/lib/stack";
 
 interface MessagePart {
-  type: "text" | "code";
+  type: "text" | "code" | "think";
   content: string;
   language?: string;
   startIndex: number;
 }
 
-const Response = (
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+});
+
+const Response = memo((
   {
     response,
     timestamp,
@@ -66,81 +72,130 @@ const Response = (
   const [, setResearchLog] = useAtom(researchLogAtom);
   const [, setResearchStep] = useAtom(researchStepAtom);
   const [, setChatHistory] = useAtom(chatHistoryAtom);
+  const [isThinking, setIsThinking] = useState(false);
   const timer = useRef<number>(0);
-  const md = new MarkdownIt({
-    html: true,
-    linkify: true,
-    typographer: true,
-  });
 
-  const splitResponse = (content: string): MessagePart[] => {
-    let isInCodeBlock: boolean = false;
-    let currentPart: MessagePart = {
-      type: "text",
-      content: "",
-      startIndex: 0,
-    };
+  const splitResponse = useMemo(() => {
     let lineNumber: number = 0;
     const parts: MessagePart[] = [];
+    const thinkBlocks = response.split(/(<think>|<\/think>|◁think▷|◁\/think▷)/);
+    let currentContent = "";
+    let isInThink = false;
 
-    content.split("\n").forEach((line: string) => {
-      // Seperate each line of the response
-      if (line.trim().startsWith("```")) {
-        // If the line starts with "```", then it's a code block
-        if (!isInCodeBlock) {
-          // Beginning of a code block
-          isInCodeBlock = true;
-          parts.push(currentPart);
-          let language = line.slice(3).trim().toLowerCase(); // Get the language
-
-          language = language === "csharp" ? "cpp" : language;
-          currentPart = {
-            type: "code",
-            content: "",
-            language: language || "Text",
-            startIndex: lineNumber,
-          };
-        } else {
-          // End of a code block
-          isInCodeBlock = false;
-          parts.push(currentPart);
-          currentPart = {
+    // First process think blocks
+    thinkBlocks.forEach((block) => {
+      if (block === "<think>" || block === "◁think▷") {
+        if (currentContent.trim()) {
+          parts.push({
             type: "text",
-            content: "",
-            startIndex: lineNumber + 1,
-          };
-        }
-      } else if (line.trim().startsWith("--------------------------------------------------")) {
-        // If the line starts with dashes, then it's a code block
-        if (!isInCodeBlock) {
-          // Beginning of a code block
-          isInCodeBlock = true;
-          parts.push(currentPart);
-          currentPart = {
-            type: "code",
-            content: "",
-            language: "Text",
+            content: currentContent,
             startIndex: lineNumber,
-          };
-        } else {
-          // End of a code block
-          isInCodeBlock = false;
-          parts.push(currentPart);
-          currentPart = {
-            type: "text",
-            content: "",
-            startIndex: lineNumber + 1,
-          };
+          });
+          lineNumber += currentContent.split("\n").length;
         }
+        currentContent = "";
+        isInThink = true;
+        setIsThinking(true);
+      } else if (block === "</think>" || block === "◁/think▷") {
+        if (currentContent.trim()) {
+          parts.push({
+            type: "think",
+            content: currentContent,
+            startIndex: lineNumber,
+          });
+          lineNumber += currentContent.split("\n").length;
+        }
+        currentContent = "";
+        isInThink = false;
+        setIsThinking(false);
       } else {
-        currentPart.content += line + "\n";
+        currentContent += block;
       }
-      lineNumber++;
     });
 
-    parts.push(currentPart);
-    return parts.filter((part) => part.content.trim());
-  };
+    if (currentContent.trim()) {
+      parts.push({
+        type: isInThink ? "think" : "text",
+        content: currentContent,
+        startIndex: lineNumber,
+      });
+    }
+
+    // Now process each part for code blocks
+    const processedParts: MessagePart[] = [];
+    parts.forEach((part) => {
+      if (part.type === "think") {
+        processedParts.push(part);
+      } else {
+        let isInCodeBlock = false;
+        let currentCodePart: MessagePart = {
+          type: "text",
+          content: "",
+          startIndex: part.startIndex,
+        };
+        let lineNumber = part.startIndex;
+
+        part.content.split("\n").forEach((line: string) => {
+          if (line.trim().startsWith("```")) {
+            if (!isInCodeBlock) {
+              // Beginning of a code block
+              isInCodeBlock = true;
+              if (currentCodePart.content.trim()) {
+                processedParts.push(currentCodePart);
+              }
+              let language = line.slice(3).trim().toLowerCase();
+              language = language === "csharp" ? "cpp" : language;
+              currentCodePart = {
+                type: "code",
+                content: "",
+                language: language || "Text",
+                startIndex: lineNumber,
+              };
+            } else {
+              // End of a code block
+              isInCodeBlock = false;
+              processedParts.push(currentCodePart);
+              currentCodePart = {
+                type: "text",
+                content: "",
+                startIndex: lineNumber + 1,
+              };
+            }
+          } else if (line.trim().startsWith("--------------------------------------------------")) {
+            if (!isInCodeBlock) {
+              isInCodeBlock = true;
+              if (currentCodePart.content.trim()) {
+                processedParts.push(currentCodePart);
+              }
+              currentCodePart = {
+                type: "code",
+                content: "",
+                language: "Text",
+                startIndex: lineNumber,
+              };
+            } else {
+              isInCodeBlock = false;
+              processedParts.push(currentCodePart);
+              currentCodePart = {
+                type: "text",
+                content: "",
+                startIndex: lineNumber + 1,
+              };
+            }
+          } else {
+            currentCodePart.content += line + "\n";
+          }
+          lineNumber++;
+        });
+
+        if (currentCodePart.content.trim()) {
+          processedParts.push(currentCodePart);
+        }
+      }
+    });
+
+    return processedParts.filter((part) => part.content.trim());
+  }, [response]);
 
   const refreshGenerate = () => {
     setChatHistory((prevChatHistory) => {
@@ -555,7 +610,7 @@ const Response = (
               const newLog = [...prevChatLog];
               newLog[newLog.length - 1] = {
                 prompt,
-                response: mainResponse,
+                response: mainResponse ? mainResponse : " ",
                 timestamp: newLog[newLog.length - 1].timestamp,
                 inputToken: 0,
                 outputToken: 0,
@@ -625,12 +680,13 @@ const Response = (
             <Image src={response} alt="image" width={500} height={500} /> :
             chatType == 4 ?
               <audio src={response} controls /> :
-              splitResponse(response).map((part, index) => (
+              splitResponse.map((part, index) => (
                 <React.Fragment key={index}>
                   {part.type === "text" && (
                     <div className="break-words answer-markdown" dangerouslySetInnerHTML={{ __html: md.render(part.content) }}></div>
                   )}
                   {part.type === "code" && <CodeMessagePart part={part} />}
+                  {part.type === "think" && <ThinkMessagePart part={part} isThinking={isThinking} />}
                 </React.Fragment>
               ))
         }
@@ -669,7 +725,9 @@ const Response = (
       </div>
     </div>
   );
-};
+});
+
+Response.displayName = 'Response';
 
 const CodeMessagePart = ({ part }: { part: MessagePart }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -712,5 +770,82 @@ const CodeMessagePart = ({ part }: { part: MessagePart }) => {
     </div>
   )
 }
+
+const ThinkMessagePart = memo(({ part, isThinking }: { part: MessagePart, isThinking: boolean }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const dotsRef = useRef("");
+  const intervalRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (isThinking) {
+      intervalRef.current = setInterval(() => {
+        dotsRef.current = dotsRef.current.length >= 3 ? "" : dotsRef.current + ".";
+        // Force re-render only for the dots
+        setIsCollapsed(prev => !prev);
+        setIsCollapsed(prev => !prev);
+      }, 500);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      dotsRef.current = "";
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isThinking]);
+
+  const previewText = useMemo(() => {
+    return part.content.split("\n")[0].slice(0, 200) + "...";
+  }, [part.content]);
+
+  return (
+    <div 
+      className="border-2 border-[#25252799] rounded-[12px] md:rounded-[24px] bg-box-bg my-2 overflow-hidden transition-all duration-300 ease-in-out"
+    >
+      <div className="w-full flex justify-between items-center px-4 transition-colors duration-200 py-2">
+        <div className="text-sm text-subFont flex items-center gap-2">
+          <span className="text-blue-400">💭</span>
+          {isThinking ? "Thinking" + dotsRef.current : "Thinking Process"}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            className="p-2 bg-transparent border-none hover:border-none focus:border-none focus:outline-none"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            <FiChevronDown 
+              size={20} 
+              className={`duration-300 transform transition-transform ${isCollapsed ? "rotate-180" : ""}`} 
+            />
+          </button>
+        </div>
+      </div>
+      <div 
+        className={`
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${isCollapsed ? "max-h-[200px] opacity-80" : "max-h-[1000px] opacity-100"}
+        `}
+      >
+        <div className="p-4">
+          {isCollapsed ? (
+            <div className="text-sm text-gray-400 italic">
+              {isThinking ? previewText : "Click to expand for details"}
+            </div>
+          ) : (
+            <div 
+              className="break-words answer-markdown whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{ __html: md.render(part.content) }}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+ThinkMessagePart.displayName = 'ThinkMessagePart';
 
 export default Response;

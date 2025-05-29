@@ -89,7 +89,7 @@ export default function ModelManagement() {
                     />
                     <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-subButtonFont" />
                 </div>
-                <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/admin/modelManagement/add')}>Add New Model</Button>
+                <Button variant="outline" className="w-full sm:w-auto text-black" onClick={() => router.push('/admin/modelManagement/add')}>Add New Model</Button>
             </div>
 
             <div className="rounded-md border overflow-x-auto">
