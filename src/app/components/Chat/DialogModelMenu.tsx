@@ -31,7 +31,6 @@ import React from "react";
 import QwerkyModelIcon from "@/app/assets/models/QwerkyModelIcon";
 
 const getModelIcon = (type: string) => {
-    console.log(type);
     switch (type) {
         case "anthropic":
             return <ClaudeModelIcon />;

@@ -3,7 +3,7 @@ import Image from "next/image";
 const GemmaModelIcon = () => {
     return (
         <div>
-            <Image src="/image/model/gemma.webp" alt="gemma" width={30} height={30} />
+            <Image src="/image/model/gemma.webp" className="rounded-md" alt="gemma" width={30} height={30} />
         </div>
     )
 }
