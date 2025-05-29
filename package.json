@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"next dev\" \"node resetPoints.js\"",
     "build": "next build",
-    "start": "concurrently \"next start -p 3001\" \"node resetPoints.js\"",
+    "start": "concurrently \"next start\" \"node resetPoints.js\"",
     "lint": "next lint"
   },
   "dependencies": {
