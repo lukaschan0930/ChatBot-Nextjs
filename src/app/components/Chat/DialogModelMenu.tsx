@@ -26,9 +26,9 @@ import NvidiaModelIcon from "@/app/assets/models/NvidiaModelIcon";
 import OpengvlabModelIcon from "@/app/assets/models/OpengvlabModelIcon";
 import MoonshotModelIcon from "@/app/assets/models/MoonshotModelIcon";
 import GeminiModelIcon from "@/app/assets/models/GeminiModelIcon";
+import QwerkyModelIcon from "@/app/assets/models/QwerkyModelIcon";
 import { useAuth } from "@/app/context/AuthContext";
 import React from "react";
-import QwerkyModelIcon from "@/app/assets/models/QwerkyModelIcon";
 
 const getModelIcon = (type: string) => {
     switch (type) {

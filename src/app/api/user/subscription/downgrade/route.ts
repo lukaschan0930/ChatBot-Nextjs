@@ -29,22 +29,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if current plan has ended
-    const isCurrentPlanEnded = user.planEndDate && new Date(user.planEndDate).getTime() < new Date().getTime();
+    // const isCurrentPlanEnded = user.planEndDate && new Date(user.planEndDate).getTime() < new Date().getTime();
 
-    if (!isCurrentPlanEnded) {
-        return NextResponse.json({ error: "Current plan has not ended" }, { status: 400 });
-    }
+    // if (!isCurrentPlanEnded) {
+    //     return NextResponse.json({ error: "Current plan has not ended" }, { status: 400 });
+    // }
 
     // Handle free plan (price = 0)
     if (plan.price === 0) {
         // If user has an active subscription, cancel it
         if (user.subscriptionId) {
             const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
-            try {
-                await stripe.subscriptions.cancel(user.subscriptionId);
-            } catch (error) {
-                console.error('Error canceling subscription:', error);
-            }
+            const currentPeriodEnd = subscription.current_period_end;
+            await stripe.subscriptions.update(user.subscriptionId, {
+                cancel_at_period_end: true,
+            });
+    
+            return NextResponse.json({ 
+                success: true, 
+                message: "Subscription will be cancelled at the end of current billing period",
+                effectiveDate: new Date(currentPeriodEnd * 1000)
+            }, { status: 200 });
         }
 
         return NextResponse.json({ success: true }, { status: 200 });
@@ -54,9 +59,7 @@ export async function POST(request: NextRequest) {
     const subscription = await stripe.subscriptions.retrieve(user.subscriptionId);
     const subscriptionItemId = subscription.items.data[0].id;
     await stripe.subscriptions.update(user.subscriptionId, {
-        items: [{ id: subscriptionItemId, price: plan.priceId }],
-        proration_behavior: 'none',
-        billing_cycle_anchor: 'now'
+        items: [{ id: subscriptionItemId, price: plan.priceId }]
     });
 
     user.requestPlanId = planId;
