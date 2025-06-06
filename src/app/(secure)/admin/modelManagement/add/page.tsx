@@ -7,7 +7,7 @@ import { toast } from "@/app/hooks/use-toast";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Switch } from "@mui/material";
 import { ModelType } from "@/app/lib/stack";
 
 export default function AddEditModel() {
@@ -19,7 +19,8 @@ export default function AddEditModel() {
         provider: '',
         model: '',
         type: '',
-        iconType: ''
+        iconType: '',
+        imageSupport: false
     });
     const { useFetch } = useAdmin();
     const fetch = useFetch();
@@ -188,6 +189,13 @@ export default function AddEditModel() {
                                 <MenuItem key={item.id} value={item.id}>{item.label}</MenuItem>
                             ))}
                         </Select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-mainFont">Image Support</label>
+                        <Switch
+                            checked={model.imageSupport}
+                            onChange={(e) => setModel({ ...model, imageSupport: e.target.checked })}
+                        />
                     </div>
                     <div className="flex gap-2">
                         <Button type="submit" disabled={loading}>{loading ? 'Saving...' : modelId ? 'Update' : 'Create'} Model</Button>

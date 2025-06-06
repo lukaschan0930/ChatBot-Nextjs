@@ -103,6 +103,7 @@ export default function ModelManagement() {
                             <TableHead className="min-w-[100px]">Provider</TableHead>
                             <TableHead className="min-w-[100px]">Model</TableHead>
                             <TableHead className="min-w-[100px]">Type</TableHead>
+                            <TableHead className="min-w-[100px]">Image Support</TableHead>
                             <TableHead className="min-w-[100px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -116,7 +117,8 @@ export default function ModelManagement() {
                                 <TableCell className="text-mainFont">{model.provider}</TableCell>
                                 <TableCell className="text-mainFont">{model.model}</TableCell>
                                 <TableCell className="text-mainFont">{ModelType.find((item) => item.id === model.type)?.label}</TableCell>
-                                <TableCell>
+                                <TableCell className="text-mainFont">{model.imageSupport ? "Yes" : "No"}</TableCell>
+                                <TableCell className="text-mainFont">
                                     <div className="flex gap-2">
                                         <Button
                                             variant="outline"

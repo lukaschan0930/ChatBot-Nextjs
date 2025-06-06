@@ -258,6 +258,7 @@ export const processResponse = (response: string) => {
   if (pointsMatch || outputTimeMatch) {
       const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim() || " ";
       const points = pointsMatch ? pointsMatch[1] : null;
+      console.log(points);
       const outputTime = outputTimeMatch ? outputTimeMatch[1] : null;
       return { mainResponse, points, outputTime };
   }
