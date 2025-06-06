@@ -34,7 +34,7 @@ const ChatArea = () => {
     <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center px-2 mt-8" onClick={() => setIsSidebarVisible(false)}>
       {chatLog && chatLog.length > 0 && chatLog.map((chat: ChatLog, id: number) => (
         <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[700px] px-0 md:px-4">
-          <UserPrompt prompt={chat.prompt} />
+          <UserPrompt prompt={chat.prompt} fileUrls={chat.fileUrls} />
           <div className="flex justify-start flex-col gap-3">
             <div className="flex items-center gap-2">
               <div className={`w-10 h-10 rounded-lg border border-gray-500 bg-[#181818] relative`}>

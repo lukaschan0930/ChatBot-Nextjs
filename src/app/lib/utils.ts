@@ -264,3 +264,7 @@ export const processResponse = (response: string) => {
   }
   return { mainResponse: response, points: null, outputTime: null };
 };
+
+export const isImage = (url: string) => {
+  return url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".gif") || url.endsWith(".webp") || url.endsWith(".svg");
+};
