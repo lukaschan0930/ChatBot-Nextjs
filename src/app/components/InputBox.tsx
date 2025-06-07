@@ -17,7 +17,8 @@ import {
   isResearchAreaVisibleAtom,
   chatModeAtom,
   routerModelAtom,
-  modelTypeAtom
+  modelTypeAtom,
+  routerModelsAtom
 } from "@/app/lib/store";
 import { generateSessionId, processResponse } from "@/app/lib/utils";
 import { signOut, useSession } from "next-auth/react";
@@ -31,11 +32,11 @@ import ChatFileMenu from "./Chat/ChatFileMenu";
 // import ChatProMenu from "./Chat/ChatProMenu";
 // import ChatTypeMenu from "./Chat/ChatTypeMenu";
 import { useAuth } from "@/app/context/AuthContext";
-import DropDownModelMenu from "./headers/DropDownModelMenu";
+// import DropDownModelMenu from "./headers/DropDownModelMenu";
 import DialogModelMenu from "./Chat/DialogModelMenu";
 import ChatSettingMenu from "./Chat/ChatSettingMenu";
 import { Divider } from "@mui/material";
-import { Cross, CrossIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { ProDisableIcon } from "../assets/pro";
 import Lightning from "../assets/lightning";
 import { Credits } from "@/app/lib/stack";
@@ -106,9 +107,11 @@ const InputBox = () => {
   const [isFileUploading, setIsFileUploading] = useState<boolean>(false);
   const [chatMode, setChatMode] = useAtom(chatModeAtom);
   const [routerModel,] = useAtom(routerModelAtom);
+  const [routerModels, ] = useAtom(routerModelsAtom);
   const [modelType,] = useAtom(modelTypeAtom);
   const [chatLog, setChatLog] = useAtom(chatLogAtom);
   const [sessionId, setSessionId] = useAtom(sessionIdAtom);
+  const [imageSupport, setImageSupport] = useState<boolean>(false);
   const { data: session } = useSession();
   const [, setChatHistory] = useAtom(chatHistoryAtom);
   const { user, setUser } = useAuth();
@@ -156,6 +159,22 @@ const InputBox = () => {
   }, [sessionId]);
 
   useEffect(() => {
+    if (routerModels.length > 0) {
+      const imageSupport = routerModels.find((model) => model._id == routerModel)?.imageSupport || false;
+      setImageSupport(imageSupport);
+      if (!imageSupport) {
+        if (files.find((file) => file.file.type.startsWith("image/"))) {
+          toast({
+            variant: "destructive",
+            title: 'Image files are not supported for this model.',
+          });
+        }
+        setFiles(files.filter((file) => !file.file.type.startsWith("image/")));
+      }
+    }
+  }, [routerModels, routerModel]);
+
+  useEffect(() => {
     if (modelType == "image") {
       setChatType(0);
     } else if (modelType == "audio") {
@@ -193,11 +212,20 @@ const InputBox = () => {
         return;
       }
 
-      const uploadFiles = filesArray.filter((file) => {
+      let uploadFiles = filesArray.filter((file) => {
         return !files.some(
           (prevFile) => prevFile.file.name === file.name && prevFile.file.size === file.size
         );
       });
+
+      if (!imageSupport) {
+        uploadFiles = uploadFiles.filter((file) => !file.type.startsWith("image/"));
+        toast({
+          variant: "destructive",
+          title: 'Image files are not supported for this model.',
+        });
+        return;
+      }
 
       const fileUrls = await fileUpload(uploadFiles);
 
@@ -352,6 +380,7 @@ const InputBox = () => {
     }
 
     const newChatType = modelType == "image" ? 3 : modelType == "audio" ? 4 : chatMode == 1 ? 2 : learnings.length > 0 ? 1 : 0;
+    const fileLists = imageSupport ? files.map((file) => file.url) : files.filter((file) => !file.file.type.startsWith("image/")).map((file) => file.url);
 
     try {
       if (learnings.length == 0) {
@@ -365,7 +394,7 @@ const InputBox = () => {
             inputToken: 0,
             outputToken: 0,
             outputTime: 0,
-            fileUrls: files.map((file) => file.url),
+            fileUrls: fileLists,
             model: routerModel,
             points: 0
           });
@@ -381,7 +410,7 @@ const InputBox = () => {
       formData.append("reGenerate", "false");
       formData.append("learnings", JSON.stringify(learnings));
       formData.append("time", time.toString());
-      formData.append("fileUrls", JSON.stringify(files.map((file) => file.url)));
+      formData.append("fileUrls", JSON.stringify(fileLists));
       formData.append("model", routerModel);
       formData.append("chatMode", chatMode.toString());
       formData.append("modelType", modelType);
@@ -414,7 +443,7 @@ const InputBox = () => {
           newLog[newLog.length - 1].outputToken = data.outputToken;
           newLog[newLog.length - 1].outputTime = outputTime ? Number(outputTime) : 0;
           newLog[newLog.length - 1].chatType = newChatType;
-          newLog[newLog.length - 1].fileUrls = files.map((file) => file.url);
+          newLog[newLog.length - 1].fileUrls = fileLists;
           newLog[newLog.length - 1].points = points ? Number(points) : 0;
           return newLog;
         });
@@ -471,7 +500,7 @@ const InputBox = () => {
                   inputToken: 0,
                   outputToken: 0,
                   chatType: newChatType,
-                  fileUrls: files.map((file) => file.url),
+                  fileUrls: fileLists,
                   model: routerModel,
                   points: points ? Number(points) : 0,
                   outputTime: outputTime ? Number(outputTime) : 0
@@ -484,7 +513,7 @@ const InputBox = () => {
                   inputToken: 0,
                   outputToken: 0,
                   chatType: newChatType,
-                  fileUrls: files.map((file) => file.url),
+                  fileUrls: fileLists,
                   model: routerModel,
                   points: points ? Number(points) : 0,
                   outputTime: outputTime ? Number(outputTime) : 0
@@ -515,7 +544,7 @@ const InputBox = () => {
                   inputToken: 0,
                   outputToken: 0,
                   chatType: newChatType,
-                  fileUrls: files.map((file) => file.url),
+                  fileUrls: fileLists,
                   model: routerModel,
                   points: points ? Number(points) : 0,
                   outputTime: outputTime ? Number(outputTime) : 0
@@ -528,7 +557,7 @@ const InputBox = () => {
                   inputToken: 0,
                   outputToken: 0,
                   chatType: newChatType,
-                  fileUrls: files.map((file) => file.url),
+                  fileUrls: fileLists,
                   model: routerModel,
                   points: points ? Number(points) : 0,
                   outputTime: outputTime ? Number(outputTime) : 0
@@ -901,7 +930,7 @@ const InputBox = () => {
             }
             <input
               type="file"
-              accept=".pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js"
+              accept={`.pdf,.csv,.xlsx,.xls,.doc,.docx,.text,.txt,.json,.html,.xml,.css,.js${imageSupport ? ",image/*" : ""}`}
               style={{ display: 'none' }}
               onChange={handleFileChange}
               ref={fileInputRef}

@@ -733,6 +733,11 @@ function aiModel() {
         iconType: {
             type: String,
             required: true
+        },
+        imageSupport: {
+            type: Boolean,
+            required: true,
+            default: false
         }
     });
 

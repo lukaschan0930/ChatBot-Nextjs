@@ -319,6 +319,7 @@ export interface IAI {
     model: string;
     type: string;
     iconType: string;
+    imageSupport: boolean;
 }
 
 export interface ISubscriptionPlan {

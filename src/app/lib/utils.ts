@@ -258,8 +258,13 @@ export const processResponse = (response: string) => {
   if (pointsMatch || outputTimeMatch) {
       const mainResponse = response.substring(0, pointsMatch?.index || outputTimeMatch?.index || response.length).trim() || " ";
       const points = pointsMatch ? pointsMatch[1] : null;
+      console.log(points);
       const outputTime = outputTimeMatch ? outputTimeMatch[1] : null;
       return { mainResponse, points, outputTime };
   }
   return { mainResponse: response, points: null, outputTime: null };
+};
+
+export const isImage = (url: string) => {
+  return url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg") || url.endsWith(".gif") || url.endsWith(".webp") || url.endsWith(".svg");
 };

@@ -35,7 +35,7 @@ const RoboChatArea = () => {
         <div className="flex flex-col flex-auto w-full gap-6 overflow-y-auto items-center px-2 mt-8" onClick={() => setIsSidebarVisible(false)}>
             {roboChatLog && roboChatLog.length > 0 && roboChatLog.map((chat: IRoboChatLog, id: number) => (
                 chat.role === "user" ? 
-                <UserPrompt prompt={chat.prompt || ""} key={id} />
+                <UserPrompt prompt={chat.prompt || ""} fileUrls={[]} key={id} />
                 :
                 <div key={id} className="flex flex-col w-full gap-6 lg:max-w-[700px] px-0 md:px-4">
                     <div className="flex justify-start flex-col gap-3">

@@ -17,19 +17,20 @@ const nextConfig = {
     },
     images: {
         remotePatterns: [
-            { hostname: "pbs.twimg.com" },
-            { 
-                protocol: 'https',
-                hostname: "edith.nyc3.cdn.digitaloceanspaces.com",
-                port: '',
-                pathname: '/images/**',
-            },
+            { hostname: "pbs.twimg.com", },
+                    { 
+            protocol: 'https',
+            hostname: "edith.nyc3.cdn.digitaloceanspaces.com",
+            port: '',
+            pathname: '/**',
+        },
         ],
     },
     env: {
         DAILY_POOL: process.env.DAILY_POOL,
         RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
         CEREBRAS_API_KEY: process.env.CEREBRAS_API_KEY,
+        AWS_CDN_URL: process.env.AWS_CDN_URL,
     },
     webpack: (config, options) => {
         if (options.nextRuntime === "edge") {
