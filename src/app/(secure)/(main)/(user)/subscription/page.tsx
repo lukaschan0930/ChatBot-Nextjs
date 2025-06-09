@@ -23,6 +23,7 @@ const SubscriptionPage = () => {
     const { user, setUser } = useAuth();
     const [isYearly, setIsYearly] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [requestPlanId, setRequestPlanId] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -68,12 +69,19 @@ const SubscriptionPage = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (user?.requestPlanId) {
+            setRequestPlanId(user.requestPlanId);
+        }
+    }, [user?.requestPlanId]);
+
     const handleUpgrade = async (planId: string) => {
         setIsLoading(true);
         try {
             const plan = plans.find(p => p._id === planId);
             if (!plan) throw new Error("Plan not found");
 
+            console.log(user?.currentplan);
             if (!user?.currentplan || user.currentplan.type == 'free') {
                 const response = await fetch("/api/user/subscription/createCheckoutSession", {
                     method: "POST",
@@ -147,6 +155,36 @@ const SubscriptionPage = () => {
         }
     };
 
+    const handleCancelPending = async (planId: string) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch("/api/user/subscription/cancelPending", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setRequestPlanId(null);
+                toast({
+                    description: "Your Request is canceled",
+                });
+            } else {
+                throw new Error(data.error || "Failed to cancel pending subscription");
+            }
+        } catch (error) {
+            console.error("Error canceling pending subscription:", error);
+            toast({
+                description: error instanceof Error ? error.message : "Failed to cancel pending subscription",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+
     return (
         <>
             <div
@@ -174,7 +212,8 @@ const SubscriptionPage = () => {
                             planEndDate={user?.planEndDate || null}
                             onUpgrade={handleUpgrade}
                             onDowngrade={handleDowngrade}
-                            requestPlanId={user?.requestPlanId || null}
+                            requestPlanId={requestPlanId}
+                            onCancelPending={handleCancelPending}
                             isLoading={isLoading}
                         />
                     ))}
@@ -214,6 +253,7 @@ const PlanCard = ({
     planEndDate,
     onUpgrade,
     onDowngrade,
+    onCancelPending,
     isLoading,
     requestPlanId
 }: {
@@ -223,6 +263,7 @@ const PlanCard = ({
     planEndDate: Date | null,
     onUpgrade: (planId: string) => void,
     onDowngrade: (planId: string) => void,
+    onCancelPending: (planId: string) => void,
     isLoading: boolean,
     requestPlanId: string | null
 }) => {
@@ -234,6 +275,14 @@ const PlanCard = ({
     return (
         <div className='bg-[rgba(255,255,255,0.12)] p-[1px] bg-no-repeat rounded-[20px] bg-[linear-gradient(-195deg,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0)_20%)] w-full sm:w-[440px] max-sm:max-w-[330px]'>
             <div className="bg-[#020202] rounded-[20px] p-3 sm:p-6 h-full relative border border-[#FFFFFF1F] flex flex-col">
+                {/* Pending Badge */}
+                {
+                    isRequestPlan && (
+                        <div className='absolute top-5 right-6 bg-[#020202] text-[#AEB0B9] text-[14px] font-medium rounded-full px-3 py-[2px] border border-[#FFFFFF26]'>
+                            Pending...
+                        </div>
+                    )
+                }
                 {/* Plan name */}
                 <div className="absolute inset-0 bg-radial-white pointer-events-none rounded-[18px]"></div>
                 <div className="text-[16px] font-medium text-white">{plan.name}</div>
@@ -255,33 +304,28 @@ const PlanCard = ({
 
                 <button
                     className={`w-full mt-3 sm:mt-7 py-2 rounded-full text-base sm:text-[16px] font-medium border h-11 hover:outline-none hover:border-transparent
-                        ${isCurrentPlan || isRequestPlan
+                        ${isCurrentPlan
                             ? 'bg-[#FFFFFF14] text-white border-[#ffffff30]'
-                            : canUpgrade
-                                ? 'bg-gradient-to-b from-[#FFFFFF] to-[#898989] text-black hover:opacity-90'
-                                : canDowngrade
-                                    ? 'bg-[#FF4444] text-white hover:opacity-90'
-                                    : 'bg-[#FFFFFF14] text-white border-[#ffffff30] cursor-not-allowed'
+                            : 'bg-gradient-to-b from-[#FFFFFF] to-[#898989] text-black hover:opacity-90'
                         }`}
                     onClick={() => {
-                        if (isCurrentPlan || isRequestPlan) return;
-                        if (canUpgrade) onUpgrade(plan._id);
-                        if (canDowngrade) onDowngrade(plan._id);
+                        if (isCurrentPlan) return;
+                        else if (isRequestPlan) onCancelPending(plan._id);
+                        else if (canDowngrade) onDowngrade(plan._id);
+                        else onUpgrade(plan._id);
                     }}
-                    disabled={isLoading || (!canUpgrade && !canDowngrade && !isCurrentPlan && !isRequestPlan)}
+                    disabled={isLoading || isCurrentPlan}
                 >
                     {isLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                     ) : isCurrentPlan ? (
                         'Current Plan'
                     ) : isRequestPlan ? (
-                        'Confirming...'
-                    ) : canUpgrade ? (
-                        'Upgrade Plan'
+                        'Cancel Pending'
                     ) : canDowngrade ? (
                         'Downgrade Plan'
                     ) : (
-                        'Not Available'
+                        'Upgrade Plan'
                     )}
                 </button>
 
