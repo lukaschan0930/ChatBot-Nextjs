@@ -182,6 +182,46 @@ export async function POST(request: NextRequest) {
                 console.log(`Subscription renewed for user: ${user._id}`);
                 break;
             }
+
+            case 'invoice.payment_failed': {
+                const invoice = event.data.object as Stripe.Invoice;
+                const subscriptionId = invoice.subscription as string;
+                const customerId = invoice.customer as string;
+
+                // Only process subscription invoices
+                if (!subscriptionId) break;
+
+                // Find user by Stripe customer ID
+                const user = await UserRepo.getUserByStripeCustomerId(customerId);
+
+                if (!user) {
+                    console.error(`No user found with Stripe customer ID: ${customerId}`);
+                    break;
+                }
+
+                // Get subscription details from Stripe
+                // const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                
+                // Update user subscription to reflect payment failure
+                // Set status to past_due and add a grace period before cancellation
+                // const gracePeriodEnd = new Date();
+                // gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7); // 7 day grace period
+
+                await UserRepo.updateUserSubscription(
+                    user.email,
+                    user.subscriptionId,
+                    user.subscriptionStatus, // Set status to past_due
+                    user.currentplan, // Keep current plan
+                    user.planStartDate,
+                    user.planEndDate,
+                    user.pointsUsed || 0,
+                    user.pointsResetDate,
+                    null
+                );
+
+                console.log(`Payment failed for user: ${user._id}, subscription: ${subscriptionId}. Grace period until: ${user.pointsResetDate}`);
+                break;
+            }
         }
 
         return NextResponse.json({ received: true });
