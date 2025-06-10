@@ -29,7 +29,6 @@ const nextConfig = {
     env: {
         DAILY_POOL: process.env.DAILY_POOL,
         RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
-        CEREBRAS_API_KEY: process.env.CEREBRAS_API_KEY,
         AWS_CDN_URL: process.env.AWS_CDN_URL,
     },
     webpack: (config, options) => {

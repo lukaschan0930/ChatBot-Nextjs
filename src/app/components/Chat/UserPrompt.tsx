@@ -8,7 +8,7 @@ const UserPrompt = ({ prompt, fileUrls }: { prompt: string, fileUrls: string[] }
     <div className="pl-20 w-full flex justify-end lg:max-w-[700px] md:px-4">
       <div className="flex flex-col items-end gap-2 mb-4">
         {
-          fileUrls.length > 0 &&
+          fileUrls && fileUrls.length > 0 &&
           <div className="flex flex-col items-start gap-2 mb-4">
             {fileUrls.map((fileUrl, index) => (
               isImage(fileUrl) &&
