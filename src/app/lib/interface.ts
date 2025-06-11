@@ -144,7 +144,7 @@ export interface IUser {
     nodeConnectedTime?: Date;
     nodeRewardHash?: string;
     pointsUsed: number;
-    pointResetDate: Date;
+    pointsResetDate: Date;
     currentplan?: string;
     requestPlanId?: string;
     disableModel?: string[];

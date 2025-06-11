@@ -119,24 +119,6 @@ export async function POST(request: NextRequest) {
                 break;
             }
 
-            case "customer.subscription.deleted": {
-                const subscription = event.data.object as Stripe.Subscription;
-                const customerId = subscription.customer as string;
-
-                // Find user by Stripe customer ID
-                const user = await UserRepo.getUserByStripeCustomerId(customerId);
-                if (!user) {
-                    console.error("User not found for customer:", customerId);
-                    return NextResponse.json(
-                        { error: "User not found" },
-                        { status: 404 }
-                    );
-                }
-
-                await UserRepo.updateUserSubscription(user.email, null, null, null, null, null, 0, new Date(new Date().setMonth(new Date().getMonth() + 1)), null);
-                break;
-            }
-
             case 'invoice.payment_succeeded': {
                 const invoice = event.data.object as Stripe.Invoice;
                 const subscriptionId = invoice.subscription as string;
@@ -183,7 +165,8 @@ export async function POST(request: NextRequest) {
                 break;
             }
 
-            case 'invoice.payment_failed': {
+            case 'invoice.payment_failed':
+            case 'customer.subscription.deleted': {
                 const invoice = event.data.object as Stripe.Invoice;
                 const subscriptionId = invoice.subscription as string;
                 const customerId = invoice.customer as string;
@@ -198,14 +181,6 @@ export async function POST(request: NextRequest) {
                     console.error(`No user found with Stripe customer ID: ${customerId}`);
                     break;
                 }
-
-                // Get subscription details from Stripe
-                // const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-                
-                // Update user subscription to reflect payment failure
-                // Set status to past_due and add a grace period before cancellation
-                // const gracePeriodEnd = new Date();
-                // gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7); // 7 day grace period
 
                 await UserRepo.updateUserSubscription(
                     user.email,

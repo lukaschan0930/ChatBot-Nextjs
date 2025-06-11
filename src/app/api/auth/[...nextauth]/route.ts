@@ -178,7 +178,7 @@ const authOptions: NextAuthOptions = {
                             isReward: false
                         },
                         pointsUsed: 0,
-                        pointResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                        pointsResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
                         currentplan: "680f11c0d44970f933ae5e54",
                     });
 
