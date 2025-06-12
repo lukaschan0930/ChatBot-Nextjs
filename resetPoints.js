@@ -252,9 +252,10 @@ cron.schedule('0 0 * * *', async () => {
         // Reset pointsUsed to 0 for all matching users
         for (const user of usersToReset) {
             try {
-                user.pointsUsed = 0;
-                user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
-                await user.save();
+                // user.pointsUsed = 0;
+                // user.pointsResetDate = new Date(new Date().setMonth(new Date().getMonth() + 1));
+                await User.updateOne({ _id: user._id }, { $set: { pointsUsed: 0, pointsResetDate: new Date(new Date().setMonth(new Date().getMonth() + 1)) } });
+                // await user.save();
                 console.log(`Successfully reset points for user: ${user.email}`);
             } catch (userError) {
                 console.error(`Error resetting points for user ${user.email}:`, userError);

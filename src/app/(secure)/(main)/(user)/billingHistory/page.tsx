@@ -69,7 +69,7 @@ const BillingHistory = () => {
                                 {planHistory.length > 0 ? planHistory.map((history, index) => (
                                     <tr key={history._id} className="bg-transparent border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                                         <td className="py-4 px-4 lg:px-6 text-gray-200 text-sm lg:text-base">
-                                            {format(new Date(history.createdAt), "yyyy/MM/dd")}
+                                            {format(new Date(history.createdAt), "yyyy/MM/dd HH:mm")}
                                         </td>
                                         <td className="py-4 px-4 lg:px-6 text-gray-200 text-sm lg:text-base">{history.type}</td>
                                         <td className="py-4 px-4 lg:px-6 text-gray-200 text-sm lg:text-base">${history.price}</td>
