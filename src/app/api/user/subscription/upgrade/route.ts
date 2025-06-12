@@ -44,8 +44,9 @@ export async function POST(request: NextRequest) {
         });
 
         // Update user's current plan in database
-        user.requestPlanId = planId;
-        await user.save();
+        // user.requestPlanId = planId;
+        // await user.save();
+        await UserRepo.updateUserSubscription(user.email, user.subscriptionId, user.subscriptionStatus, user.currentplan._id.toString(), user.planStartDate, user.planEndDate, user.pointsUsed, user.pointsResetDate, planId);
 
         await PlanRepo.createPlanHistory(user._id.toString(), plan._id.toString(), plan.price, `${plan.name} - ${plan.isYearlyPlan ? "Annual" : "Monthly"}`);
 

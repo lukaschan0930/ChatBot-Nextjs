@@ -81,7 +81,7 @@ async function createPlanHistory(userId: string, planId: string, price: number, 
 }
 
 async function findPlanHistoryByUserId(userId: string) {
-    return await db.PlanHistory.find({ userId });
+    return await db.PlanHistory.find({ userId }).sort({ createdAt: -1 });
 }
 
 async function updatePlanHistory(userId: string, planId: string, status: string, invoiceId: string | null, invoicePdfUrl: string | null | undefined) {
