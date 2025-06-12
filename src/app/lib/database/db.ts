@@ -62,7 +62,8 @@ const db = {
     Plan: planModel(),
     AI: aiModel(),
     UsageStats: usageStateModel(),
-    PlanHistory: planHistoryModel()
+    PlanHistory: planHistoryModel(),
+    ErrorLog: errorLogModel()
 }
 
 function userModel() {
@@ -803,6 +804,39 @@ function usageStateModel() {
     });
 
     return mongoose.models.UsageStats || mongoose.model('UsageStats', UsageStatsSchema);
+}
+
+function errorLogModel() {
+    const ErrorLogSchema = new Schema({
+        errorType: {
+            type: String,
+            required: true
+        },
+        message: {
+            type: String,
+            required: true
+        },
+        stack: {
+            type: String,
+        },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        userEmail: {
+            type: String,
+        },
+        context: {
+            type: Schema.Types.Mixed,
+        },
+        metadata: {
+            type: Schema.Types.Mixed,
+        }
+    }, {
+        timestamps: true
+    });
+
+    return mongoose.models.ErrorLog || mongoose.model('ErrorLog', ErrorLogSchema);
 }
 
 export default db;
