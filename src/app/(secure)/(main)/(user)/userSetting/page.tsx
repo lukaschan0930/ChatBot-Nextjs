@@ -20,6 +20,7 @@ import { formatNumber } from "@/app/lib/utils";
 import { CreditCard, AlertTriangle, Loader2 } from "lucide-react";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import PaymentMethodUpdate from "@/app/components/PaymentMethodUpdate";
+import { signOut } from "next-auth/react";
 
 const UserSetting = () => {
     const { user, setUser, setRequestPlanId } = useAuth();
@@ -199,7 +200,7 @@ const UserSetting = () => {
     const handleConfirmCancelSubscription = async () => {
         setConfirmCancelDialog({ open: false });
         setIsCancelLoading(true);
-        
+
         try {
             const freePlanId = "680f11c0d44970f933ae5e54";
             const response = await fetch("/api/user/subscription/downgrade", {
@@ -248,6 +249,24 @@ const UserSetting = () => {
             console.error("Error refreshing user data:", error);
         }
     };
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const res = await fetch(`/api/user/profile`);
+                const data = await res.json();
+                if (data.success) {
+                    setUser(data.user);
+                } else {
+                    signOut();
+                }
+            } catch (err) {
+                console.error("Error fetching user data:", err);
+                signOut();
+            }
+        }
+        fetchUserData();
+    }, []);
 
     return (
         <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen md:pt-[80px] pt-[50px] pb-10">
@@ -506,10 +525,10 @@ const UserSetting = () => {
                         }
                     }}
                 >
-                    <DialogTitle sx={{ 
-                        color: 'white', 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                    <DialogTitle sx={{
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 2,
                         fontSize: '18px',
                         fontWeight: 600
