@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
         user.requestPlanId = planId;
         await user.save();
 
+        await PlanRepo.createPlanHistory(user._id.toString(), plan._id.toString(), plan.price, `${plan.name} - ${plan.isYearlyPlan ? "Annual" : "Monthly"}`);
+
         return NextResponse.json({ success: true, user }, { status: 200 });
     } catch (error) {
         console.error('Subscription update error:', error);

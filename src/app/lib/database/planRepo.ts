@@ -7,7 +7,9 @@ export const PlanRepo = {
     update,
     deletePlan,
     createPlanHistory,
-    findByPriceId
+    findByPriceId,
+    findPlanHistoryByUserId,
+    updatePlanHistory
 }
 
 async function findAll() {
@@ -67,10 +69,19 @@ async function findByPriceId(priceId: string) {
     return await db.Plan.findOne({ priceId });
 }
 
-async function createPlanHistory(userId: string, planId: string, price: number) {
+async function createPlanHistory(userId: string, planId: string, price: number, type: string) {
     return await db.PlanHistory.create({
         userId,
         planId,
-        price
+        price,
+        type
     });
+}
+
+async function findPlanHistoryByUserId(userId: string) {
+    return await db.PlanHistory.find({ userId });
+}
+
+async function updatePlanHistory(userId: string, planId: string, status: string, invoiceId: string | null, invoicePdfUrl: string | null | undefined) {
+    return await db.PlanHistory.findOneAndUpdate({ userId, planId, status: "pending" }, { status, invoiceId, invoicePdfUrl }, { new: true });
 }

@@ -3,12 +3,17 @@
 import { useState, useEffect, Suspense } from 'react';
 import { ISubscriptionPlan } from '@/app/lib/interface';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/app/hooks/use-toast';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useSearchParams } from 'next/navigation';
-import { formatNumber } from '@/app/lib/utils';
+// import { formatNumber } from '@/app/lib/utils';
 
 export default function Page() {
     return (
@@ -20,10 +25,14 @@ export default function Page() {
 
 const SubscriptionPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
-    const { user, setUser } = useAuth();
+    const { user, setUser, requestPlanId, setRequestPlanId } = useAuth();
     const [isYearly, setIsYearly] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
-    const [requestPlanId, setRequestPlanId] = useState<string | null>(null);
+    const [confirmDialog, setConfirmDialog] = useState({
+        open: false,
+        planId: '',
+        planName: ''
+    });
     const router = useRouter();
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -68,12 +77,6 @@ const SubscriptionPage = () => {
 
         fetchData();
     }, []);
-
-    useEffect(() => {
-        if (user?.requestPlanId) {
-            setRequestPlanId(user.requestPlanId);
-        }
-    }, [user?.requestPlanId]);
 
     const handleUpgrade = async (planId: string) => {
         setIsLoading(true);
@@ -124,15 +127,32 @@ const SubscriptionPage = () => {
     };
 
     const handleDowngrade = async (planId: string) => {
-        setIsLoading(true);
-        try {
-            const plan = plans.find(p => p._id === planId);
-            if (!plan) throw new Error("Plan not found");
+        const plan = plans.find(p => p._id === planId);
+        if (!plan) {
+            toast({
+                description: "Plan not found",
+                variant: "destructive"
+            });
+            return;
+        }
 
+        // Show confirmation dialog
+        setConfirmDialog({
+            open: true,
+            planId: planId,
+            planName: plan.name
+        });
+    };
+
+    const handleConfirmDowngrade = async () => {
+        setConfirmDialog({ open: false, planId: '', planName: '' });
+        setIsLoading(true);
+        
+        try {
             const response = await fetch("/api/user/subscription/downgrade", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planId })
+                body: JSON.stringify({ planId: confirmDialog.planId })
             });
 
             const data = await response.json();
@@ -140,7 +160,7 @@ const SubscriptionPage = () => {
                 toast({
                     description: "Your Request is being processed, please wait for the confirmation",
                 });
-                setUser(data.user);
+                setRequestPlanId(confirmDialog.planId);
             } else {
                 throw new Error(data.error || "Failed to downgrade subscription");
             }
@@ -153,6 +173,10 @@ const SubscriptionPage = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleCancelDowngrade = () => {
+        setConfirmDialog({ open: false, planId: '', planName: '' });
     };
 
     const handleCancelPending = async (planId: string) => {
@@ -218,6 +242,89 @@ const SubscriptionPage = () => {
                         />
                     ))}
                 </div>
+
+                {/* Downgrade Confirmation Dialog */}
+                <Dialog
+                    open={confirmDialog.open}
+                    onClose={handleCancelDowngrade}
+                    PaperProps={{
+                        sx: {
+                            backgroundColor: '#020202',
+                            border: '1px solid #FFFFFF1F',
+                            borderRadius: '20px',
+                            color: 'white',
+                            minWidth: '400px',
+                            maxWidth: '500px'
+                        }
+                    }}
+                    BackdropProps={{
+                        sx: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backdropFilter: 'blur(8px)'
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{ 
+                        color: 'white', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 2,
+                        fontSize: '18px',
+                        fontWeight: 600
+                    }}>
+                        <AlertTriangle className="text-yellow-500" size={24} />
+                        Confirm Downgrade
+                    </DialogTitle>
+                    <DialogContent sx={{ color: '#AEB0B9', paddingBottom: 2 }}>
+                        Are you sure you want to downgrade to the <strong className="text-white">{confirmDialog.planName}</strong> plan? 
+                        <br /><br />
+                        This action will:
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Reduce your subscription benefits</li>
+                            <li>Cannot be undone immediately</li>
+                            <li>Take effect at the end of your current billing cycle</li>
+                        </ul>
+                    </DialogContent>
+                    <DialogActions sx={{ padding: '16px 24px', gap: 1 }}>
+                        <Button
+                            onClick={handleCancelDowngrade}
+                            sx={{
+                                color: '#AEB0B9',
+                                border: '1px solid #FFFFFF26',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                '&:hover': {
+                                    backgroundColor: '#FFFFFF14',
+                                    border: '1px solid #FFFFFF40'
+                                }
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleConfirmDowngrade}
+                            disabled={isLoading}
+                            sx={{
+                                background: 'linear-gradient(to bottom, #FFFFFF, #898989)',
+                                color: 'black',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: 500,
+                                '&:hover': {
+                                    opacity: 0.9
+                                },
+                                '&:disabled': {
+                                    opacity: 0.5
+                                }
+                            }}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : null}
+                            Confirm Downgrade
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         </>
     );

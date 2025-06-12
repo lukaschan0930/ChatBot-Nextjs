@@ -3,22 +3,15 @@ import { authOptions, getChatPoints } from "@/app/lib/api/helper";
 import { getServerSession, AuthOptions } from "next-auth";
 import { UserRepo } from "@/app/lib/database/userrepo";
 import { ChatRepo } from "@/app/lib/database/chatrepo";
-import { verifyRecaptcha, getRecaptchaTokenFromRequest } from "@/app/lib/recaptcha";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2025-02-24.acacia",
+});
 
 export async function PUT(request: NextRequest) {
     const { name, avatar, wallet, workerPoints, isNodeConnected, isNodeAdded } = await request.json();
     const session = await getServerSession(authOptions as AuthOptions);
-
-    // Verify reCAPTCHA
-    // const recaptchaToken = getRecaptchaTokenFromRequest(request);
-    // if (!recaptchaToken) {
-    //     return Response.json({ success: false, message: "reCAPTCHA token is required" });
-    // }
-
-    // const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
-    // if (!isValidRecaptcha) {
-    //     return Response.json({ success: false, message: "reCAPTCHA verification failed" });
-    // }
 
     const user = await UserRepo.findByEmail(session?.user?.email as string);
     if (!user) {
@@ -52,7 +45,8 @@ export async function PUT(request: NextRequest) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
         // }
-        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected, user.isNodeAdded);
+
+        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected, user.isNodeAdded, user.paymentMethod ?? null);
         return Response.json({ success: true, message: "User updated", user: user });
     } catch (error) {   
         console.error(error);
@@ -74,7 +68,12 @@ export async function GET() {
         if (chatHistory) {
             user.chatPoints = getChatPoints(chatHistory.session);
         }
-        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected ?? false, user.isNodeAdded ?? false);
+        
+        if (user.stripeCustomerId && !user.paymentMethod) {
+            const paymentMethods = await stripe.customers.listPaymentMethods(user.stripeCustomerId, {limit: 1});
+            user.paymentMethod = paymentMethods.data[0];
+        }
+        await UserRepo.updateUserProfileWithEmail(user.email, user.name, user.avatar, user.wallet, user.chatPoints ?? 0, user.workerPoints ?? 0, user.isNodeConnected ?? false, user.isNodeAdded ?? false, user.paymentMethod);
         return Response.json({ success: true, user: user });
     } catch (error) {
         console.error(error);

@@ -11,15 +11,18 @@ import ShadowBtn from "@/app/components/ShadowBtn";
 import Camera from "@/app/assets/camera";
 // import { useRecaptcha } from "@/app/hooks/useRecaptcha";
 import { LABELS } from "@/app/lib/utils";
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+// import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useWalletMultiButton } from "@solana/wallet-adapter-base-ui";
 import Loading from "@/app/components/Loading";
-import { Divider } from "@mui/material";
+import { Divider, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import { format, differenceInDays } from "date-fns";
 import { formatNumber } from "@/app/lib/utils";
+import { CreditCard, AlertTriangle, Loader2 } from "lucide-react";
+import { Separator } from "@radix-ui/react-dropdown-menu";
+import PaymentMethodUpdate from "@/app/components/PaymentMethodUpdate";
 
 const UserSetting = () => {
-    const { user, setUser } = useAuth();
+    const { user, setUser, setRequestPlanId } = useAuth();
     // const { executeRecaptcha } = useRecaptcha();
     const { publicKey, buttonState } = useWalletMultiButton({ onSelectWallet() { }, });
 
@@ -27,7 +30,12 @@ const UserSetting = () => {
     const [avatar, setAvatar] = useState<string>(user?.avatar || "");
     const [name, setName] = useState<string>(user?.name || "");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isCancelLoading, setIsCancelLoading] = useState<boolean>(false);
     const [percent, setPercent] = useState<number>(0);
+    const [confirmCancelDialog, setConfirmCancelDialog] = useState({
+        open: false
+    });
+    const [paymentMethodDialog, setPaymentMethodDialog] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const radius = 40;
     const stroke = 8;
@@ -181,9 +189,69 @@ const UserSetting = () => {
         }
     }, [user])
 
+    const cancelSubscription = () => {
+        // Show confirmation dialog
+        setConfirmCancelDialog({
+            open: true
+        });
+    };
+
+    const handleConfirmCancelSubscription = async () => {
+        setConfirmCancelDialog({ open: false });
+        setIsCancelLoading(true);
+        
+        try {
+            const freePlanId = "680f11c0d44970f933ae5e54";
+            const response = await fetch("/api/user/subscription/downgrade", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId: freePlanId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                toast({
+                    variant: "default",
+                    title: "Subscription will be canceled at the end of current billing period",
+                });
+                setRequestPlanId(freePlanId);
+            } else {
+                throw new Error(data.error || "Failed to cancel subscription");
+            }
+        } catch (error) {
+            console.error("Error canceling subscription:", error);
+            toast({
+                description: error instanceof Error ? error.message : "Failed to cancel subscription",
+                variant: "destructive"
+            });
+        } finally {
+            setIsCancelLoading(false);
+        }
+    };
+
+    const handleCancelCancelSubscription = () => {
+        setConfirmCancelDialog({ open: false });
+    };
+
+    const changePaymentMethod = () => {
+        setPaymentMethodDialog(true);
+    };
+
+    const handlePaymentMethodSuccess = async () => {
+        // Refresh user data to get updated payment method
+        try {
+            const response = await fetch("/api/user/profile");
+            const data = await response.json();
+            if (data.success && data.user) {
+                setUser(data.user);
+            }
+        } catch (error) {
+            console.error("Error refreshing user data:", error);
+        }
+    };
+
     return (
-        <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen md:pt-[180px] pt-[100px]">
-            <h1 className="text-2xl font-medium text-left text-[#FFFFFF] max-sm:hidden">Profile</h1>
+        <div className="flex flex-col items-center min-h-screen text-[#E2E2E2] px-4 w-screen md:pt-[80px] pt-[50px] pb-10">
+            {/* <h1 className="text-2xl font-medium text-left text-[#FFFFFF] max-sm:hidden">Profile</h1> */}
             <div
                 className="mt-7 bg-[#FFFFFF05] border border-[#25252799] rounded-3xl md:!w-[640px] w-full flex flex-col"
             >
@@ -255,17 +323,17 @@ const UserSetting = () => {
                                         </CopyToClipboard>
                                     </div>
                                 </div>
-                                <div className="mt-4">
+                                {/* <div className="mt-4">
                                     <WalletMultiButton style={{ backgroundImage: "linear-gradient(rgb(38, 210, 160), rgb(2, 126, 90))" }} endIcon={
                                         publicKey ? <img className="rounded-full" src={`https://i.pravatar.cc/150?u=${publicKey}`} alt="Logo" /> : undefined
                                     }>
                                         {content}
                                     </WalletMultiButton>
-                                </div>
+                                </div> */}
                             </div>
                             <Divider orientation="vertical" sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
                             <Divider sx={{ backgroundColor: "#FFFFFF14" }} flexItem />
-                            <div className="md:w-1/2 w-full md:pl-8">
+                            <div className="md:w-1/2 w-full md:pl-8 pb-3">
                                 <div className="flex w-full justify-between">
                                     <div className="flex flex-col">
                                         <div className="text-[12px] text-[#808080]">Current Plan</div>
@@ -327,14 +395,79 @@ const UserSetting = () => {
                                     <div className="text-[12px] text-[#808080]">Resets on</div>
                                     <div className="text-[14px] text-white">{user?.pointsResetDate ? format(user?.pointsResetDate, 'MMM d, yyyy') : 'N/A'} <span className="text-[#808080]">({user?.pointsResetDate ? differenceInDays(user?.pointsResetDate, new Date()) : 'N/A'} days left)</span></div>
                                 </div>
-                                <button
-                                    onClick={() => router.push('/subscription')}
-                                    className="mt-4 w-full h-[39px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[14px] text-[#000000] hover:border-transparent transition-transform duration-300 ease-linear"
-                                >
-                                    Increase Limited Points
-                                </button>
+                                <div className="flex gap-3 mt-5 text-[12px] max-sm:flex-col">
+                                    <button
+                                        className="w-full h-[32px] flex items-center justify-center bg-[#FAFAFA]/80 border border-transparent focus:outline-none text-[#000000] hover:border-transparent transition-transform duration-300 ease-linear"
+                                        onClick={() => router.push('/subscription')}
+                                    >
+                                        Upgrade Plan
+                                    </button>
+                                    <button
+                                        className="w-full h-[32px] flex items-center justify-center text-white bg-[#00000040] border border-[#FFFFFF80] focus:outline-none hover:border-[#FFFFFF80] transition-transform duration-300 ease-linear"
+                                        onClick={() => router.push('/billingHistory')}
+                                    >
+                                        Billing History
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        {
+                            user?.paymentMethod && (
+                                <div className="mt-5 border bg-[#FFFFFF05] text-white border-[#FFFFFF1A] rounded-md p-4 flex flex-col gap-2 w-full">
+                                    <div className="text-[16px] text-white">Payment Method</div>
+                                    <div className="w-full flex justify-between items-center max-sm:flex-col max-sm:items-start">
+                                        <div className="flex items-center gap-3">
+                                            {
+                                                user?.paymentMethod && (
+                                                    <PaymentMethodImage paymentMethod={user?.paymentMethod} />
+                                                )
+                                            }
+                                            <div className="flex flex-col">
+                                                {
+                                                    (user?.paymentMethod as any)?.type === 'card' ? (
+                                                        <>
+                                                            <div className="text-[16px]">**** **** **** {(user?.paymentMethod as any)?.card?.last4}</div>
+                                                            <div className="text-[#808080] text-[10px]">Expires {(user?.paymentMethod as any)?.card?.exp_month}/{(user?.paymentMethod as any)?.card?.exp_year}</div>
+                                                        </>
+                                                    ) : (user?.paymentMethod as any)?.type === 'link' ? (
+                                                        <>
+                                                            <div className="text-[16px]">{(user?.paymentMethod as any)?.link?.email}</div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="text-[16px]">unknown</div>
+                                                        </>
+                                                    )
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className="text-[14px] cursor-pointer" onClick={changePaymentMethod}>Change</div>
+                                    </div>
+                                </div>
+                            )
+                        }
+                        {
+                            user?.currentplan && user?.currentplan?.type !== 'free' && (
+                                <div className="mt-4 border bg-[#FFFFFF05] text-white border-[#FFFFFF1A] rounded-md p-4 flex flex-col gap-2 w-full">
+                                    <div className="text-[16px] text-white">Cancel Subscription</div>
+                                    <div className="w-full flex justify-between items-center mt-7 max-sm:flex-col max-sm:items-start">
+                                        <div className="flex flex-col text-[12px]">
+                                            <div>{user?.currentplan?.name} - {user?.currentplan?.isYearlyPlan ? 'Yearly' : 'Monthly'}</div>
+                                            <div className="text-[#808080]">Next billing: {user?.planEndDate ? format(user?.planEndDate, 'MMM d, yyyy') : 'N/A'}</div>
+                                        </div>
+                                        <div className="text-[20px]">${user?.currentplan?.price} <span className="text-[#808080] text-[12px]">/{user?.currentplan?.isYearlyPlan ? 'year' : 'month'}</span></div>
+                                    </div>
+                                    <Separator className="my-2 w-full h-[1px] bg-[#FFFFFF1A]" />
+                                    <button
+                                        className="w-[157px] text-[12px] h-9 flex items-center justify-center text-[#C55252] bg-[#00000040] border border-[#C55252] focus:outline-none hover:border-[#C55252] transition-transform duration-300 ease-linear"
+                                        onClick={handleConfirmCancelSubscription}
+                                        disabled={isCancelLoading}
+                                    >
+                                        {isCancelLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Cancel Subscription"}
+                                    </button>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
                 <div className="flex justify-end gap-3 border-t border-[#25252799] p-3 w-full max-sm:justify-between">
@@ -351,8 +484,147 @@ const UserSetting = () => {
                         {isLoading ? <Loading /> : "Update"}
                     </button>
                 </div>
+
+                {/* Cancel Subscription Confirmation Dialog */}
+                <Dialog
+                    open={confirmCancelDialog.open}
+                    onClose={handleCancelCancelSubscription}
+                    PaperProps={{
+                        sx: {
+                            backgroundColor: '#020202',
+                            border: '1px solid #FFFFFF1F',
+                            borderRadius: '20px',
+                            color: 'white',
+                            minWidth: '400px',
+                            maxWidth: '500px'
+                        }
+                    }}
+                    BackdropProps={{
+                        sx: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backdropFilter: 'blur(8px)'
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{ 
+                        color: 'white', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 2,
+                        fontSize: '18px',
+                        fontWeight: 600
+                    }}>
+                        <AlertTriangle className="text-red-500" size={24} />
+                        Cancel Subscription
+                    </DialogTitle>
+                    <DialogContent sx={{ color: '#AEB0B9', paddingBottom: 2 }}>
+                        Are you sure you want to cancel your <strong className="text-white">{user?.currentplan?.name}</strong> subscription?
+                        <br /><br />
+                        This action will:
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Downgrade you to the Free plan</li>
+                            <li>Remove all premium features</li>
+                            <li>Take effect at the end of your current billing cycle</li>
+                            <li>Cannot be undone immediately</li>
+                        </ul>
+                    </DialogContent>
+                    <DialogActions sx={{ padding: '16px 24px', gap: 1 }}>
+                        <Button
+                            onClick={handleCancelCancelSubscription}
+                            sx={{
+                                color: '#AEB0B9',
+                                border: '1px solid #FFFFFF26',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                '&:hover': {
+                                    backgroundColor: '#FFFFFF14',
+                                    border: '1px solid #FFFFFF40'
+                                }
+                            }}
+                        >
+                            Keep Subscription
+                        </Button>
+                        <Button
+                            onClick={handleConfirmCancelSubscription}
+                            disabled={isLoading}
+                            sx={{
+                                background: 'linear-gradient(to bottom, #C55252, #A03333)',
+                                color: 'white',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: 500,
+                                '&:hover': {
+                                    opacity: 0.9
+                                },
+                                '&:disabled': {
+                                    opacity: 0.5
+                                }
+                            }}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : null}
+                            Cancel Subscription
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Payment Method Update Dialog */}
+                <PaymentMethodUpdate
+                    open={paymentMethodDialog}
+                    onClose={() => setPaymentMethodDialog(false)}
+                    onSuccess={handlePaymentMethodSuccess}
+                />
             </div>
         </div>
+    )
+}
+
+const PaymentMethodImage = ({ paymentMethod }: { paymentMethod: any }) => {
+    const [imageError, setImageError] = useState(false);
+
+    const handleImageError = () => {
+        setImageError(true);
+    };
+
+    return (
+        paymentMethod?.type === 'card' ? (
+            !imageError ? (
+                <div className="w-8 h-8 bg-white rounded-sm flex flex-col items-center justify-center">
+                    <Image
+                        src={`/image/payment-method/${paymentMethod.card.brand}.png`}
+                        alt={`${paymentMethod.card.brand} card`}
+                        width={20}
+                        height={20}
+                        onError={handleImageError}
+                    />
+                </div>
+            ) : (
+                <div className="w-8 h-8 bg-[#292929] rounded-sm flex flex-col items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-[#808080]" />
+                </div>
+            )
+        ) : paymentMethod?.type === 'link' ? (
+            !imageError ? (
+                <div className="w-8 h-8 bg-white rounded-sm flex flex-col items-center justify-center">
+                    <Image
+                        src={`/image/payment-method/link.png`}
+                        alt="Link payment method"
+                        width={20}
+                        height={20}
+                        onError={handleImageError}
+                    />
+                </div>
+            ) : (
+                <div className="w-8 h-8 bg-[#292929] rounded-sm flex flex-col items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-[#808080]" />
+                </div>
+            )
+        ) : (
+            <div className="w-8 h-8 bg-[#292929] rounded-sm flex flex-col items-center justify-center">
+                <CreditCard className="w-5 h-5 text-[#808080]" />
+            </div>
+        )
     )
 }
 
