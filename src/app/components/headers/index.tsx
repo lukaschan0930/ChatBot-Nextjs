@@ -205,7 +205,7 @@ const Header = () => {
                   </ShadowBtn>
                 </>
               }
-              {
+              {/* {
                 (endPoint[1] === "workers" || endPoint[1] === "subscription") &&
                 <>
                   <ShadowBtn
@@ -214,7 +214,7 @@ const Header = () => {
                     <ProfileIcon />
                   </ShadowBtn>
                 </>
-              }
+              } */}
             </div>
           }
           <div className="flex items-center gap-2 sm:hidden">
