@@ -10,11 +10,11 @@ export async function GET() {
 
     const user = await UserRepo.findByEmail(session.user?.email || '');
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    await PlanRepo.updatePlanHistory(user._id.toString(), user.requestPlanId, "failed", null, null);
 
     user.requestPlanId = null;
     await user.save();
 
-    await PlanRepo.updatePlanHistory(user._id.toString(), user.requestPlanId, "failed", null, null);
 
     return NextResponse.json({ success: true, user }, { status: 200 });
 }
