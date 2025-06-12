@@ -32,7 +32,7 @@ type MenuItem = {
   }[];
 };
 
-const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
+const MobileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -179,6 +179,13 @@ const MobileDropDownMenu = ( { endpoint }: {endpoint: string}) => {
         >
           Subscription
           <FiCreditCard className="!w-5 !h-5" />
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
+          onClick={handleSetting}
+        >
+          <FiSettings className="!w-5 !h-5" />
+          Setting
         </DropdownMenuItem>
         <DropdownMenuItem
           className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-3 text-base transition-all duration-300 text-mainFont sm:hidden border-b rounded-none border-[#29292B] flex items-center gap-2"
