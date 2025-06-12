@@ -37,22 +37,41 @@ const SubscriptionPage = () => {
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
+    const planId = searchParams.get('planId');
 
     useEffect(() => {
         if (success) {
+            setRequestPlanId(planId || '');
             toast({
                 description: "Subscription created successfully",
             });
-        }
-        if (canceled) {
-            fetch('/api/user/subscription/requestCancel').then(res => res.json()).then(data => {
+            fetch('/api/user/subscription/requestUpdate', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ planId: planId })
+            }).then(res => res.json()).then(data => {
                 if (data.success) {
-                    setUser(data.user);
+                    // setUser(data.user);
                     toast({
-                        description: "Subscription creation canceled",
-                        variant: "destructive"
+                        description: "Subscription created successfully",
+                        variant: "default"
                     });
                 }
+            });
+        }
+        if (canceled) {
+            // fetch('/api/user/subscription/requestCancel').then(res => res.json()).then(data => {
+            //     if (data.success) {
+            //         setUser(data.user);
+            //         toast({
+            //             description: "Subscription creation canceled",
+            //             variant: "destructive"
+            //         });
+            //     }
+            // });
+            toast({
+                description: "Subscription creation canceled",
+                variant: "destructive"
             });
         }
     }, [success, canceled]);
@@ -110,7 +129,8 @@ const SubscriptionPage = () => {
                     toast({
                         description: "Your Request is being processed, please wait for the confirmation",
                     });
-                    setUser(data.user);
+                    // setUser(data.user);
+                    setRequestPlanId(planId);
                 } else {
                     throw new Error(data.error || "Failed to upgrade subscription");
                 }
@@ -147,7 +167,7 @@ const SubscriptionPage = () => {
     const handleConfirmDowngrade = async () => {
         setConfirmDialog({ open: false, planId: '', planName: '' });
         setIsLoading(true);
-        
+
         try {
             const response = await fetch("/api/user/subscription/downgrade", {
                 method: "POST",
@@ -264,10 +284,10 @@ const SubscriptionPage = () => {
                         }
                     }}
                 >
-                    <DialogTitle sx={{ 
-                        color: 'white', 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                    <DialogTitle sx={{
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 2,
                         fontSize: '18px',
                         fontWeight: 600
@@ -276,7 +296,7 @@ const SubscriptionPage = () => {
                         Confirm Downgrade
                     </DialogTitle>
                     <DialogContent sx={{ color: '#AEB0B9', paddingBottom: 2 }}>
-                        Are you sure you want to downgrade to the <strong className="text-white">{confirmDialog.planName}</strong> plan? 
+                        Are you sure you want to downgrade to the <strong className="text-white">{confirmDialog.planName}</strong> plan?
                         <br /><br />
                         This action will:
                         <ul className="list-disc list-inside mt-2 space-y-1">

@@ -159,7 +159,12 @@ export async function POST(request: NextRequest) {
                     null
                 );
 
-                await PlanRepo.updatePlanHistory(user._id.toString(), planId._id.toString(), "paid", invoice.id, invoice.invoice_pdf);
+                const planPending = await PlanRepo.getPlanHistoryByUserIdAndPlanId(user._id.toString(), planId._id.toString());
+                if (planPending) {
+                    await PlanRepo.updatePlanHistory(user._id.toString(), planId._id.toString(), "paid", invoice.id, invoice.invoice_pdf);
+                } else {
+                    await PlanRepo.savePlanHistory(user._id.toString(), planId._id.toString(), planId.price, `${planId.name} - ${planId.isYearlyPlan ? "Annual" : "Monthly"}`, "paid", invoice.id, invoice.invoice_pdf);
+                }
 
                 console.log(`Subscription renewed for user: ${user._id}`);
                 break;
@@ -170,6 +175,8 @@ export async function POST(request: NextRequest) {
                 const invoice = event.data.object as Stripe.Invoice;
                 const subscriptionId = invoice.subscription as string;
                 const customerId = invoice.customer as string;
+                const priceId = invoice.lines?.data[0]?.price?.id || null;
+                const planId = await PlanRepo.findByPriceId(priceId || '');
 
                 // Only process subscription invoices
                 if (!subscriptionId) break;
@@ -180,6 +187,13 @@ export async function POST(request: NextRequest) {
                 if (!user) {
                     console.error(`No user found with Stripe customer ID: ${customerId}`);
                     break;
+                }
+
+                const planPending = await PlanRepo.getPlanHistoryByUserIdAndPlanId(user._id.toString(), planId?._id.toString());
+                if (planPending) {
+                    await PlanRepo.updatePlanHistory(user._id.toString(), planId?._id.toString(), "failed", invoice.id, invoice.invoice_pdf);
+                } else {
+                    await PlanRepo.savePlanHistory(user._id.toString(), planId?._id.toString(), 0, `${planId?.name} - ${planId?.isYearlyPlan ? "Annual" : "Monthly"}`, "failed", invoice.id, invoice.invoice_pdf);
                 }
 
                 await UserRepo.updateUserSubscription(
