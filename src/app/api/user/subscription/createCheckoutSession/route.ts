@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         customer: customerId,
         line_items: [{ price: plan.priceId, quantity: 1 }],
         mode: 'subscription',
-        success_url: `${process.env.NEXTAUTH_URL}/subscription?success=true`,
+        success_url: `${process.env.NEXTAUTH_URL}/subscription?success=true&planId=${planId}`,
         cancel_url: `${process.env.NEXTAUTH_URL}/subscription?canceled=true`,
         metadata: {
             userId: user._id.toString(),
@@ -43,12 +43,12 @@ export async function POST(request: NextRequest) {
         },
     });
     
-    await db.User.updateOne(
-        { email: user.email },
-        { $set: { requestPlanId: planId } }
-    );
+    // await db.User.updateOne(
+    //     { email: user.email },
+    //     { $set: { requestPlanId: planId } }
+    // );
 
-    await PlanRepo.createPlanHistory(user._id.toString(), plan._id.toString(), plan.price, `${plan.name} - ${plan.isYearlyPlan ? "Annual" : "Monthly"}`);
+    // await PlanRepo.createPlanHistory(user._id.toString(), plan._id.toString(), plan.price, `${plan.name} - ${plan.isYearlyPlan ? "Annual" : "Monthly"}`);
 
     return NextResponse.json({ success: true, url: stripeSession.url }, { status: 200 });
 }

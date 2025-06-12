@@ -159,7 +159,12 @@ export async function POST(request: NextRequest) {
                     null
                 );
 
-                await PlanRepo.updatePlanHistory(user._id.toString(), planId._id.toString(), "paid", invoice.id, invoice.invoice_pdf);
+                const planPending = await PlanRepo.getPlanHistoryByUserIdAndPlanId(user._id.toString(), planId._id.toString());
+                if (planPending) {
+                    await PlanRepo.updatePlanHistory(user._id.toString(), planId._id.toString(), "paid", invoice.id, invoice.invoice_pdf);
+                } else {
+                    await PlanRepo.savePlanHistory(user._id.toString(), planId._id.toString(), planId.price, `${planId.name} - ${planId.isYearlyPlan ? "Annual" : "Monthly"}`, "paid", invoice.id, invoice.invoice_pdf);
+                }
 
                 console.log(`Subscription renewed for user: ${user._id}`);
                 break;
@@ -193,6 +198,13 @@ export async function POST(request: NextRequest) {
                     user.pointsResetDate,
                     null
                 );
+
+                const planPending = await PlanRepo.getPlanHistoryByUserIdAndPlanId(user._id.toString(), user.currentplan?._id.toString());
+                if (planPending) {
+                    await PlanRepo.updatePlanHistory(user._id.toString(), user.currentplan?._id.toString(), "failed", null, null);
+                } else {
+                    await PlanRepo.savePlanHistory(user._id.toString(), user.currentplan?._id.toString(), user.currentplan?.price || 0, `${user.currentplan?.name} - ${user.currentplan?.isYearlyPlan ? "Annual" : "Monthly"}`, "failed", null, null);
+                }
 
                 console.log(`Payment failed for user: ${user._id}, subscription: ${subscriptionId}. Grace period until: ${user.pointsResetDate}`);
                 break;

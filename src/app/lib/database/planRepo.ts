@@ -9,7 +9,9 @@ export const PlanRepo = {
     createPlanHistory,
     findByPriceId,
     findPlanHistoryByUserId,
-    updatePlanHistory
+    updatePlanHistory,
+    getPlanHistoryByUserIdAndPlanId,
+    savePlanHistory
 }
 
 async function findAll() {
@@ -84,4 +86,12 @@ async function findPlanHistoryByUserId(userId: string) {
 
 async function updatePlanHistory(userId: string, planId: string, status: string, invoiceId: string | null, invoicePdfUrl: string | null | undefined) {
     return await db.PlanHistory.findOneAndUpdate({ userId, planId, status: "pending" }, { status, invoiceId, invoicePdfUrl }, { new: true });
+}
+
+async function getPlanHistoryByUserIdAndPlanId(userId: string, planId: string) {
+    return await db.PlanHistory.findOne({ userId, planId, status: "pending" });
+}
+
+async function savePlanHistory(userId: string, planId: string, price: number, type: string, status: string, invoiceId: string | null, invoicePdfUrl: string | null | undefined) {
+    return await db.PlanHistory.create({ userId, planId, price, type, status, invoiceId, invoicePdfUrl });
 }
