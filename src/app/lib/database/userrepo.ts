@@ -132,8 +132,18 @@ async function getTopBoardUsers() {
     return topUsers;
 };
 
-async function updateUserProfileWithEmail(email: string, name: string, avatar: string, wallet: string, chatPoints: number, workerPoints: number, isNodeConnected: boolean, isNodeAdded: boolean) {
-    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints, workerPoints, isNodeConnected, isNodeAdded }, { upsert: true });
+async function updateUserProfileWithEmail(
+    email: string, 
+    name: string, 
+    avatar: string, 
+    wallet: string, 
+    chatPoints: number, 
+    workerPoints: number, 
+    isNodeConnected: boolean, 
+    isNodeAdded: boolean, 
+    paymentMethod: object | null
+) {
+    return db.User.findOneAndUpdate({ email }, { name, avatar, wallet, chatPoints, workerPoints, isNodeConnected, isNodeAdded, paymentMethod }, { upsert: true });
 }
 
 async function count() {

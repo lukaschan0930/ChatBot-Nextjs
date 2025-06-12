@@ -41,6 +41,7 @@ interface IUser extends Document {
     subscriptionId: string;
     subscriptionStatus: string;
     stripeCustomerId: string;
+    paymentMethod: object;
 }
 
 mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/edith-chatapp')
@@ -196,6 +197,10 @@ function userModel() {
         },
         stripeCustomerId: {
             type: String,
+            default: null
+        },
+        paymentMethod: {
+            type: Object,
             default: null
         },
         salt: {
@@ -685,9 +690,25 @@ function planHistoryModel() {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Plan',
         },
+        type: {
+            type: String,
+            required: true,
+            default: null
+        },
         price: {
             type: Number,
             required: true
+        },
+        status: {
+            type: String,
+            required: true,
+            default: "pending"
+        },
+        invoiceId: {
+            type: String,
+        },
+        invoicePdfUrl: {
+            type: String,
         },
         createdAt: {
             type: Date,

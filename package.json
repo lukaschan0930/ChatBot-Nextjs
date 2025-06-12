@@ -43,6 +43,8 @@
     "@solana/wallet-adapter-react-ui": "^0.9.36",
     "@solana/wallet-adapter-wallets": "^0.19.33",
     "@solana/web3.js": "^1.98.0",
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.1",
     "@tinymce/tinymce-react": "^5.1.1",
     "ai": "^4.1.18",
     "apexcharts": "^4.5.0",

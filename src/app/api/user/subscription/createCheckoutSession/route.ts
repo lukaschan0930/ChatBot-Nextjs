@@ -48,5 +48,7 @@ export async function POST(request: NextRequest) {
         { $set: { requestPlanId: planId } }
     );
 
+    await PlanRepo.createPlanHistory(user._id.toString(), plan._id.toString(), plan.price, `${plan.name} - ${plan.isYearlyPlan ? "Annual" : "Monthly"}`);
+
     return NextResponse.json({ success: true, url: stripeSession.url }, { status: 200 });
 }

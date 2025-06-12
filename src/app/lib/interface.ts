@@ -20,6 +20,7 @@ export interface User {
     planEndDate?: Date;
     pointsResetDate?: Date;
     pointsUsed?: number;
+    paymentMethod?: object;
     // board: {
     //     score: number;
     //     rank: number;
@@ -67,6 +68,8 @@ export interface AuthContextType {
     isNodeConnected: boolean;
     setIsNodeConnected: (isNodeConnected: boolean) => void;
     workerPoints: number;
+    requestPlanId: string | null;
+    setRequestPlanId: (requestPlanId: string | null) => void;
 }
 
 interface RequestFunction {
@@ -152,7 +155,8 @@ export interface IUser {
         jumpUserId?: string;
         jumpTransactionId?: string;
         isReward: boolean
-    }
+    };
+    paymentMethod?: object;
 }
 
 export interface ChatHistory {

@@ -9,6 +9,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [verifyCode, setVerifyCode] = useState<string | null>("");
   const [user, setUser] = useState<User | null>(null);
+  const [requestPlanId, setRequestPlanId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: session } = useSession();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
+        setRequestPlanId(data.user.requestPlanId);
         nodeRewardHash.current = data.user.nodeRewardHash;
         workerPoints.current = data.user.workerPoints;
       } else {
@@ -105,6 +107,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isNodeConnected,
         setIsNodeConnected,
         workerPoints: workerPoints.current,
+        requestPlanId,
+        setRequestPlanId
       }}
     >
       {children}

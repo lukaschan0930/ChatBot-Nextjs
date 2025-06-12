@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
                     null
                 );
 
-                await PlanRepo.createPlanHistory(user._id, planId._id, planId.price);
+                await PlanRepo.updatePlanHistory(user._id.toString(), planId._id.toString(), "paid", invoice.id, invoice.invoice_pdf);
 
                 console.log(`Subscription renewed for user: ${user._id}`);
                 break;
