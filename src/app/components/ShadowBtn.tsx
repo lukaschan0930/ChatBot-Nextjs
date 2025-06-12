@@ -7,6 +7,7 @@ interface FormBtnProps {
     onClick?: () => void,
     children?: React.ReactNode,
     mainClassName?: string,
+    // onMouseDown?: () => void,
 }
 
 const ShadowBtn = ( props : FormBtnProps ) => {

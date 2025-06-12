@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiLogOut, FiSettings, FiCreditCard } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,8 @@ const MobileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(MenuItems);
+  const [isActive, setIsActive] = useState<boolean>(false);
+
   const handleSetting = () => {
     router.push("/userSetting");
     setIsOpen(false);
@@ -47,6 +49,16 @@ const MobileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
     signOut();
     setIsOpen(false);
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        setIsActive(true);
+      }, 500);
+    } else {
+      setIsActive(false);
+    }
+  }, [isOpen]);
 
   const handleItemClick = (itemId: string) => {
     setMenuItems((prevItems) =>
@@ -59,7 +71,9 @@ const MobileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-      <DropdownMenuTrigger className="bg-transparent border-none focus:outline-none hover:bg-transparent hover:outline-none p-0">
+      <DropdownMenuTrigger
+        className="bg-transparent border-none focus:outline-none hover:bg-transparent hover:outline-none p-0"
+      >
         <ShadowBtn
           className="rounded-md md:hidden"
           mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
@@ -107,16 +121,20 @@ const MobileDropDownMenu = ({ endpoint }: { endpoint: string }) => {
           ))}
         </div>
         <DropdownMenuSeparator className="block sm:hidden bg-[#FFFFFF]/10" /> */}
-        <div className="flex w-full justify-between px-3 py-4 items-center sm:hidden">
-          <span className="text-mainFont text-base">Settings</span>
-          <ShadowBtn
-            className="rounded-md"
-            mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <IoClose size={18} />
-          </ShadowBtn>
-        </div>
+        {
+          isOpen && (
+            <div className="flex w-full justify-between px-3 py-4 items-center sm:hidden">
+              <span className="text-mainFont text-base">Settings</span>
+              <ShadowBtn
+                className="rounded-md"
+                mainClassName="rounded-md border-[#2C2B30] border bg-[#292929] shadow-btn-google text-white p-2 flex items-center justify-center gap-2 sm:hidden"
+                onClick={() => isActive && setIsOpen(false)}
+              >
+                <IoClose size={18} />
+              </ShadowBtn>
+            </div>
+          )
+        }
         <DropdownMenuSub>
           <DropdownMenuItem
             className="hover:bg-[#ffffff80] focus:bg-[#ffffff80] h-10 py-0 text-base transition-all duration-300 text-mainFont max-sm:hidden flex items-center gap-2"
