@@ -13,6 +13,7 @@ import { toast } from '@/app/hooks/use-toast';
 import { Loader2, X, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useSearchParams } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 // import { formatNumber } from '@/app/lib/utils';
 
 export default function Page() {
@@ -94,6 +95,21 @@ const SubscriptionPage = () => {
             }
         };
 
+        const fetchUserData = async () => {
+            try {
+                const res = await fetch(`/api/user/profile`);
+                const data = await res.json();
+                if (data.success) {
+                    setUser(data.user);
+                } else {
+                    signOut();
+                }
+            } catch (err) {
+                console.error("Error fetching user data:", err);
+                signOut();
+            }
+        }
+        fetchUserData();
         fetchData();
     }, []);
 
